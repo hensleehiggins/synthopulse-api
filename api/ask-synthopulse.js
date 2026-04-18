@@ -30,6 +30,34 @@ export default async function handler(req, res) {
       });
     }
 
+    // ---------------------------------
+    // TEMP HARD-CODED CONTEXT
+    // ---------------------------------
+    // This is just to prove the assistant works with business context.
+    // Next step after this: replace with live Airtable/KitchenPulse fields.
+    const context = `
+Restaurant: Chloe's Steakhouse
+
+Today's Recommendation:
+Feature Classic Crème Brûlée now
+
+Decision Priority:
+MEDIUM
+
+Why this surfaced:
+- Classic Crème Brûlée is the clearest upside play this run
+- It appears to be a strong margin opportunity
+- The system sees it as the best short-term push based on current movement
+
+Action callout:
+Feature Classic Crème Brûlée now
+
+What to keep in mind:
+- This is a focused recommendation, not a full menu reset
+- The goal is to test and confirm the upside in the next run
+- Execution should stay narrow and measurable
+`.trim();
+
     const openaiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -39,8 +67,14 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-5",
         instructions:
-          "You are SynthoPulse, an AI assistant for restaurant operators. Give clear, direct, actionable answers in plain business language.",
-        input: `User question: ${message}`
+          "You are SynthoPulse, an AI assistant for restaurant operators. Always answer using the provided business context. Be direct, concise, and actionable. Do not ask broad generic follow-up questions when the context already gives you enough to answer.",
+        input: `
+Business Context:
+${context}
+
+User Question:
+${message}
+`
       })
     });
 
@@ -55,12 +89,10 @@ export default async function handler(req, res) {
 
     let reply = "";
 
-    // Best case: official shortcut field
     if (typeof data.output_text === "string" && data.output_text.trim()) {
       reply = data.output_text.trim();
     }
 
-    // Fallback: walk the output array
     if (!reply && Array.isArray(data.output)) {
       for (const item of data.output) {
         if (!item || !Array.isArray(item.content)) continue;
@@ -75,7 +107,6 @@ export default async function handler(req, res) {
       reply = reply.trim();
     }
 
-    // Final fallback: return useful debug info instead of "No response returned."
     if (!reply) {
       return res.status(200).json({
         reply: "SynthoPulse returned no readable text.",
