@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Basic CORS support for embed requests
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -31,7 +30,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const openaiResponse = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -39,35 +38,54 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-5",
-        input: `You are SynthoPulse, an AI assistant for restaurant operators.
-
-Give clear, actionable recommendations based on this input:
-${message}`
+        instructions:
+          "You are SynthoPulse, an AI assistant for restaurant operators. Give clear, direct, actionable answers in plain business language.",
+        input: `User question: ${message}`
       })
     });
 
-    const data = await response.json();
+    const data = await openaiResponse.json();
 
-    let reply = "No response returned.";
+    if (!openaiResponse.ok) {
+      return res.status(openaiResponse.status).json({
+        error: data?.error?.message || "OpenAI request failed",
+        debug: data
+      });
+    }
 
+    let reply = "";
+
+    // Best case: official shortcut field
     if (typeof data.output_text === "string" && data.output_text.trim()) {
       reply = data.output_text.trim();
-    } else if (Array.isArray(data.output)) {
-      const textParts = [];
+    }
 
+    // Fallback: walk the output array
+    if (!reply && Array.isArray(data.output)) {
       for (const item of data.output) {
         if (!item || !Array.isArray(item.content)) continue;
 
         for (const part of item.content) {
-          if (part?.type === "output_text" && part?.text) {
-            textParts.push(part.text);
+          if (part?.type === "output_text" && typeof part.text === "string") {
+            reply += part.text;
           }
         }
       }
 
-      if (textParts.length > 0) {
-        reply = textParts.join("\n").trim();
-      }
+      reply = reply.trim();
+    }
+
+    // Final fallback: return useful debug info instead of "No response returned."
+    if (!reply) {
+      return res.status(200).json({
+        reply: "SynthoPulse returned no readable text.",
+        debug: {
+          id: data?.id,
+          model: data?.model,
+          output_text: data?.output_text ?? null,
+          output: data?.output ?? null
+        }
+      });
     }
 
     return res.status(200).json({ reply });
