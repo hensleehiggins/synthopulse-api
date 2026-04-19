@@ -13,37 +13,37 @@ module.exports = async function handler(req, res) {
 
   const BRIEFS_TABLE_ID = "tblzlPlaD5KbnE9XP";
 
-  function json(res, status, payload) {
+  function sendJson(status, payload) {
     return res.status(status).json(payload);
   }
 
-async function fetchJsonOrText(url, options = {}) {
-  try {
-    const res = await fetch(url, options);
-    const text = await res.text();
-
-    let data = null;
+  async function fetchJsonOrText(url, options = {}) {
     try {
-      data = JSON.parse(text);
-    } catch {
-      data = null;
-    }
+      const response = await fetch(url, options);
+      const rawText = await response.text();
 
-    return {
-      ok: res.ok,
-      status: res.status,
-      data,
-      rawText: text
-    };
-  } catch (err) {
-    return {
-      ok: false,
-      status: "fetch_failed",
-      data: null,
-      rawText: err.message
-    };
+      let data = null;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        data = null;
+      }
+
+      return {
+        ok: response.ok,
+        status: response.status,
+        data,
+        rawText
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        status: "fetch_failed",
+        data: null,
+        rawText: err.message
+      };
+    }
   }
-}
 
   function safeText(value) {
     if (value === null || value === undefined) return "";
@@ -75,7 +75,6 @@ async function fetchJsonOrText(url, options = {}) {
     return "";
   }
 
-  // Health / diagnostics route
   if (req.method === "GET") {
     const envOk = Boolean(AIRTABLE_PAT && AIRTABLE_BASE_ID && OPENAI_API_KEY);
 
@@ -101,7 +100,7 @@ async function fetchJsonOrText(url, options = {}) {
 
       const recordsUrl =
         `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
-        `?maxRecords=1&cellFormat=string&timeZone=America%2FNew_York&userLocale=en
+        `?maxRecords=1&cellFormat=string&timeZone=America%2FNew_York&userLocale=en`;
 
       const recordsResult = await fetchJsonOrText(recordsUrl, {
         method: "GET",
@@ -118,7 +117,7 @@ async function fetchJsonOrText(url, options = {}) {
       };
     }
 
-    return json(res, 200, {
+    return sendJson(200, {
       status: "ok",
       message: "SynthoPulse API is live.",
       health: {
@@ -135,19 +134,19 @@ async function fetchJsonOrText(url, options = {}) {
   }
 
   if (req.method !== "POST") {
-    return json(res, 405, { error: "Method not allowed. Use POST." });
+    return sendJson(405, { error: "Method not allowed. Use POST." });
   }
 
   if (!AIRTABLE_PAT) {
-    return json(res, 500, { error: "Missing AIRTABLE_PAT environment variable." });
+    return sendJson(500, { error: "Missing AIRTABLE_PAT environment variable." });
   }
 
   if (!AIRTABLE_BASE_ID) {
-    return json(res, 500, { error: "Missing AIRTABLE_BASE_ID environment variable." });
+    return sendJson(500, { error: "Missing AIRTABLE_BASE_ID environment variable." });
   }
 
   if (!OPENAI_API_KEY) {
-    return json(res, 500, { error: "Missing OPENAI_API_KEY environment variable." });
+    return sendJson(500, { error: "Missing OPENAI_API_KEY environment variable." });
   }
 
   try {
@@ -155,7 +154,7 @@ async function fetchJsonOrText(url, options = {}) {
     const message = safeText(body.message);
 
     if (!message) {
-      return json(res, 400, { error: "Missing message" });
+      return sendJson(400, { error: "Missing message" });
     }
 
     const formula = encodeURIComponent("{Is Latest Brief}=1");
@@ -177,7 +176,7 @@ async function fetchJsonOrText(url, options = {}) {
     });
 
     if (!airtableResult.ok) {
-      return json(res, 500, {
+      return sendJson(500, {
         error: "Airtable error",
         status: airtableResult.status,
         body: airtableResult.rawText
@@ -187,7 +186,7 @@ async function fetchJsonOrText(url, options = {}) {
     const latestBrief = airtableResult.data?.records?.[0];
 
     if (!latestBrief) {
-      return json(res, 404, {
+      return sendJson(404, {
         error: "No latest Forecasts & Insights brief found."
       });
     }
@@ -255,16 +254,19 @@ ${quickWatch || "N/A"}
     });
 
     if (!openaiResult.ok) {
-      return json(res, openaiResult.status, {
-        error: openaiResult.data?.error?.message || "OpenAI request failed",
-        body: openaiResult.rawText
-      });
+      return sendJson(
+        typeof openaiResult.status === "number" ? openaiResult.status : 500,
+        {
+          error: openaiResult.data?.error?.message || "OpenAI request failed",
+          body: openaiResult.rawText
+        }
+      );
     }
 
     const reply = extractOpenAIText(openaiResult.data);
 
     if (!reply) {
-      return json(res, 200, {
+      return sendJson(200, {
         reply: "SynthoPulse returned no readable text.",
         meta: {
           restaurant,
@@ -274,7 +276,7 @@ ${quickWatch || "N/A"}
       });
     }
 
-    return json(res, 200, {
+    return sendJson(200, {
       reply,
       meta: {
         restaurant,
@@ -283,7 +285,7 @@ ${quickWatch || "N/A"}
       }
     });
   } catch (error) {
-    return json(res, 500, {
+    return sendJson(500, {
       error: error.message || "Server error"
     });
   }
