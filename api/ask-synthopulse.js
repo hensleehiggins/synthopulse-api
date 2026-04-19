@@ -52,13 +52,47 @@ module.exports = async function handler(req, res) {
   }
 
 function extractOpenAIText(payload) {
-  if (typeof payload?.output_text === "string" && payload.output_text.trim()) {
+  if (!payload) return "";
+
+  if (typeof payload.output_text === "string" && payload.output_text.trim()) {
     return payload.output_text.trim();
   }
 
-  if (!Array.isArray(payload?.output)) {
-    return "";
+  if (Array.isArray(payload.output)) {
+    let collected = [];
+
+    for (const item of payload.output) {
+      if (!item) continue;
+
+      if (typeof item.text === "string" && item.text.trim()) {
+        collected.push(item.text.trim());
+      }
+
+      if (Array.isArray(item.content)) {
+        for (const part of item.content) {
+          if (!part) continue;
+
+          if (typeof part.text === "string" && part.text.trim()) {
+            collected.push(part.text.trim());
+          }
+
+          if (
+            part.text &&
+            typeof part.text === "object" &&
+            typeof part.text.value === "string" &&
+            part.text.value.trim()
+          ) {
+            collected.push(part.text.value.trim());
+          }
+        }
+      }
+    }
+
+    return collected.join("\n").trim();
   }
+
+  return "";
+}
 
   let reply = "";
 
