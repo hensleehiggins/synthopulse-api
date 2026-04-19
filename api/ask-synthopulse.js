@@ -169,11 +169,13 @@ const briefUrl =
     });
 
     if (!airtableResult.ok) {
-      return sendJson(500, {
-      error: "Airtable request failed",
-      details: airtableResult.rawText
-      });
+  return sendJson(200, {
+    reply: `Airtable request failed\n\n${airtableResult.rawText}`,
+    meta: {
+      airtable_status: airtableResult.status
     }
+  });
+}
 
     const latestRecord = airtableResult.data?.records?.[0];
     const fields = latestRecord?.fields || {};
