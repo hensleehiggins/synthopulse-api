@@ -52,12 +52,31 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    async function airtableRequest(url) {
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${AIRTABLE_PAT}`,
-          "Content-Type": "application/json"
-        }
+  async function airtableRequest(url) {
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_PAT}`,
+      "Content-Type": "application/json"
+    }
+  });
+
+  const rawText = await response.text();
+
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch {
+    data = { rawText };
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Airtable ${response.status}: ${rawText}`
+    );
+  }
+
+  return data;
+}
       });
 
       const data = await response.json();
