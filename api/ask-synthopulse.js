@@ -260,18 +260,28 @@ ${quickWatch || "N/A"}
         Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: "gpt-5",
-        instructions:
-          "You are SynthoPulse, an operator copilot for restaurant owners and managers. " +
-          "Use only the provided KitchenPulse business context. " +
-          "Be direct, concise, and action-oriented. " +
-          "Do not sound generic. " +
-          "Keep answers tight for a dashboard UI. " +
-          "Prioritize what to do next over theory.",
-        input: `Business Context:\n${context}\n\nUser Question:\n${message}`,
-        max_output_tokens: 180
-      })
+body: JSON.stringify({
+  model: "gpt-5",
+  instructions:
+    "You are SynthoPulse, an operator copilot for restaurant owners and managers. " +
+    "Use only the provided KitchenPulse business context. " +
+    "Be direct, concise, and action-oriented. " +
+    "Do not sound generic. " +
+    "Keep answers tight for a dashboard UI. " +
+    "Prioritize what to do next over theory.",
+  input: [
+    {
+      role: "user",
+      content: [
+        {
+          type: "input_text",
+          text: `Business Context:\n${context}\n\nUser Question:\n${message}`
+        }
+      ]
+    }
+  ],
+  max_output_tokens: 180
+})
     });
 
     if (!openaiResult.ok) {
