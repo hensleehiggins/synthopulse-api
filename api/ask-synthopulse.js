@@ -17,24 +17,33 @@ module.exports = async function handler(req, res) {
     return res.status(status).json(payload);
   }
 
-  async function fetchJsonOrText(url, options = {}) {
-    const response = await fetch(url, options);
-    const rawText = await response.text();
+async function fetchJsonOrText(url, options = {}) {
+  try {
+    const res = await fetch(url, options);
+    const text = await res.text();
 
     let data = null;
     try {
-      data = JSON.parse(rawText);
+      data = JSON.parse(text);
     } catch {
       data = null;
     }
 
     return {
-      ok: response.ok,
-      status: response.status,
+      ok: res.ok,
+      status: res.status,
       data,
-      rawText
+      rawText: text
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      status: "fetch_failed",
+      data: null,
+      rawText: err.message
     };
   }
+}
 
   function safeText(value) {
     if (value === null || value === undefined) return "";
