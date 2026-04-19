@@ -8,9 +8,35 @@ module.exports = async function handler(req, res) {
   }
 
 if (req.method === "GET") {
-  const AIRTABLE_PAT = process.env.AIRTABLE_PAT || "";
-  const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "";
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
+  const AIRTABLE_PAT = String(process.env.AIRTABLE_PAT || "").trim();
+  const AIRTABLE_BASE_ID = String(process.env.AIRTABLE_BASE_ID || "").trim();
+  const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
+
+  let airtableAuthCheck = null;
+
+  try {
+    const testResponse = await fetch(`https://api.airtable.com/v0/meta/bases/${AIRTABLE_BASE_ID}/tables`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_PAT}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const testText = await testResponse.text();
+
+    airtableAuthCheck = {
+      status: testResponse.status,
+      ok: testResponse.ok,
+      body_preview: testText.slice(0, 300)
+    };
+  } catch (err) {
+    airtableAuthCheck = {
+      status: "request_failed",
+      ok: false,
+      body_preview: err.message
+    };
+  }
 
   return res.status(200).json({
     status: "ok",
@@ -20,7 +46,8 @@ if (req.method === "GET") {
       airtable_pat_length: AIRTABLE_PAT ? AIRTABLE_PAT.length : 0,
       airtable_base_id: AIRTABLE_BASE_ID || null,
       openai_key_prefix: OPENAI_API_KEY ? OPENAI_API_KEY.slice(0, 3) : null,
-      openai_key_length: OPENAI_API_KEY ? OPENAI_API_KEY.length : 0
+      openai_key_length: OPENAI_API_KEY ? OPENAI_API_KEY.length : 0,
+      airtable_auth_check: airtableAuthCheck
     }
   });
 }
@@ -41,9 +68,9 @@ if (req.method === "GET") {
       });
     }
 
-    const AIRTABLE_PAT = process.env.AIRTABLE_PAT;
-    const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const AIRTABLE_PAT = String(process.env.AIRTABLE_PAT || "").trim();
+const AIRTABLE_BASE_ID = String(process.env.AIRTABLE_BASE_ID || "").trim();
+const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
 
     if (!AIRTABLE_PAT) {
       return res.status(500).json({
