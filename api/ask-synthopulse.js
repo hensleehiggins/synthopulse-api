@@ -11,7 +11,7 @@ module.exports = async function handler(req, res) {
   const AIRTABLE_BASE_ID = String(process.env.AIRTABLE_BASE_ID || "").trim();
   const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
 
-  const BRIEFS_TABLE_ID = "tblz1PlaD5KbnE9XP";
+  const BRIEFS_TABLE_ID = "Forecasts & Insights";
 
   function sendJson(status, payload) {
     return res.status(status).json(payload);
