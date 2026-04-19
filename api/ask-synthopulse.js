@@ -137,7 +137,7 @@ module.exports = async function handler(req, res) {
       },
       debug: {
         airtable_status: airtableCheck.status,
-        airtable_preview: airtableCheck.rawText.slice(0, 200)
+        airtable_preview: airtableCheck.rawText.slice(0, 400)
       }
     });
   }
@@ -156,9 +156,9 @@ module.exports = async function handler(req, res) {
 
     const userQuestion = normalizeQuestion(rawMessage);
 
-const briefUrl =
-  `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
-  `?maxRecords=1&cellFormat=string&timeZone=America/New_York&userLocale=en`;
+    const briefUrl =
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
+      `?maxRecords=1&cellFormat=string&timeZone=America/New_York&userLocale=en`;
 
     const airtableResult = await fetchJsonOrText(briefUrl, {
       method: "GET",
@@ -169,13 +169,13 @@ const briefUrl =
     });
 
     if (!airtableResult.ok) {
-  return sendJson(200, {
-  reply: `OpenAI request failed\n\n${openaiResult.rawText}`,
-  meta: {
-    openai_status: openaiResult.status
-  }
-});
-}
+      return sendJson(200, {
+        reply: `Airtable request failed\n\n${airtableResult.rawText}`,
+        meta: {
+          airtable_status: airtableResult.status
+        }
+      });
+    }
 
     const latestRecord = airtableResult.data?.records?.[0];
     const fields = latestRecord?.fields || {};
@@ -214,11 +214,8 @@ const briefUrl =
       safeText(fields["Quick - Watch"]) ||
       safeText(fields["Watch Today"]);
 
-    const runId =
-      safeText(fields["Run ID"]);
-
-    const briefDate =
-      safeText(fields["Brief Date"]);
+    const runId = safeText(fields["Run ID"]);
+    const briefDate = safeText(fields["Brief Date"]);
 
     const context = `
 KitchenPulse Context
@@ -259,7 +256,6 @@ ${watch || "Not available"}
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          reasoning: { effort: "low" },
           instructions:
             "You are SynthoPulse, an operator copilot for restaurant owners and managers. " +
             "You are answering inside KitchenPulse. " +
@@ -282,24 +278,29 @@ ${watch || "Not available"}
               ]
             }
           ],
-          max_output_tokens: 600
+          max_output_tokens: 500
         })
       }
     );
 
     if (!openaiResult.ok) {
-      return sendJson(500, {
-        error: "OpenAI request failed",
-        details: openaiResult.rawText
+      return sendJson(200, {
+        reply: `OpenAI request failed\n\n${openaiResult.rawText}`,
+        meta: {
+          openai_status: openaiResult.status
+        }
       });
     }
 
     const reply = extractOpenAIText(openaiResult.data);
 
     if (!reply) {
-      return sendJson(500, {
-        error: "No readable response from OpenAI",
-        debug: openaiResult.data
+      return sendJson(200, {
+        reply: "OpenAI returned no readable response.",
+        meta: {
+          openai_status: openaiResult.status,
+          openai_raw: openaiResult.rawText.slice(0, 800)
+        }
       });
     }
 
