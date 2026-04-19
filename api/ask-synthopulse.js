@@ -156,12 +156,9 @@ module.exports = async function handler(req, res) {
 
     const userQuestion = normalizeQuestion(rawMessage);
 
-    const briefUrl =
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
-      `?maxRecords=1` +
-      `&sort[0][field]=Brief%20Date` +
-      `&sort[0][direction]=desc` +
-      `&cellFormat=string&timeZone=America/New_York&userLocale=en`;
+const briefUrl =
+  `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
+  `?maxRecords=1&cellFormat=string&timeZone=America/New_York&userLocale=en`;
 
     const airtableResult = await fetchJsonOrText(briefUrl, {
       method: "GET",
@@ -173,8 +170,8 @@ module.exports = async function handler(req, res) {
 
     if (!airtableResult.ok) {
       return sendJson(500, {
-        error: "Airtable request failed",
-        details: airtableResult.rawText
+      error: "Airtable request failed",
+      details: airtableResult.rawText
       });
     }
 
