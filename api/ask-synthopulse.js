@@ -291,7 +291,7 @@ if (!reply) {
       runId,
       priority
     },
-    debug_openai: openaiResult.data
+    debug_openai_json: JSON.stringify(openaiResult.data, null, 2)
   });
 }
 
