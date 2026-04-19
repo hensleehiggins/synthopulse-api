@@ -115,11 +115,21 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method === "GET") {
-    const healthUrl =
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
+    const metaUrl = `https://api.airtable.com/v0/meta/bases/${AIRTABLE_BASE_ID}/tables`;
+
+    const recordsUrl =
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(BRIEFS_TABLE_ID)}` +
       `?maxRecords=1&cellFormat=string&timeZone=America/New_York&userLocale=en`;
 
-    const airtableCheck = await fetchJsonOrText(healthUrl, {
+    const metaCheck = await fetchJsonOrText(metaUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_PAT}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const recordsCheck = await fetchJsonOrText(recordsUrl, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${AIRTABLE_PAT}`,
@@ -130,14 +140,14 @@ module.exports = async function handler(req, res) {
     return sendJson(200, {
       status: "ok",
       message: "SynthoPulse API is live.",
-      health: {
-        env_ok: Boolean(AIRTABLE_PAT && AIRTABLE_BASE_ID && OPENAI_API_KEY),
-        airtable_records_ok: airtableCheck.ok,
-        openai_key_present: Boolean(OPENAI_API_KEY)
-      },
       debug: {
-        airtable_status: airtableCheck.status,
-        airtable_preview: airtableCheck.rawText.slice(0, 400)
+        airtable_pat_prefix: AIRTABLE_PAT ? AIRTABLE_PAT.slice(0, 8) : null,
+        airtable_base_id: AIRTABLE_BASE_ID,
+        briefs_table_target: BRIEFS_TABLE_ID,
+        meta_status: metaCheck.status,
+        meta_preview: metaCheck.rawText.slice(0, 500),
+        records_status: recordsCheck.status,
+        records_preview: recordsCheck.rawText.slice(0, 500)
       }
     });
   }
