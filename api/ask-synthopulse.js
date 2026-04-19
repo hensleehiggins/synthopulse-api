@@ -52,46 +52,35 @@ module.exports = async function handler(req, res) {
       });
     }
 
-  async function airtableRequest(url) {
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${AIRTABLE_PAT}`,
-      "Content-Type": "application/json"
-    }
-  });
-
-  const rawText = await response.text();
-
-  let data;
-  try {
-    data = JSON.parse(rawText);
-  } catch {
-    data = { rawText };
-  }
-
-  if (!response.ok) {
-    throw new Error(
-      `Airtable ${response.status}: ${rawText}`
-    );
-  }
-
-  return data;
-}
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error?.message || `Airtable request failed with ${response.status}`);
-      }
-
-      return data;
-    }
-
     function safeText(value) {
       if (value === null || value === undefined) return "";
       if (Array.isArray(value)) return value.join(", ");
       return String(value).trim();
+    }
+
+    async function airtableRequest(url) {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${AIRTABLE_PAT}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      const rawText = await response.text();
+
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        data = { rawText };
+      }
+
+      if (!response.ok) {
+        throw new Error(`Airtable ${response.status}: ${rawText}`);
+      }
+
+      return data;
     }
 
     const tableId = "tblzlPlaD5KbnE9XP";
@@ -166,9 +155,11 @@ ${quickWatch || "N/A"}
         model: "gpt-5",
         instructions:
           "You are SynthoPulse, an operator copilot for restaurant owners and managers. " +
-          "Answer using only the live KitchenPulse context provided. " +
+          "Use only the provided KitchenPulse business context. " +
           "Be direct, concise, and action-oriented. " +
-          "Keep answers tight and useful for a Softr UI.",
+          "Do not sound generic. " +
+          "Keep answers tight and useful for a Softr UI. " +
+          "Prefer short paragraphs and practical recommendations.",
         input: `
 Live KitchenPulse Business Context:
 ${context}
@@ -183,23 +174,33 @@ ${message}
       })
     });
 
-    const data = await openaiResponse.json();
+    const openaiRawText = await openaiResponse.text();
+
+    let openaiData;
+    try {
+      openaiData = JSON.parse(openaiRawText);
+    } catch {
+      return res.status(500).json({
+        error: "OpenAI returned non-JSON output.",
+        debug: openaiRawText
+      });
+    }
 
     if (!openaiResponse.ok) {
       return res.status(openaiResponse.status).json({
-        error: data?.error?.message || "OpenAI request failed",
-        debug: data
+        error: openaiData?.error?.message || "OpenAI request failed",
+        debug: openaiData
       });
     }
 
     let reply = "";
 
-    if (typeof data.output_text === "string" && data.output_text.trim()) {
-      reply = data.output_text.trim();
+    if (typeof openaiData.output_text === "string" && openaiData.output_text.trim()) {
+      reply = openaiData.output_text.trim();
     }
 
-    if (!reply && Array.isArray(data.output)) {
-      for (const item of data.output) {
+    if (!reply && Array.isArray(openaiData.output)) {
+      for (const item of openaiData.output) {
         if (!item || !Array.isArray(item.content)) continue;
 
         for (const part of item.content) {
@@ -214,14 +215,22 @@ ${message}
 
     if (!reply) {
       return res.status(200).json({
-        reply: "SynthoPulse returned no readable text."
+        reply: "SynthoPulse returned no readable text.",
+        debug: openaiData
       });
     }
 
-    return res.status(200).json({ reply });
+    return res.status(200).json({
+      reply,
+      meta: {
+        restaurant,
+        runId,
+        priority
+      }
+    });
   } catch (error) {
     return res.status(500).json({
       error: error.message || "Server error"
     });
   }
-}
+};
