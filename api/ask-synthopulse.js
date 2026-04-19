@@ -258,7 +258,7 @@ ${watch || "Not available"}
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "gpt-5",
+          model: "gpt-4o",
           reasoning: { effort: "low" },
           instructions:
             "You are SynthoPulse, an operator copilot for restaurant owners and managers. " +
