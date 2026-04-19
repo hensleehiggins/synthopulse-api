@@ -283,16 +283,17 @@ ${quickWatch || "N/A"}
 
     const reply = extractOpenAIText(openaiResult.data);
 
-    if (!reply) {
-      return sendJson(200, {
-        reply: "SynthoPulse returned no readable text.",
-        meta: {
-          restaurant,
-          runId,
-          priority
-        }
-      });
-    }
+if (!reply) {
+  return sendJson(200, {
+    reply: "SynthoPulse returned no readable text.",
+    meta: {
+      restaurant,
+      runId,
+      priority
+    },
+    debug_openai: openaiResult.data
+  });
+}
 
     return sendJson(200, {
       reply,
