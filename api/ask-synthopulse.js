@@ -45,6 +45,12 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  function safeText(value) {
+    if (value === null || value === undefined) return "";
+    if (Array.isArray(value)) return value.join(", ");
+    return String(value).trim();
+  }
+
   function extractOpenAIText(payload) {
     if (!payload) return "";
 
@@ -52,9 +58,7 @@ module.exports = async function handler(req, res) {
       return payload.output_text.trim();
     }
 
-    if (!Array.isArray(payload.output)) {
-      return "";
-    }
+    if (!Array.isArray(payload.output)) return "";
 
     const collected = [];
 
@@ -88,12 +92,34 @@ module.exports = async function handler(req, res) {
     return collected.join("\n").trim();
   }
 
+  function normalizeQuestion(message) {
+    const q = safeText(message).toLowerCase();
+
+    if (q === "why this?" || q === "why this") {
+      return "Explain why today's recommendation surfaced, what signals likely drove it, and what it means operationally.";
+    }
+
+    if (q === "what should i do first?" || q === "what should i do first") {
+      return "What should the operator do first based on today's recommendation? Give the first concrete actions only.";
+    }
+
+    if (q === "what happens if i ignore this?" || q === "what happens if i ignore this") {
+      return "What happens if the operator ignores today's recommendation? Explain downside risk plainly.";
+    }
+
+    if (q === "what else should i watch today?" || q === "what else should i watch today") {
+      return "Besides today's recommendation, what else should the operator watch today?";
+    }
+
+    return safeText(message);
+  }
+
   if (req.method === "GET") {
-    const recordsUrl =
+    const healthUrl =
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
       `?maxRecords=1&cellFormat=string&timeZone=America/New_York&userLocale=en`;
 
-    const airtableCheck = await fetchJsonOrText(recordsUrl, {
+    const airtableCheck = await fetchJsonOrText(healthUrl, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${AIRTABLE_PAT}`,
@@ -122,17 +148,22 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = req.body || {};
-    const message = String(body.message || "").trim();
+    const rawMessage = safeText(body.message);
 
-    if (!message) {
+    if (!rawMessage) {
       return sendJson(400, { error: "Missing message" });
     }
 
-    const recordsUrl =
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
-      `?maxRecords=3&cellFormat=string&timeZone=America/New_York&userLocale=en`;
+    const userQuestion = normalizeQuestion(rawMessage);
 
-    const airtableResult = await fetchJsonOrText(recordsUrl, {
+    const briefUrl =
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
+      `?maxRecords=1` +
+      `&sort[0][field]=Brief%20Date` +
+      `&sort[0][direction]=desc` +
+      `&cellFormat=string&timeZone=America/New_York&userLocale=en`;
+
+    const airtableResult = await fetchJsonOrText(briefUrl, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${AIRTABLE_PAT}`,
@@ -140,13 +171,84 @@ module.exports = async function handler(req, res) {
       }
     });
 
-    let context = "No data available.";
-
-    if (airtableResult.data?.records?.length) {
-      context = airtableResult.data.records
-        .map((r) => JSON.stringify(r.fields))
-        .join("\n");
+    if (!airtableResult.ok) {
+      return sendJson(500, {
+        error: "Airtable request failed",
+        details: airtableResult.rawText
+      });
     }
+
+    const latestRecord = airtableResult.data?.records?.[0];
+    const fields = latestRecord?.fields || {};
+
+    const restaurant =
+      safeText(fields["Restaurant"]) ||
+      safeText(fields["Restaurant Name"]);
+
+    const recommendation =
+      safeText(fields["Decision Display"]) ||
+      safeText(fields["Recommendation"]) ||
+      safeText(fields["Action Callout"]) ||
+      safeText(fields["Name"]);
+
+    const priority =
+      safeText(fields["Decision Priority"]) ||
+      safeText(fields["Priority"]);
+
+    const summary =
+      safeText(fields["Summary"]) ||
+      safeText(fields["Brief Summary"]);
+
+    const why =
+      safeText(fields["Quick - Why"]) ||
+      safeText(fields["Why This Surfaced"]);
+
+    const firstAction =
+      safeText(fields["Quick - First Action"]) ||
+      safeText(fields["First Action"]);
+
+    const ignoreRisk =
+      safeText(fields["Quick - Ignore Risk"]) ||
+      safeText(fields["Ignore Risk"]);
+
+    const watch =
+      safeText(fields["Quick - Watch"]) ||
+      safeText(fields["Watch Today"]);
+
+    const runId =
+      safeText(fields["Run ID"]);
+
+    const briefDate =
+      safeText(fields["Brief Date"]);
+
+    const context = `
+KitchenPulse Context
+
+Restaurant: ${restaurant || "Unknown"}
+Run ID: ${runId || "Unknown"}
+Brief Date: ${briefDate || "Unknown"}
+
+Today's Recommendation:
+${recommendation || "No recommendation available"}
+
+Priority:
+${priority || "Unknown"}
+
+Summary:
+${summary || "No summary available"}
+
+Why This Surfaced:
+${why || "Not available"}
+
+First Action:
+${firstAction || "Not available"}
+
+Ignore Risk:
+${ignoreRisk || "Not available"}
+
+Watch Today:
+${watch || "Not available"}
+`.trim();
 
     const openaiResult = await fetchJsonOrText(
       "https://api.openai.com/v1/responses",
@@ -161,10 +263,13 @@ module.exports = async function handler(req, res) {
           reasoning: { effort: "low" },
           instructions:
             "You are SynthoPulse, an operator copilot for restaurant owners and managers. " +
-            "Use only the provided KitchenPulse business context. " +
-            "Be direct and action-oriented. " +
-            "Prioritize what to do next. " +
-            "Keep the answer short and practical.",
+            "You are answering inside KitchenPulse. " +
+            "Assume references like 'this' mean today's recommendation shown on the dashboard. " +
+            "Use only the provided KitchenPulse context. " +
+            "Be direct, concise, and action-oriented. " +
+            "Do not ask for more context unless the provided context is actually missing critical data. " +
+            "Prefer this structure when possible: Bottom line, Why this surfaced, What to do now, Risk if ignored, What else to watch. " +
+            "Keep it tight enough for a dashboard response box.",
           input: [
             {
               role: "user",
@@ -172,8 +277,8 @@ module.exports = async function handler(req, res) {
                 {
                   type: "input_text",
                   text:
-                    `Business Context:\n${context}\n\n` +
-                    `User Question:\n${message}`
+                    `KitchenPulse Context:\n${context}\n\n` +
+                    `Operator Question:\n${userQuestion}`
                 }
               ]
             }
@@ -202,7 +307,9 @@ module.exports = async function handler(req, res) {
     return sendJson(200, {
       reply,
       meta: {
-        airtable_records: airtableResult.data?.records?.length || 0
+        restaurant,
+        recommendation,
+        priority
       }
     });
   } catch (err) {
