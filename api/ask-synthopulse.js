@@ -170,11 +170,11 @@ const briefUrl =
 
     if (!airtableResult.ok) {
   return sendJson(200, {
-    reply: `Airtable request failed\n\n${airtableResult.rawText}`,
-    meta: {
-      airtable_status: airtableResult.status
-    }
-  });
+  reply: `OpenAI request failed\n\n${openaiResult.rawText}`,
+  meta: {
+    openai_status: openaiResult.status
+  }
+});
 }
 
     const latestRecord = airtableResult.data?.records?.[0];
@@ -258,7 +258,7 @@ ${watch || "Not available"}
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "gpt-4o",
+          model: "gpt-4o-mini",
           reasoning: { effort: "low" },
           instructions:
             "You are SynthoPulse, an operator copilot for restaurant owners and managers. " +
