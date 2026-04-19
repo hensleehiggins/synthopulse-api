@@ -48,45 +48,46 @@ module.exports = async function handler(req, res) {
   function extractOpenAIText(payload) {
     if (!payload) return "";
 
-    if (typeof payload.output_text === "string") {
+    if (typeof payload.output_text === "string" && payload.output_text.trim()) {
       return payload.output_text.trim();
     }
 
-    if (Array.isArray(payload.output)) {
-      let collected = [];
+    if (!Array.isArray(payload.output)) {
+      return "";
+    }
 
-      for (const item of payload.output) {
-        if (!item) continue;
+    const collected = [];
 
-        if (typeof item.text === "string") {
-          collected.push(item.text.trim());
-        }
+    for (const item of payload.output) {
+      if (!item) continue;
 
-        if (Array.isArray(item.content)) {
-          for (const part of item.content) {
-            if (!part) continue;
+      if (typeof item.text === "string" && item.text.trim()) {
+        collected.push(item.text.trim());
+      }
 
-            if (typeof part.text === "string") {
-              collected.push(part.text.trim());
-            }
+      if (Array.isArray(item.content)) {
+        for (const part of item.content) {
+          if (!part) continue;
 
-            if (
-              part.text &&
-              typeof part.text.value === "string"
-            ) {
-              collected.push(part.text.value.trim());
-            }
+          if (typeof part.text === "string" && part.text.trim()) {
+            collected.push(part.text.trim());
+          }
+
+          if (
+            part.text &&
+            typeof part.text === "object" &&
+            typeof part.text.value === "string" &&
+            part.text.value.trim()
+          ) {
+            collected.push(part.text.value.trim());
           }
         }
       }
-
-      return collected.join("\n").trim();
     }
 
-    return "";
+    return collected.join("\n").trim();
   }
 
-  // ---------------- GET (health check) ----------------
   if (req.method === "GET") {
     const recordsUrl =
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
@@ -115,7 +116,6 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // ---------------- POST ----------------
   if (req.method !== "POST") {
     return sendJson(405, { error: "Method not allowed. Use POST." });
   }
@@ -128,7 +128,6 @@ module.exports = async function handler(req, res) {
       return sendJson(400, { error: "Missing message" });
     }
 
-    // --- Pull Airtable context ---
     const recordsUrl =
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
       `?maxRecords=3&cellFormat=string&timeZone=America/New_York&userLocale=en`;
@@ -145,11 +144,10 @@ module.exports = async function handler(req, res) {
 
     if (airtableResult.data?.records?.length) {
       context = airtableResult.data.records
-        .map(r => JSON.stringify(r.fields))
+        .map((r) => JSON.stringify(r.fields))
         .join("\n");
     }
 
-    // --- OpenAI call ---
     const openaiResult = await fetchJsonOrText(
       "https://api.openai.com/v1/responses",
       {
@@ -160,12 +158,13 @@ module.exports = async function handler(req, res) {
         },
         body: JSON.stringify({
           model: "gpt-5",
+          reasoning: { effort: "low" },
           instructions:
             "You are SynthoPulse, an operator copilot for restaurant owners and managers. " +
             "Use only the provided KitchenPulse business context. " +
             "Be direct and action-oriented. " +
-            "Prioritize what to do next.",
-
+            "Prioritize what to do next. " +
+            "Keep the answer short and practical.",
           input: [
             {
               role: "user",
@@ -179,8 +178,7 @@ module.exports = async function handler(req, res) {
               ]
             }
           ],
-
-          max_output_tokens: 200
+          max_output_tokens: 600
         })
       }
     );
@@ -207,7 +205,6 @@ module.exports = async function handler(req, res) {
         airtable_records: airtableResult.data?.records?.length || 0
       }
     });
-
   } catch (err) {
     return sendJson(500, {
       error: "Server error",
