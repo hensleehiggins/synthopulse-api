@@ -51,29 +51,47 @@ module.exports = async function handler(req, res) {
     return String(value).trim();
   }
 
-  function extractOpenAIText(payload) {
-    if (typeof payload?.output_text === "string" && payload.output_text.trim()) {
-      return payload.output_text.trim();
-    }
+function extractOpenAIText(payload) {
+  if (typeof payload?.output_text === "string" && payload.output_text.trim()) {
+    return payload.output_text.trim();
+  }
 
-    if (Array.isArray(payload?.output)) {
-      let reply = "";
-
-      for (const item of payload.output) {
-        if (!item || !Array.isArray(item.content)) continue;
-
-        for (const part of item.content) {
-          if (part?.type === "output_text" && typeof part.text === "string") {
-            reply += part.text;
-          }
-        }
-      }
-
-      return reply.trim();
-    }
-
+  if (!Array.isArray(payload?.output)) {
     return "";
   }
+
+  let reply = "";
+
+  for (const item of payload.output) {
+    if (!item) continue;
+
+    if (item.type === "message" && Array.isArray(item.content)) {
+      for (const part of item.content) {
+        if (part?.type === "output_text" && typeof part.text === "string") {
+          reply += part.text;
+        }
+      }
+    }
+
+    if (Array.isArray(item.content)) {
+      for (const part of item.content) {
+        if (part?.type === "text" && typeof part.text === "string") {
+          reply += part.text;
+        }
+
+        if (
+          part?.type === "output_text" &&
+          part.text &&
+          typeof part.text === "string"
+        ) {
+          reply += part.text;
+        }
+      }
+    }
+  }
+
+  return reply.trim();
+}
 
   if (req.method === "GET") {
     const envOk = Boolean(AIRTABLE_PAT && AIRTABLE_BASE_ID && OPENAI_API_KEY);
