@@ -92,7 +92,7 @@ module.exports = async function handler(req, res) {
 
       const recordsUrl =
         `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
-        `?maxRecords=1&cellFormat=string`;
+        `?maxRecords=1&cellFormat=string&timeZone=America%2FNew_York&userLocale=en
 
       const recordsResult = await fetchJsonOrText(recordsUrl, {
         method: "GET",
@@ -157,7 +157,7 @@ module.exports = async function handler(req, res) {
       `&sort[0][field]=Brief%20Date` +
       `&sort[0][direction]=desc` +
       `&maxRecords=1` +
-      `&cellFormat=string`;
+      `&cellFormat=string&timeZone=America%2FNew_York&userLocale=en`;
 
     const airtableResult = await fetchJsonOrText(briefUrl, {
       method: "GET",
