@@ -7,12 +7,23 @@ module.exports = async function handler(req, res) {
     return res.status(200).end();
   }
 
-  if (req.method === "GET") {
-    return res.status(200).json({
-      status: "ok",
-      message: "SynthoPulse API is live. Send a POST request with a message field."
-    });
-  }
+if (req.method === "GET") {
+  const AIRTABLE_PAT = process.env.AIRTABLE_PAT || "";
+  const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || "";
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
+
+  return res.status(200).json({
+    status: "ok",
+    message: "SynthoPulse API is live. Send a POST request with a message field.",
+    debug: {
+      airtable_pat_prefix: AIRTABLE_PAT ? AIRTABLE_PAT.slice(0, 4) : null,
+      airtable_pat_length: AIRTABLE_PAT ? AIRTABLE_PAT.length : 0,
+      airtable_base_id: AIRTABLE_BASE_ID || null,
+      openai_key_prefix: OPENAI_API_KEY ? OPENAI_API_KEY.slice(0, 3) : null,
+      openai_key_length: OPENAI_API_KEY ? OPENAI_API_KEY.length : 0
+    }
+  });
+}
 
   if (req.method !== "POST") {
     return res.status(405).json({
