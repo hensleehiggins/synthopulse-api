@@ -12,9 +12,36 @@ module.exports = async function handler(req, res) {
   const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
 
   const BRIEFS_TABLE_ID = "tblzlPlaD5KbnE9XP";
+  const MOVEMENT_TABLE_ID = "tblt4IDWrqDL9jg0S";
 
   function sendJson(status, payload) {
     return res.status(status).json(payload);
+  }
+
+  function safeText(value) {
+    if (value === null || value === undefined) return "";
+    if (Array.isArray(value)) {
+      return value
+        .map(v => {
+          if (v === null || v === undefined) return "";
+          if (typeof v === "string") return v.trim();
+          if (typeof v === "object") {
+            return String(v.name || v.id || "").trim();
+          }
+          return String(v).trim();
+        })
+        .filter(Boolean)
+        .join(", ");
+    }
+    if (typeof value === "object") {
+      return String(value.name || value.id || "").trim();
+    }
+    return String(value).trim();
+  }
+
+  function safeNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
   }
 
   async function fetchJsonOrText(url, options = {}) {
@@ -43,12 +70,6 @@ module.exports = async function handler(req, res) {
         rawText: err.message
       };
     }
-  }
-
-  function safeText(value) {
-    if (value === null || value === undefined) return "";
-    if (Array.isArray(value)) return value.join(", ");
-    return String(value).trim();
   }
 
   function extractOpenAIText(payload) {
@@ -96,58 +117,292 @@ module.exports = async function handler(req, res) {
     const q = safeText(message).toLowerCase();
 
     if (q === "why this?" || q === "why this") {
-      return "Explain why today's recommendation surfaced, what signals likely drove it, and what it means operationally.";
+      return {
+        normalized:
+          "Why did today's recommendation surface? Explain the real business signals behind it and what it means operationally.",
+        intent: "why"
+      };
     }
 
     if (q === "what should i do first?" || q === "what should i do first") {
-      return "What should the operator do first based on today's recommendation? Give the first concrete actions only.";
+      return {
+        normalized:
+          "What should the operator do first based on today's recommendation? Give the first concrete actions only.",
+        intent: "first_action"
+      };
     }
 
     if (q === "what happens if i ignore this?" || q === "what happens if i ignore this") {
-      return "What happens if the operator ignores today's recommendation? Explain downside risk plainly.";
+      return {
+        normalized:
+          "What happens if the operator ignores today's recommendation? Explain the downside risk plainly.",
+        intent: "ignore_risk"
+      };
     }
 
     if (q === "what else should i watch today?" || q === "what else should i watch today") {
-      return "Besides today's recommendation, what else should the operator watch today?";
+      return {
+        normalized:
+          "Besides today's recommendation, what else should the operator watch today?",
+        intent: "watch"
+      };
     }
 
-    return safeText(message);
+    return {
+      normalized: safeText(message),
+      intent: "freeform"
+    };
+  }
+
+  function parseDecisionJson(rawValue) {
+    const raw = safeText(rawValue);
+    if (!raw) return null;
+
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  function normalizeMovementRow(fields = {}) {
+    return {
+      item: safeText(fields["Item"]),
+      movementType: safeText(fields["Movement Type"]),
+      listType: safeText(fields["List Type"]),
+      impactLevel: safeText(fields["Impact Level"]),
+      currentQty: safeNumber(fields["Current Qty"]),
+      previousQty: safeNumber(fields["Previous Qty"]),
+      currentRevenue: safeNumber(fields["Current Revenue"]),
+      previousRevenue: safeNumber(fields["Previous Revenue"]),
+      notes: safeText(fields["Notes"]),
+      currentRunId: safeText(fields["Current Run ID"]),
+      previousRunId: safeText(fields["Previous Run ID"])
+    };
+  }
+
+  function buildMovementSummary(rows = []) {
+    if (!rows.length) {
+      return {
+        topRows: [],
+        risks: [],
+        opportunities: [],
+        summaryText: "No meaningful movement rows were available for the current run."
+      };
+    }
+
+    const riskTypes = new Set(["Declining", "Dropped from Top", "Dropped to Low", "New Low"]);
+    const upsideTypes = new Set(["Rising", "Recovered", "Recovered to Top", "New Top"]);
+
+    const impactRank = { High: 3, Medium: 2, Low: 1, "": 0 };
+
+    const sorted = [...rows].sort((a, b) => {
+      const impactDelta = (impactRank[b.impactLevel] || 0) - (impactRank[a.impactLevel] || 0);
+      if (impactDelta !== 0) return impactDelta;
+
+      const qtyDelta =
+        Math.abs(b.currentQty - b.previousQty) - Math.abs(a.currentQty - a.previousQty);
+      if (qtyDelta !== 0) return qtyDelta;
+
+      return b.currentQty - a.currentQty;
+    });
+
+    const risks = sorted.filter(r => riskTypes.has(r.movementType)).slice(0, 5);
+    const opportunities = sorted.filter(r => upsideTypes.has(r.movementType)).slice(0, 5);
+    const topRows = sorted.slice(0, 8);
+
+    const lines = [];
+
+    if (opportunities.length) {
+      lines.push(
+        `Top opportunities: ${opportunities
+          .map(r => `${r.item} (${r.movementType}${r.impactLevel ? `, ${r.impactLevel}` : ""})`)
+          .join("; ")}`
+      );
+    }
+
+    if (risks.length) {
+      lines.push(
+        `Top risks: ${risks
+          .map(r => `${r.item} (${r.movementType}${r.impactLevel ? `, ${r.impactLevel}` : ""})`)
+          .join("; ")}`
+      );
+    }
+
+    if (!lines.length) {
+      lines.push(
+        `Movement present but mixed: ${topRows
+          .map(r => `${r.item} (${r.movementType || "Signal"})`)
+          .join("; ")}`
+      );
+    }
+
+    return {
+      topRows,
+      risks,
+      opportunities,
+      summaryText: lines.join("\n")
+    };
+  }
+
+  function summarizeDecisionPayload(payload) {
+    if (!payload || typeof payload !== "object") {
+      return {
+        text: "No structured decision payload was available.",
+        topRisk: null,
+        topOpportunity: null
+      };
+    }
+
+    const lines = [];
+
+    if (safeText(payload.recommendation)) {
+      lines.push(`Recommendation: ${safeText(payload.recommendation)}`);
+    }
+
+    if (safeText(payload.decisionPriority)) {
+      lines.push(`Decision Priority: ${safeText(payload.decisionPriority)}`);
+    }
+
+    if (safeText(payload.summary)) {
+      lines.push(`Decision Summary: ${safeText(payload.summary)}`);
+    }
+
+    if (payload.topOpportunity) {
+      lines.push(
+        `Top Opportunity: ${safeText(payload.topOpportunity.item)} • ${safeText(payload.topOpportunity.movementType)} • score ${safeNumber(payload.topOpportunity.score)} • est. impact $${Math.round(safeNumber(payload.topOpportunity.estimatedImpact))}`
+      );
+    }
+
+    if (payload.topRisk) {
+      lines.push(
+        `Top Risk: ${safeText(payload.topRisk.item)} • ${safeText(payload.topRisk.movementType)} • score ${safeNumber(payload.topRisk.score)} • est. impact $${Math.round(safeNumber(payload.topRisk.estimatedImpact))}`
+      );
+    }
+
+    const externalFactors = Array.isArray(payload.activeExternalFactors)
+      ? payload.activeExternalFactors
+      : [];
+
+    if (externalFactors.length) {
+      lines.push(
+        `External Context: ${externalFactors
+          .slice(0, 5)
+          .map(f => {
+            const type = safeText(f.type) || "Factor";
+            const direction = safeText(f.impactDirection);
+            const note = safeText(f.decisionNote || f.description);
+            return [type, direction, note].filter(Boolean).join(" • ");
+          })
+          .join(" | ")}`
+      );
+    }
+
+    return {
+      text: lines.join("\n"),
+      topRisk: payload.topRisk || null,
+      topOpportunity: payload.topOpportunity || null
+    };
+  }
+
+  function buildIntentGuidance(intent) {
+    switch (intent) {
+      case "why":
+        return [
+          "Answer only why today's recommendation surfaced.",
+          "Focus on the actual signals that drove the recommendation.",
+          "Do not drift into a full dashboard summary.",
+          "Do not mention hidden system internals unless they materially explain the recommendation."
+        ].join(" ");
+
+      case "first_action":
+        return [
+          "Answer only with the first concrete actions to take now.",
+          "Prioritize execution over explanation.",
+          "Keep it tight and operator-friendly.",
+          "Do not give four different strategic paths."
+        ].join(" ");
+
+      case "ignore_risk":
+        return [
+          "Answer only what happens if the operator ignores this.",
+          "Focus on downside, lost profit, repeat signal risk, or missed correction.",
+          "Keep it plain and commercially aware."
+        ].join(" ");
+
+      case "watch":
+        return [
+          "Answer only what else the operator should watch today.",
+          "Use current movement, top risk, top opportunity, and external context if available.",
+          "Do not repeat the whole recommendation unless needed."
+        ].join(" ");
+
+      default:
+        return [
+          "Answer the operator's actual question using the KitchenPulse context.",
+          "You may synthesize across recommendation, decision payload, movement, and external context.",
+          "Do not sound generic, canned, or consultant-like.",
+          "If the data is thin, say exactly what is known and what is not known."
+        ].join(" ");
+    }
+  }
+
+  async function fetchLatestBrief() {
+    const formula = encodeURIComponent("{Is Latest Brief}=1");
+    const sortField = encodeURIComponent("Brief Date");
+
+    const briefUrl =
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
+      `?filterByFormula=${formula}` +
+      `&sort[0][field]=${sortField}` +
+      `&sort[0][direction]=desc` +
+      `&maxRecords=1` +
+      `&cellFormat=string` +
+      `&timeZone=America/New_York` +
+      `&userLocale=en`;
+
+    return fetchJsonOrText(briefUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_PAT}`,
+        "Content-Type": "application/json"
+      }
+    });
+  }
+
+  async function fetchRecentMovementRows() {
+    const sortField = encodeURIComponent("Created Time");
+
+    const movementUrl =
+      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${MOVEMENT_TABLE_ID}` +
+      `?sort[0][field]=${sortField}` +
+      `&sort[0][direction]=desc` +
+      `&maxRecords=100` +
+      `&cellFormat=string` +
+      `&timeZone=America/New_York` +
+      `&userLocale=en`;
+
+    return fetchJsonOrText(movementUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_PAT}`,
+        "Content-Type": "application/json"
+      }
+    });
   }
 
   if (req.method === "GET") {
-    const metaUrl = `https://api.airtable.com/v0/meta/bases/${AIRTABLE_BASE_ID}/tables`;
-
-    const recordsUrl =
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(BRIEFS_TABLE_ID)}` +
-      `?maxRecords=1&cellFormat=string&timeZone=America/New_York&userLocale=en`;
-
-    const metaCheck = await fetchJsonOrText(metaUrl, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_PAT}`,
-        "Content-Type": "application/json"
-      }
-    });
-
-    const recordsCheck = await fetchJsonOrText(recordsUrl, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_PAT}`,
-        "Content-Type": "application/json"
-      }
-    });
+    const briefCheck = await fetchLatestBrief();
 
     return sendJson(200, {
       status: "ok",
       message: "SynthoPulse API is live.",
       debug: {
-        airtable_pat_prefix: AIRTABLE_PAT ? AIRTABLE_PAT.slice(0, 8) : null,
         airtable_base_id: AIRTABLE_BASE_ID,
         briefs_table_target: BRIEFS_TABLE_ID,
-        meta_status: metaCheck.status,
-        meta_preview: metaCheck.rawText.slice(0, 500),
-        records_status: recordsCheck.status,
-        records_preview: recordsCheck.rawText.slice(0, 500)
+        movement_table_target: MOVEMENT_TABLE_ID,
+        latest_brief_status: briefCheck.status,
+        latest_brief_preview: briefCheck.rawText.slice(0, 600)
       }
     });
   }
@@ -164,30 +419,20 @@ module.exports = async function handler(req, res) {
       return sendJson(400, { error: "Missing message" });
     }
 
-    const userQuestion = normalizeQuestion(rawMessage);
+    const { normalized: userQuestion, intent } = normalizeQuestion(rawMessage);
 
-    const briefUrl =
-      `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${BRIEFS_TABLE_ID}` +
-      `?maxRecords=1&cellFormat=string&timeZone=America/New_York&userLocale=en`;
+    const briefResult = await fetchLatestBrief();
 
-    const airtableResult = await fetchJsonOrText(briefUrl, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_PAT}`,
-        "Content-Type": "application/json"
-      }
-    });
-
-    if (!airtableResult.ok) {
+    if (!briefResult.ok) {
       return sendJson(200, {
-        reply: `Airtable request failed\n\n${airtableResult.rawText}`,
+        reply: `Airtable latest-brief request failed\n\n${briefResult.rawText}`,
         meta: {
-          airtable_status: airtableResult.status
+          airtable_status: briefResult.status
         }
       });
     }
 
-    const latestRecord = airtableResult.data?.records?.[0];
+    const latestRecord = briefResult.data?.records?.[0];
     const fields = latestRecord?.fields || {};
 
     const restaurant =
@@ -208,53 +453,109 @@ module.exports = async function handler(req, res) {
       safeText(fields["Summary"]) ||
       safeText(fields["Brief Summary"]);
 
-    const why =
-      safeText(fields["Quick - Why"]) ||
-      safeText(fields["Why This Surfaced"]);
+    const actionCallout =
+      safeText(fields["Action Callout"]);
 
-    const firstAction =
-      safeText(fields["Quick - First Action"]) ||
-      safeText(fields["First Action"]);
-
-    const ignoreRisk =
-      safeText(fields["Quick - Ignore Risk"]) ||
-      safeText(fields["Ignore Risk"]);
-
-    const watch =
-      safeText(fields["Quick - Watch"]) ||
-      safeText(fields["Watch Today"]);
+    const formattedBrief =
+      safeText(fields["Formatted Brief (Display)"]);
 
     const runId = safeText(fields["Run ID"]);
     const briefDate = safeText(fields["Brief Date"]);
+    const decisionSource = safeText(fields["Decision Source"]);
+    const decisionJson = parseDecisionJson(fields["Decision JSON"]);
+    const decisionSummary = summarizeDecisionPayload(decisionJson);
+
+    const movementResult = await fetchRecentMovementRows();
+
+    let currentRunMovement = [];
+    let movementSummary = {
+      topRows: [],
+      risks: [],
+      opportunities: [],
+      summaryText: "Movement rows were not available."
+    };
+
+    if (movementResult.ok) {
+      const rawMovementRecords = Array.isArray(movementResult.data?.records)
+        ? movementResult.data.records
+        : [];
+
+      currentRunMovement = rawMovementRecords
+        .map(record => normalizeMovementRow(record.fields || {}))
+        .filter(row => {
+          if (!row.item) return false;
+          if (!runId) return false;
+          return row.currentRunId.includes(runId);
+        });
+
+      movementSummary = buildMovementSummary(currentRunMovement);
+    }
 
     const context = `
-KitchenPulse Context
+KitchenPulse Live Context
 
 Restaurant: ${restaurant || "Unknown"}
 Run ID: ${runId || "Unknown"}
 Brief Date: ${briefDate || "Unknown"}
+Decision Source: ${decisionSource || "Unknown"}
 
 Today's Recommendation:
 ${recommendation || "No recommendation available"}
 
-Priority:
+Decision Priority:
 ${priority || "Unknown"}
+
+Action Callout:
+${actionCallout || "Not available"}
 
 Summary:
 ${summary || "No summary available"}
 
-Why This Surfaced:
-${why || "Not available"}
+Decision Payload Summary:
+${decisionSummary.text || "No structured decision payload available."}
 
-First Action:
-${firstAction || "Not available"}
+Formatted Brief:
+${formattedBrief || "Not available"}
 
-Ignore Risk:
-${ignoreRisk || "Not available"}
-
-Watch Today:
-${watch || "Not available"}
+Movement Summary:
+${movementSummary.summaryText || "Not available"}
 `.trim();
+
+    const movementEvidenceBlock = currentRunMovement.length
+      ? currentRunMovement
+          .slice(0, 8)
+          .map(row => {
+            const delta = row.currentQty - row.previousQty;
+            const deltaText =
+              Number.isFinite(delta) ? `qty delta ${delta >= 0 ? "+" : ""}${delta}` : "";
+
+            return [
+              row.item,
+              row.movementType,
+              row.listType,
+              row.impactLevel,
+              deltaText,
+              row.notes
+            ]
+              .filter(Boolean)
+              .join(" • ");
+          })
+          .join("\n")
+      : "No current-run movement evidence available.";
+
+    const instructionText = [
+      "You are SynthoPulse, an operator copilot for restaurant owners and managers inside KitchenPulse.",
+      "You are not a generic assistant and not a consultant.",
+      "Assume references like 'this' mean today's recommendation shown on the dashboard.",
+      "Use only the provided KitchenPulse context and movement evidence.",
+      "Do not invent menu items, weather concerns, traffic patterns, or business signals that are not present.",
+      "Do not use or reference canned quick-answer fields.",
+      "If the context is thin, say that plainly and answer from what is actually known.",
+      "Be direct, commercially aware, and action-oriented.",
+      "Default structure when useful: Bottom line, Why this surfaced, What to do now, Risk if ignored, What else to watch.",
+      "Keep the answer tight enough for a dashboard response box, but substantive enough to feel intelligent.",
+      buildIntentGuidance(intent)
+    ].join(" ");
 
     const openaiResult = await fetchJsonOrText(
       "https://api.openai.com/v1/responses",
@@ -266,15 +567,7 @@ ${watch || "Not available"}
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          instructions:
-            "You are SynthoPulse, an operator copilot for restaurant owners and managers. " +
-            "You are answering inside KitchenPulse. " +
-            "Assume references like 'this' mean today's recommendation shown on the dashboard. " +
-            "Use only the provided KitchenPulse context. " +
-            "Be direct, concise, and action-oriented. " +
-            "Do not ask for more context unless the provided context is actually missing critical data. " +
-            "Prefer this structure when possible: Bottom line, Why this surfaced, What to do now, Risk if ignored, What else to watch. " +
-            "Keep it tight enough for a dashboard response box.",
+          instructions: instructionText,
           input: [
             {
               role: "user",
@@ -283,12 +576,13 @@ ${watch || "Not available"}
                   type: "input_text",
                   text:
                     `KitchenPulse Context:\n${context}\n\n` +
+                    `Movement Evidence:\n${movementEvidenceBlock}\n\n` +
                     `Operator Question:\n${userQuestion}`
                 }
               ]
             }
           ],
-          max_output_tokens: 500
+          max_output_tokens: 700
         })
       }
     );
@@ -317,9 +611,13 @@ ${watch || "Not available"}
     return sendJson(200, {
       reply,
       meta: {
+        intent,
         restaurant,
+        runId,
+        priority,
         recommendation,
-        priority
+        movement_rows_used: currentRunMovement.length,
+        used_decision_json: !!decisionJson
       }
     });
   } catch (err) {
