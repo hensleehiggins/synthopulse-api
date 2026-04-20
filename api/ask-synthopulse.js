@@ -306,46 +306,78 @@ module.exports = async function handler(req, res) {
   }
 
   function buildIntentGuidance(intent) {
-    switch (intent) {
-      case "why":
-        return [
-          "Answer only why today's recommendation surfaced.",
-          "Focus on the actual signals that drove the recommendation.",
-          "Do not drift into a full dashboard summary.",
-          "Do not mention hidden system internals unless they materially explain the recommendation."
-        ].join(" ");
+  switch (intent) {
 
-      case "first_action":
-        return [
-          "Answer only with the first concrete actions to take now.",
-          "Prioritize execution over explanation.",
-          "Keep it tight and operator-friendly.",
-          "Do not give four different strategic paths."
-        ].join(" ");
+    case "why":
+      return `
+You must answer ONLY why the recommendation surfaced.
 
-      case "ignore_risk":
-        return [
-          "Answer only what happens if the operator ignores this.",
-          "Focus on downside, lost profit, repeat signal risk, or missed correction.",
-          "Keep it plain and commercially aware."
-        ].join(" ");
+STRICT RULES:
+- No actions
+- No risk section
+- No "what to watch"
+- No "bottom line"
+- No multiple sections
 
-      case "watch":
-        return [
-          "Answer only what else the operator should watch today.",
-          "Use current movement, top risk, top opportunity, and external context if available.",
-          "Do not repeat the whole recommendation unless needed."
-        ].join(" ");
+Return 1–2 short paragraphs explaining the cause only.
+`;
 
-      default:
-        return [
-          "Answer the operator's actual question using the KitchenPulse context.",
-          "You may synthesize across recommendation, decision payload, movement, and external context.",
-          "Do not sound generic, canned, or consultant-like.",
-          "If the data is thin, say exactly what is known and what is not known."
-        ].join(" ");
-    }
+    case "do_now":
+      return `
+You must answer ONLY what to do right now.
+
+STRICT RULES:
+- Actions only
+- No explanation unless necessary
+- No extra sections
+
+Return a short list of actions.
+`;
+
+    case "risk":
+      return `
+You must answer ONLY the real downside risk.
+
+STRICT RULES:
+- No actions
+- No summary
+- No monitoring
+
+Return a concise explanation of the risk.
+`;
+
+    case "push":
+      return `
+You must answer ONLY what should be pushed today.
+
+STRICT RULES:
+- Focus on upside only
+- No risks
+- No monitoring
+
+Return a direct recommendation and why.
+`;
+
+    case "next_run":
+      return `
+You must answer ONLY what to watch next run.
+
+STRICT RULES:
+- Monitoring only
+- No actions
+- No summary
+
+Return 2–4 items to watch.
+`;
+
+    default:
+      return `
+Answer the operator's question directly.
+
+Use structure ONLY if the question clearly requires it.
+`;
   }
+}
 
   async function fetchLatestBrief() {
     const formula = encodeURIComponent("{Is Latest Brief}=1");
@@ -544,18 +576,25 @@ ${movementSummary.summaryText || "Not available"}
       : "No current-run movement evidence available.";
 
     const instructionText = [
-      "You are SynthoPulse, an operator copilot for restaurant owners and managers inside KitchenPulse.",
-      "You are not a generic assistant and not a consultant.",
-      "Assume references like 'this' mean today's recommendation shown on the dashboard.",
-      "Use only the provided KitchenPulse context and movement evidence.",
-      "Do not invent menu items, weather concerns, traffic patterns, or business signals that are not present.",
-      "Do not use or reference canned quick-answer fields.",
-      "If the context is thin, say that plainly and answer from what is actually known.",
-      "Be direct, commercially aware, and action-oriented.",
-      "Default structure when useful: Bottom line, Why this surfaced, What to do now, Risk if ignored, What else to watch.",
-      "Keep the answer tight enough for a dashboard response box, but substantive enough to feel intelligent.",
-      buildIntentGuidance(intent)
-    ].join(" ");
+  "You are SynthoPulse, an operator copilot for restaurant owners and managers inside KitchenPulse.",
+  "You are not a generic assistant and not a consultant.",
+
+  "Assume references like 'this' mean today's recommendation shown on the dashboard.",
+
+  "Use only the provided KitchenPulse context and movement evidence.",
+  "Do not invent menu items, weather concerns, traffic patterns, or business signals that are not present.",
+
+  "Be direct, commercially aware, and action-oriented.",
+
+  "CRITICAL RESPONSE RULE:",
+  "You MUST strictly follow the intent-specific instructions below.",
+  "You are NOT allowed to expand beyond the requested scope.",
+  "If the user asks a narrow question, your answer MUST be narrow.",
+  "Do NOT include multiple sections unless explicitly required.",
+  "Do NOT default to a full report format.",
+
+  buildIntentGuidance(intent)
+].join(" ");
 
     const openaiResult = await fetchJsonOrText(
       "https://api.openai.com/v1/responses",
