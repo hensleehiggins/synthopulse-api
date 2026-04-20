@@ -481,6 +481,7 @@ STYLE:
 - Write like you're talking to a GM in real time
 - Avoid phrases like "you should consider" or "you might want to"
 - Prefer decisive language: "lean into", "push", "avoid", "watch"
+- Prefer referencing specific items over generic categories (e.g., say the item, not “drinks” or “items”)
 
 THINKING:
 - Synthesize movement, sales, external factors, and menu economics
