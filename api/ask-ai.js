@@ -315,12 +315,54 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  if (req.method === "GET") {
+if (req.method === "GET") {
+  try {
+    const briefResult = await airtableGet(
+      BRIEFS_TABLE_ID,
+      `filterByFormula=${encodeURIComponent("{Is Latest Brief}=1")}&sort[0][field]=${encodeURIComponent("Brief Date")}&sort[0][direction]=desc&maxRecords=1`
+    );
+
+    const latestBrief = briefResult.ok ? briefResult.data?.records?.[0] : null;
+    const briefFields = latestBrief?.fields || {};
+
+    const recommendation = safeText(briefFields["Decision Display"]);
+    const actionCallout = safeText(briefFields["Action Callout"]);
+    const priority = safeText(briefFields["Decision Priority"]);
+    const restaurantName = safeText(briefFields["Restaurant"]);
+
+    const decisionPayload = parseDecisionJson(briefFields["Decision JSON"]);
+    const topOpportunity = safeText(decisionPayload?.topOpportunity?.item);
+    const topRisk = safeText(decisionPayload?.topRisk?.item);
+
+    let opener = "Ask me what to push today, what’s at risk, or what changed since last run.";
+
+    if (topOpportunity || topRisk) {
+      opener =
+        `Biggest opportunity right now: ${topOpportunity || "not clearly identified yet"}. ` +
+        `Biggest risk: ${topRisk || "not clearly identified yet"}. ` +
+        `Ask me what to push, what’s at risk, or how to play tonight.`;
+    } else if (recommendation || actionCallout) {
+      opener =
+        `${restaurantName ? restaurantName + " — " : ""}` +
+        `${actionCallout || recommendation}. ` +
+        `Ask me what to push, what’s at risk, or how to play tonight.`;
+    }
+
     return sendJson(200, {
       status: "ok",
-      message: "Ask AI API is live."
+      opener,
+      recommendation,
+      actionCallout,
+      priority,
+      restaurant: restaurantName
+    });
+  } catch (err) {
+    return sendJson(200, {
+      status: "ok",
+      opener: "Ask me what to push today, what’s at risk, or what changed since last run."
     });
   }
+}
 
   if (req.method !== "POST") {
     return sendJson(405, { error: "Method not allowed. Use POST." });
