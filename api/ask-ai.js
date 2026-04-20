@@ -328,11 +328,12 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = req.body || {};
-    const rawMessage = safeText(body.message);
+const rawMessage = safeText(body.message);
+const history = Array.isArray(body.history) ? body.history : [];
 
-    if (!rawMessage) {
-      return sendJson(400, { error: "Missing message" });
-    }
+if (!rawMessage) {
+  return sendJson(400, { error: "Missing message" });
+}
 
     const briefResult = await airtableGet(
       BRIEFS_TABLE_ID,
@@ -517,19 +518,35 @@ No fluff. No over-explaining. Get to the point.
         body: JSON.stringify({
           model: "gpt-4o-mini",
           instructions: instructionText,
-          input: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "input_text",
-                  text:
-                    `KitchenPulse Context:\n${context}\n\n` +
-                    `Owner Question:\n${rawMessage}`
-                }
-              ]
-            }
-          ],
+         input: [
+  {
+    role: "system",
+    content: [
+      {
+        type: "input_text",
+        text: `KitchenPulse Context:\n${context}`
+      }
+    ]
+  },
+  ...history.map((msg) => ({
+    role: msg.role === "assistant" ? "assistant" : "user",
+    content: [
+      {
+        type: "input_text",
+        text: safeText(msg.content)
+      }
+    ]
+  })),
+  {
+    role: "user",
+    content: [
+      {
+        type: "input_text",
+        text: rawMessage
+      }
+    ]
+  }
+],
           max_output_tokens: 1100
         })
       }
