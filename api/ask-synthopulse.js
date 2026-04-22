@@ -455,16 +455,14 @@ function normalizeQuestion(message) {
     return sendJson(200, {
   reply,
   meta: {
-    intent,
-    userQuestion,
-    restaurant,
-    runId,
-    priority,
-    recommendation,
-    movement_rows_used: currentRunMovement.length,
-    used_decision_json: !!decisionJson,
-    instruction_preview: instructionText.slice(0, 1200)
-  }
+  intent,
+  restaurant,
+  runId,
+  priority,
+  recommendation,
+  movement_rows_used: currentRunMovement.length,
+  used_decision_json: !!decisionJson
+}
 });
   }
 
