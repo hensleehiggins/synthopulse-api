@@ -113,46 +113,79 @@ module.exports = async function handler(req, res) {
     return collected.join("\n").trim();
   }
 
-  function normalizeQuestion(message) {
-    const q = safeText(message).toLowerCase();
+function normalizeQuestion(message) {
+  const q = safeText(message).toLowerCase().trim();
 
-    if (q === "why this?" || q === "why this") {
-      return {
-        normalized:
-          "Why did today's recommendation surface? Explain the real business signals behind it and what it means operationally.",
-        intent: "why"
-      };
-    }
-
-    if (q === "what should i do first?" || q === "what should i do first") {
-      return {
-        normalized:
-          "What should the operator do first based on today's recommendation? Give the first concrete actions only.",
-        intent: "first_action"
-      };
-    }
-
-    if (q === "what happens if i ignore this?" || q === "what happens if i ignore this") {
-      return {
-        normalized:
-          "What happens if the operator ignores today's recommendation? Explain the downside risk plainly.",
-        intent: "ignore_risk"
-      };
-    }
-
-    if (q === "what else should i watch today?" || q === "what else should i watch today") {
-      return {
-        normalized:
-          "Besides today's recommendation, what else should the operator watch today?",
-        intent: "watch"
-      };
-    }
-
+  if (
+    q === "why this?" ||
+    q === "why this" ||
+    q === "why did this surface?" ||
+    q === "why did this surface"
+  ) {
     return {
-      normalized: safeText(message),
-      intent: "freeform"
+      normalized:
+        "Why did today's recommendation surface? Explain the real business signals behind it and what it means operationally.",
+      intent: "why"
     };
   }
+
+  if (
+    q === "what should i do first?" ||
+    q === "what should i do first" ||
+    q === "what should i do right now?" ||
+    q === "what should i do right now"
+  ) {
+    return {
+      normalized:
+        "What should the operator do first based on today's recommendation? Give the first concrete actions only.",
+      intent: "first_action"
+    };
+  }
+
+  if (
+    q === "what happens if i ignore this?" ||
+    q === "what happens if i ignore this" ||
+    q === "what's the real risk?" ||
+    q === "whats the real risk?" ||
+    q === "what is the real risk?" ||
+    q === "what is the real risk"
+  ) {
+    return {
+      normalized:
+        "What happens if the operator ignores today's recommendation? Explain the downside risk plainly.",
+      intent: "ignore_risk"
+    };
+  }
+
+  if (
+    q === "what else should i watch today?" ||
+    q === "what else should i watch today" ||
+    q === "what should i watch today?" ||
+    q === "what should i watch today"
+  ) {
+    return {
+      normalized:
+        "Besides today's recommendation, what else should the operator watch today?",
+      intent: "watch"
+    };
+  }
+
+  if (
+    q === "what should i push today?" ||
+    q === "what should i push today"
+  ) {
+    return {
+      normalized:
+        "What should the operator push today? Recommend the clearest item or category to lean into based on today's KitchenPulse signals.",
+      intent: "push"
+    };
+  }
+
+  return {
+    normalized: safeText(message),
+    intent: "freeform"
+  };
+}
 
   function parseDecisionJson(rawValue) {
     const raw = safeText(rawValue);
@@ -315,6 +348,14 @@ module.exports = async function handler(req, res) {
           "Do not give watch items.",
           "Return 2 short paragraphs max.",
           "Ground the explanation in recommendation, movement, and external context if present."
+        ].join(" ");
+        case "push":
+          return [
+          "Answer only what should be pushed today.",
+          "Focus on the clearest upside play.",
+          "If no real upside signal exists, say that directly.",
+          "Do not include a full report.",
+          "Keep it short and grounded in live signals."
         ].join(" ");
 
       case "first_action":
