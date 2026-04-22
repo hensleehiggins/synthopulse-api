@@ -306,78 +306,56 @@ module.exports = async function handler(req, res) {
   }
 
   function buildIntentGuidance(intent) {
-  switch (intent) {
+    switch (intent) {
+      case "why":
+        return [
+          "Answer only why the recommendation surfaced.",
+          "Do not give actions.",
+          "Do not give risk if ignored.",
+          "Do not give watch items.",
+          "Return 2 short paragraphs max.",
+          "Ground the explanation in recommendation, movement, and external context if present."
+        ].join(" ");
 
-    case "why":
-      return `
-You must answer ONLY why the recommendation surfaced.
+      case "first_action":
+        return [
+          "Answer only what the operator should do first.",
+          "Return the first concrete actions only.",
+          "No full report format.",
+          "No long explanation unless needed for clarity.",
+          "Prefer 2 to 4 short action lines or a tight short paragraph."
+        ].join(" ");
 
-STRICT RULES:
-- No actions
-- No risk section
-- No "what to watch"
-- No "bottom line"
-- No multiple sections
+      case "ignore_risk":
+        return [
+          "Answer only what happens if the operator ignores the recommendation.",
+          "Focus on downside risk, lost sales, weaker mix, margin drag, missed timing, or traffic conversion risk.",
+          "Do not include action steps.",
+          "Do not include a watch list."
+        ].join(" ");
 
-Return 1–2 short paragraphs explaining the cause only.
-`;
+      case "watch":
+        return [
+          "Answer only what else the operator should watch today beyond the main recommendation.",
+          "Focus on secondary risks, emerging upside, or context shifts.",
+          "Do not restate the full main recommendation.",
+          "Keep it tight and grounded."
+        ].join(" ");
 
-    case "do_now":
-      return `
-You must answer ONLY what to do right now.
-
-STRICT RULES:
-- Actions only
-- No explanation unless necessary
-- No extra sections
-
-Return a short list of actions.
-`;
-
-    case "risk":
-      return `
-You must answer ONLY the real downside risk.
-
-STRICT RULES:
-- No actions
-- No summary
-- No monitoring
-
-Return a concise explanation of the risk.
-`;
-
-    case "push":
-      return `
-You must answer ONLY what should be pushed today.
-
-STRICT RULES:
-- Focus on upside only
-- No risks
-- No monitoring
-
-Return a direct recommendation and why.
-`;
-
-    case "next_run":
-      return `
-You must answer ONLY what to watch next run.
-
-STRICT RULES:
-- Monitoring only
-- No actions
-- No summary
-
-Return 2–4 items to watch.
-`;
-
-    default:
-      return `
-Answer the operator's question directly.
-
-Use structure ONLY if the question clearly requires it.
-`;
+      default:
+        return [
+          "When the operator asks a broad or freeform question, use this exact structure:",
+          "Bottom line:",
+          "Why this surfaced:",
+          "What to do now:",
+          "Risk if ignored:",
+          "What else to watch:",
+          "Keep each section short.",
+          "Prioritize risk over upside when signals are mixed.",
+          "Do not invent facts or generic restaurant advice."
+        ].join(" ");
+    }
   }
-}
 
   async function fetchLatestBrief() {
     const formula = encodeURIComponent("{Is Latest Brief}=1");
@@ -576,26 +554,75 @@ ${movementSummary.summaryText || "Not available"}
       : "No current-run movement evidence available.";
 
     const instructionText = [
-  "You are SynthoPulse, an operator copilot for restaurant owners and managers inside KitchenPulse.",
-  "You are not a generic assistant and not a consultant.",
+      "You are SynthoPulse, the operator copilot inside KitchenPulse.",
+      "Your job is to help a restaurant owner or manager interpret today's decision and act on it.",
+      "You are not a generic assistant.",
+      "You are not a consultant.",
+      "Use only the KitchenPulse data provided in this request.",
+      "Do not invent items, trends, weather pressure, event pressure, or business signals.",
+      "If evidence is weak or missing, say that directly.",
+      "Treat references like 'this' or 'today' as today's current KitchenPulse recommendation.",
+      "Be direct, operator-focused, commercially aware, and action-oriented.",
+      "Avoid fluff, theory, motivational language, and generic restaurant advice.",
+      "Prefer plain business language.",
+      "Keep answers tight.",
+      "Default to 2 to 5 sentences unless the question clearly needs a little more.",
+      "For broad questions, prioritize this order: recommendation first, then movement, then external context, then what to do.",
+      "When signals are mixed, prioritize downside protection over upside chasing.",
+      "Never hallucinate menu items or operational conditions.",
+      buildIntentGuidance(intent)
+    ].join(" ");
 
-  "Assume references like 'this' mean today's recommendation shown on the dashboard.",
+    const userPrompt = `
+TODAY'S DECISION
+${recommendation || "No recommendation available."}
 
-  "Use only the provided KitchenPulse context and movement evidence.",
-  "Do not invent menu items, weather concerns, traffic patterns, or business signals that are not present.",
+DECISION PRIORITY
+${priority || "Unknown"}
 
-  "Be direct, commercially aware, and action-oriented.",
+ACTION CALLOUT
+${actionCallout || "Not available."}
 
-  "CRITICAL RESPONSE RULE:",
-  "Keep answers tight. Default to 2–4 sentences unless the question clearly requires more.",
-  "You MUST strictly follow the intent-specific instructions below.",
-  "You are NOT allowed to expand beyond the requested scope.",
-  "If the user asks a narrow question, your answer MUST be narrow.",
-  "Do NOT include multiple sections unless explicitly required.",
-  "Do NOT default to a full report format.",
+SUMMARY
+${summary || "No summary available."}
 
-  buildIntentGuidance(intent)
-].join(" ");
+STRUCTURED DECISION SIGNALS
+${decisionSummary.text || "No structured decision payload available."}
+
+MOVEMENT SUMMARY
+${movementSummary.summaryText || "No movement summary available."}
+
+TOP RISKS
+${
+  movementSummary.risks.length
+    ? movementSummary.risks
+        .map(r =>
+          `${r.item} | ${r.movementType} | ${r.impactLevel || "No impact level"} | current qty ${r.currentQty} | previous qty ${r.previousQty}`
+        )
+        .join("\n")
+    : "None"
+}
+
+TOP OPPORTUNITIES
+${
+  movementSummary.opportunities.length
+    ? movementSummary.opportunities
+        .map(r =>
+          `${r.item} | ${r.movementType} | ${r.impactLevel || "No impact level"} | current qty ${r.currentQty} | previous qty ${r.previousQty}`
+        )
+        .join("\n")
+    : "None"
+}
+
+MOVEMENT EVIDENCE
+${movementEvidenceBlock}
+
+FULL CONTEXT
+${context}
+
+OPERATOR QUESTION
+${userQuestion}
+`.trim();
 
     const openaiResult = await fetchJsonOrText(
       "https://api.openai.com/v1/responses",
@@ -614,10 +641,7 @@ ${movementSummary.summaryText || "Not available"}
               content: [
                 {
                   type: "input_text",
-                  text:
-                    `KitchenPulse Context:\n${context}\n\n` +
-                    `Movement Evidence:\n${movementEvidenceBlock}\n\n` +
-                    `Operator Question:\n${userQuestion}`
+                  text: userPrompt
                 }
               ]
             }
