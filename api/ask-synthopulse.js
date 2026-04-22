@@ -152,7 +152,7 @@ function normalizeQuestion(message) {
   ) {
     return {
       normalized:
-        "What happens if the operator ignores today's recommendation? Explain the downside risk plainly.",
+        "What is the single biggest downside risk if the operator ignores today's recommendation? Answer only that risk.",
       intent: "ignore_risk"
     };
   }
@@ -176,7 +176,7 @@ function normalizeQuestion(message) {
   ) {
     return {
       normalized:
-        "What should the operator push today? Recommend the clearest item or category to lean into based on today's KitchenPulse signals.",
+        "What is the clearest item or category the operator should push today? Answer only with the best push play based on today's signals.",
       intent: "push"
     };
   }
@@ -362,20 +362,19 @@ function normalizeQuestion(message) {
       case "first_action":
   return [
     "Answer only what the operator should do first.",
-    "Give immediate shift-level actions only.",
-    "Prefer concrete execution steps.",
-    "Avoid broad monitoring language unless absolutely necessary.",
-    "No full report format.",
-    "Keep it short."
+    "Return only the top 2 or 3 immediate actions.",
+    "Use concrete shift-level actions.",
+    "Do not include monitoring, reassessment, or contingency steps unless they are the main action.",
+    "Do not include a full report format."
   ].join(" ");
 
-      case "ignore_risk":
-        return [
-          "Answer only what happens if the operator ignores the recommendation.",
-          "Focus on downside risk, lost sales, weaker mix, margin drag, missed timing, or traffic conversion risk.",
-          "Do not include action steps.",
-          "Do not include a watch list."
-        ].join(" ");
+     case "ignore_risk":
+  return [
+    "Answer only the real downside risk.",
+    "Do not include bottom line, why this surfaced, actions, or watch items.",
+    "Return 1 short paragraph only.",
+    "Focus on the most likely business consequence if the recommendation is ignored."
+  ].join(" ");
 
       case "watch":
         return [
