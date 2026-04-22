@@ -152,7 +152,7 @@ function normalizeQuestion(message) {
   ) {
     return {
       normalized:
-        "State the single biggest downside risk if today's recommendation is ignored. Answer with one short paragraph only.",
+        "Answer with exactly one paragraph stating only the single biggest downside risk if today's recommendation is ignored.",
       intent: "ignore_risk"
     };
   }
@@ -370,11 +370,13 @@ function normalizeQuestion(message) {
 
     case "ignore_risk":
   return [
+    "This is a strict format test.",
     "Answer ONLY the single biggest downside risk.",
-    "Return exactly ONE paragraph.",
-    "Do NOT include sections, labels, bullet points, or structured format.",
-    "Do NOT include 'bottom line', 'why this surfaced', 'what to do', or 'what to watch'.",
-    "If you include anything beyond the risk, the answer is wrong."
+    "Return exactly one paragraph.",
+    "Do NOT include labels.",
+    "Do NOT include sections.",
+    "Do NOT include bottom line, why this surfaced, what to do now, risk if ignored, or what else to watch.",
+    "If you include any extra section or label, the answer is wrong."
   ].join(" ");
 
       case "watch":
@@ -448,16 +450,19 @@ function normalizeQuestion(message) {
     const briefCheck = await fetchLatestBrief();
 
     return sendJson(200, {
-      status: "ok",
-      message: "SynthoPulse API is live.",
-      debug: {
-        airtable_base_id: AIRTABLE_BASE_ID,
-        briefs_table_target: BRIEFS_TABLE_ID,
-        movement_table_target: MOVEMENT_TABLE_ID,
-        latest_brief_status: briefCheck.status,
-        latest_brief_preview: briefCheck.rawText.slice(0, 600)
-      }
-    });
+  reply,
+  meta: {
+    intent,
+    userQuestion,
+    restaurant,
+    runId,
+    priority,
+    recommendation,
+    movement_rows_used: currentRunMovement.length,
+    used_decision_json: !!decisionJson,
+    instruction_preview: instructionText.slice(0, 1200)
+  }
+});
   }
 
   if (req.method !== "POST") {
