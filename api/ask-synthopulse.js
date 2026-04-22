@@ -610,11 +610,14 @@ ${movementSummary.summaryText || "Not available"}
       "Prefer plain business language.",
       "Keep answers tight.",
       "Default to 2 to 5 sentences unless the question clearly needs a little more.",
-      "For broad questions, prioritize this order: recommendation first, then movement, then external context, then what to do.",
+      "For broad questions only, use this default structure: what it means, why it surfaced, what to do now, what happens if ignored, and what else to watch.",
+      "If the user asks a specific question, answer ONLY that question.",
+      "Specific questions override the default structure.",
+      "Do not include extra sections when the question is narrow.",
       "When signals are mixed, prioritize downside protection over upside chasing.",
       "Never hallucinate menu items or operational conditions.",
       buildIntentGuidance(intent)
-    ].join(" ");
+                    ].join(" ");
 
     const userPrompt = `
 TODAY'S DECISION
