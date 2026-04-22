@@ -124,7 +124,7 @@ function normalizeQuestion(message) {
   ) {
     return {
       normalized:
-        "Why did today's recommendation surface? Explain the real business signals behind it and what it means operationally.",
+        "Why did today's recommendation surface? Explain only the strongest 1 to 3 business signals behind it. Do not generalize. Do not give advice. Do not broaden into strategy.",
       intent: "why"
     };
   }
@@ -137,7 +137,7 @@ function normalizeQuestion(message) {
   ) {
     return {
       normalized:
-        "What should the operator do first based on today's recommendation? Give the first concrete actions only.",
+        "What should the operator do first based on today's recommendation? Give only the most immediate actions for this shift. Prefer concrete execution steps over monitoring language.",
       intent: "first_action"
     };
   }
@@ -341,14 +341,15 @@ function normalizeQuestion(message) {
   function buildIntentGuidance(intent) {
     switch (intent) {
       case "why":
-        return [
-          "Answer only why the recommendation surfaced.",
-          "Do not give actions.",
-          "Do not give risk if ignored.",
-          "Do not give watch items.",
-          "Return 2 short paragraphs max.",
-          "Ground the explanation in recommendation, movement, and external context if present."
-        ].join(" ");
+  return [
+    "Answer only why the recommendation surfaced.",
+    "Use only the strongest live signals.",
+    "Do not generalize.",
+    "Do not give actions.",
+    "Do not give strategy.",
+    "Do not include a conclusion or wrap-up sentence.",
+    "Keep it to 2 short paragraphs max."
+  ].join(" ");
         case "push":
           return [
           "Answer only what should be pushed today.",
@@ -359,13 +360,14 @@ function normalizeQuestion(message) {
         ].join(" ");
 
       case "first_action":
-        return [
-          "Answer only what the operator should do first.",
-          "Return the first concrete actions only.",
-          "No full report format.",
-          "No long explanation unless needed for clarity.",
-          "Prefer 2 to 4 short action lines or a tight short paragraph."
-        ].join(" ");
+  return [
+    "Answer only what the operator should do first.",
+    "Give immediate shift-level actions only.",
+    "Prefer concrete execution steps.",
+    "Avoid broad monitoring language unless absolutely necessary.",
+    "No full report format.",
+    "Keep it short."
+  ].join(" ");
 
       case "ignore_risk":
         return [
