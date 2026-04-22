@@ -152,7 +152,7 @@ function normalizeQuestion(message) {
   ) {
     return {
       normalized:
-        "What is the single biggest downside risk if the operator ignores today's recommendation? Answer only that risk.",
+        "State the single biggest downside risk if today's recommendation is ignored. Answer with one short paragraph only.",
       intent: "ignore_risk"
     };
   }
@@ -368,12 +368,13 @@ function normalizeQuestion(message) {
     "Do not include a full report format."
   ].join(" ");
 
-     case "ignore_risk":
+    case "ignore_risk":
   return [
-    "Answer only the real downside risk.",
-    "Do not include bottom line, why this surfaced, actions, or watch items.",
-    "Return 1 short paragraph only.",
-    "Focus on the most likely business consequence if the recommendation is ignored."
+    "Answer ONLY the single biggest downside risk.",
+    "Return exactly ONE paragraph.",
+    "Do NOT include sections, labels, bullet points, or structured format.",
+    "Do NOT include 'bottom line', 'why this surfaced', 'what to do', or 'what to watch'.",
+    "If you include anything beyond the risk, the answer is wrong."
   ].join(" ");
 
       case "watch":
