@@ -114,7 +114,10 @@ module.exports = async function handler(req, res) {
   }
 
 function normalizeQuestion(message) {
-  const q = safeText(message).toLowerCase().trim();
+  const q = safeText(message)
+    .toLowerCase()
+    .replace(/[’‘]/g, "'")
+    .trim();
 
   if (
     q === "why this?" ||
@@ -124,7 +127,7 @@ function normalizeQuestion(message) {
   ) {
     return {
       normalized:
-        "Why did today's recommendation surface? Explain only the strongest 1 to 3 business signals behind it. Do not generalize. Do not give advice. Do not broaden into strategy.",
+        "Why did today's recommendation surface? Explain only the strongest 1 to 3 business signals behind it. Do not give advice. Do not broaden into strategy.",
       intent: "why"
     };
   }
@@ -137,7 +140,7 @@ function normalizeQuestion(message) {
   ) {
     return {
       normalized:
-        "What should the operator do first based on today's recommendation? Give only the most immediate actions for this shift. Prefer concrete execution steps over monitoring language.",
+        "What should the operator do first based on today's recommendation? Give only the top 2 or 3 immediate shift-level actions.",
       intent: "first_action"
     };
   }
@@ -146,13 +149,13 @@ function normalizeQuestion(message) {
     q === "what happens if i ignore this?" ||
     q === "what happens if i ignore this" ||
     q === "what's the real risk?" ||
-    q === "whats the real risk?" ||
+    q === "what's the real risk" ||
     q === "what is the real risk?" ||
     q === "what is the real risk"
   ) {
     return {
       normalized:
-        "Answer with exactly one paragraph stating only the single biggest downside risk if today's recommendation is ignored.",
+        "State the single biggest downside risk if today's recommendation is ignored. Answer with one short paragraph only.",
       intent: "ignore_risk"
     };
   }
