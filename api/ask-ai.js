@@ -560,12 +560,12 @@ No fluff. No over-explaining. Get to the point.
         body: JSON.stringify({
           model: "gpt-4o-mini",
           instructions: instructionText,
-         input: [
+input: [
   {
     role: "system",
     content: [
       {
-        type: "input_text",
+        type: "text",
         text: `KitchenPulse Context:\n${context}`
       }
     ]
@@ -574,7 +574,7 @@ No fluff. No over-explaining. Get to the point.
     role: msg.role === "assistant" ? "assistant" : "user",
     content: [
       {
-        type: "input_text",
+        type: "text",
         text: safeText(msg.content)
       }
     ]
@@ -583,7 +583,7 @@ No fluff. No over-explaining. Get to the point.
     role: "user",
     content: [
       {
-        type: "input_text",
+        type: "text",
         text: rawMessage
       }
     ]
