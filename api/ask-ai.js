@@ -574,7 +574,7 @@ input: [
     role: msg.role === "assistant" ? "assistant" : "user",
     content: [
       {
-        type: "input_text"
+        type: "input_text",
         text: safeText(msg.content)
       }
     ]
