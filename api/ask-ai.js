@@ -565,7 +565,7 @@ input: [
     role: "system",
     content: [
       {
-        type: "input_text"
+        type: "input_text",
         text: `KitchenPulse Context:\n${context}`
       }
     ]
