@@ -570,15 +570,19 @@ input: [
       }
     ]
   },
-  ...history.map((msg) => ({
-    role: msg.role === "assistant" ? "assistant" : "user",
+  ...history.map((msg) => {
+  const role = msg.role === "assistant" ? "assistant" : "user";
+
+  return {
+    role,
     content: [
       {
-        type: "input_text",
+        type: role === "assistant" ? "output_text" : "input_text",
         text: safeText(msg.content)
       }
     ]
-  })),
+  };
+}),
   {
     role: "user",
     content: [
