@@ -24,8 +24,11 @@ export default async function handler(req, res) {
       .base(process.env.AIRTABLE_BASE_ID);
 
     await base("External Factors").update(recordId, {
-      "Needs Review": false,
-    });
+  "Needs Review": false,
+  "Active": true,
+  "Event Weight": 10,
+  "Estimated Draw": "High",
+});
 
     return res.status(200).json({ ok: true });
   } catch (err) {
