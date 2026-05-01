@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     const base = new Airtable({ apiKey: process.env.AIRTABLE_PAT })
       .base(process.env.AIRTABLE_BASE_ID);
 
-    await base("External Factors").update(recordId, {
+  await base("External Factors").update(recordId, {
   "Needs Review": false,
   "Active": true,
   "Decision Driving Event": true,
@@ -29,6 +29,7 @@ export default async function handler(req, res) {
   "Estimated Draw": "Very High",
   "Traffic Effect": "Very High",
   "Confidence": "High",
+  "Event Board Column": "Active Today",
   "Event Snapshot": "Manually promoted by operator",
   "Decision Hint": "Strong demand expected — prep high-margin items and maintain pacing.",
 });
