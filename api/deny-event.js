@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       "Needs Review": false,
       "Active": false,
       "Decision Driving Event": false,
-      "Event Snapshot": "Denied by operator",
+     
       "Decision Hint": "Operator dismissed this event. Do not use as a decision driver.",
     });
 
