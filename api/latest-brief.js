@@ -1,4 +1,4 @@
-import Airtable from "airtable";
+const Airtable = require("airtable");
 
 export default async function handler(req, res) {
   const base = new Airtable({ apiKey: process.env.AIRTABLE_PAT })
