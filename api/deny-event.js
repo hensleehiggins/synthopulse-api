@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       "Active": false,
       "Decision Driving Event": false,
      
-      "Decision Hint": "Operator dismissed this event. Do not use as a decision driver.",
+      
     });
 
     return res.status(200).json({ ok: true });
