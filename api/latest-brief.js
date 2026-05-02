@@ -26,12 +26,13 @@ if (req.method === "OPTIONS") {
     const r = records[0].fields;
 
     res.status(200).json({
-      ok: true,
-      headline: r["Hero Headline"] || "",
-      cardValue: r["Hero Card Value"] || "",
-      priority: r["Hero Card Priority"] || "",
-      timeContext: r["Hero Time Context"] || "",
-    });
+  ok: true,
+  recordId: records[0].id,
+  headline: r["Hero Headline"] || "",
+  cardValue: r["Hero Card Value"] || "",
+  priority: r["Hero Card Priority"] || "",
+  timeContext: r["Hero Time Context"] || "",
+});
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
