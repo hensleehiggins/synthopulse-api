@@ -32,21 +32,37 @@ export default async function handler(req, res) {
       process.env.AIRTABLE_BASE_ID
     );
 
-    const records = await base("Event Intake Queue").create([
-      {
-        fields: {
-          "Event Name": eventName,
-          "Start DateTime": startDateTime,
-          ...(endDateTime ? { "End DateTime": endDateTime } : {}),
-          ...(venueArea ? { "Venue / Area": venueArea } : {}),
-          ...(city ? { City: city } : {}),
-          Source: "Manual",
-          "Needs Review": true,
-          Status: "Needs Review",
-          Notes: notes || "Submitted from KitchenPulse portal.",
-        },
-      },
-    ]);
+    const records = await base("External Factors").create([
+  {
+    fields: {
+      Type: "Event",
+      Source: "Manual",
+      "Source Type": "Manual",
+
+      "Event Name": eventName,
+      Description: eventName,
+      "Start DateTime": startDateTime,
+      "Start Time": startDateTime,
+      "Venue / Area": venueArea || "",
+
+      Restaurant: ["recn2LoRESKN33zHW"],
+
+      Active: true,
+      "Active (Event)": true,
+      "Decision Driving Event": true,
+
+      "Traffic Effect": "Very High",
+      Confidence: "Very High",
+      "Estimated Draw": "Very High",
+      "Distance Weight": 2,
+      "Event Weight": 10,
+
+      "Needs Review": false,
+      "Auto Imported": false,
+      Notes: notes || "Submitted manually from KitchenPulse portal.",
+    },
+  },
+]);
 
     return res.status(200).json({
       ok: true,
