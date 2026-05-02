@@ -34,7 +34,7 @@ export default async function handler(req, res) {
         estimatedDraw: f["Estimated Draw"] || "",
         eventWeight: f["Event Weight"] || 0,
         decisionDriving: !!f["Decision Driving Event"],
-        decisionDriving: !!f["Decision Driving Event"],
+        
       };
     });
 
