@@ -32,6 +32,10 @@ if (req.method === "OPTIONS") {
   cardValue: r["Hero Card Value"] || "",
   priority: r["Hero Card Priority"] || "",
   timeContext: r["Hero Time Context"] || "",
+  formattedBrief: r["Formatted Brief (Display)"] || "",
+  decisionDisplay: r["Decision Display"] || "",
+  actionCallout: r["Action Callout"] || "",
+  whyFull: r["Why Full"] || "",
 });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
