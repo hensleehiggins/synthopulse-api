@@ -1,11 +1,21 @@
 export default async function handler(req, res) {
   // CORS for Softr/Vibe
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
+  }
+
+  // Browser health check. This prevents the scary Vercel crash page on GET.
+  if (req.method === "GET") {
+    return res.status(200).json({
+      ok: true,
+      route: "update-event",
+      message: "Route is live. Use POST to update an event.",
+      time: new Date().toISOString(),
+    });
   }
 
   if (req.method !== "POST") {
@@ -16,15 +26,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const {
-      recordId,
-      eventName,
-      startDateTime,
-      endDateTime,
-      venueArea,
-      estimatedDraw,
-      trafficEffect,
-    } = req.body || {};
+    const body = req.body || {};
+
+    const recordId = body.recordId;
+    const eventName = body.eventName;
+    const startDateTime = body.startDateTime;
+    const endDateTime = body.endDateTime;
+    const venueArea = body.venueArea;
+    const estimatedDraw = body.estimatedDraw;
+    const trafficEffect = body.trafficEffect;
 
     if (!recordId) {
       return res.status(400).json({
@@ -34,14 +44,14 @@ export default async function handler(req, res) {
     }
 
     const AIRTABLE_TOKEN =
-  process.env.AIRTABLE_PAT ||
-  process.env.AIRTABLE_TOKEN ||
-  process.env.AIRTABLE_API_KEY ||
-  process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
+      process.env.AIRTABLE_PAT ||
+      process.env.AIRTABLE_TOKEN ||
+      process.env.AIRTABLE_API_KEY ||
+      process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
 
-const AIRTABLE_BASE_ID =
-  process.env.AIRTABLE_BASE_ID ||
-  process.env.KITCHENPULSE_BASE_ID;
+    const AIRTABLE_BASE_ID =
+      process.env.AIRTABLE_BASE_ID ||
+      process.env.KITCHENPULSE_BASE_ID;
 
     if (!AIRTABLE_TOKEN) {
       return res.status(500).json({
@@ -61,23 +71,30 @@ const AIRTABLE_BASE_ID =
 
     const fields = {};
 
+    // Writable text fields
     if (eventName !== undefined) {
-      fields["Event Name"] = eventName;
-      fields["Description"] = eventName;
+      fields["Event Name"] = eventName || "";
+      fields["Description"] = eventName || "";
     }
 
+    if (venueArea !== undefined) {
+      fields["Venue / Area"] = venueArea || "";
+    }
+
+    // Writable date fields.
+    // Do NOT write Event Sort Date. It is a formula.
     if (startDateTime !== undefined && startDateTime !== "") {
-  fields["Start DateTime"] = startDateTime;
-}
+      fields["Start DateTime"] = startDateTime;
+    }
 
     if (endDateTime !== undefined && endDateTime !== "") {
       fields["End DateTime"] = endDateTime;
     }
 
-    if (venueArea !== undefined) {
-      fields["Venue / Area"] = venueArea;
-    }
-
+    // Writable single-select fields.
+    // Your Airtable choices are exactly:
+    // Estimated Draw: Low, Medium, High, Very High
+    // Traffic Effect: Low, Medium, High, Very High, High positive
     if (estimatedDraw !== undefined && estimatedDraw !== "") {
       fields["Estimated Draw"] = estimatedDraw;
     }
@@ -86,8 +103,10 @@ const AIRTABLE_BASE_ID =
       fields["Traffic Effect"] = trafficEffect;
     }
 
-    // Reclassify board placement after edit.
-    // Uses Event Sort Date / startDateTime as the source.
+    // Writable checkbox helpers.
+    // Do NOT write Event Board Column. It is a formula.
+    // Airtable formula decides:
+    // Needs Review / Active Today / Upcoming Impact
     if (startDateTime) {
       const eventDate = new Date(startDateTime);
       const now = new Date();
@@ -104,19 +123,22 @@ const AIRTABLE_BASE_ID =
         now.getDate()
       );
 
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
-
       if (eventDay.getTime() === today.getTime()) {
-  fields["Active"] = true;
-  fields["Needs Review"] = false;
-} else if (eventDay.getTime() > today.getTime()) {
-  fields["Active"] = false;
-  fields["Needs Review"] = false;
-} else {
-  fields["Active"] = false;
-  fields["Needs Review"] = false;
-}
+        fields["Active"] = true;
+        fields["Needs Review"] = false;
+      } else if (eventDay.getTime() > today.getTime()) {
+        fields["Active"] = false;
+        fields["Needs Review"] = false;
+      } else {
+        fields["Active"] = false;
+        fields["Needs Review"] = false;
+      }
+    }
+
+    console.log("update-event payload:", {
+      recordId,
+      fields,
+    });
 
     const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
       tableName
@@ -130,19 +152,37 @@ const AIRTABLE_BASE_ID =
       },
       body: JSON.stringify({
         fields,
+        typecast: true,
       }),
     });
 
-    const airtableData = await airtableRes.json();
+    let airtableData = null;
+    const rawText = await airtableRes.text();
+
+    try {
+      airtableData = rawText ? JSON.parse(rawText) : null;
+    } catch (parseErr) {
+      airtableData = {
+        raw: rawText,
+      };
+    }
 
     if (!airtableRes.ok) {
+      console.error("Airtable update failed:", {
+        status: airtableRes.status,
+        airtableData,
+        fields,
+      });
+
       return res.status(airtableRes.status).json({
         ok: false,
         error:
           airtableData?.error?.message ||
           airtableData?.error?.type ||
+          rawText ||
           "Airtable update failed",
         airtable: airtableData,
+        sentFields: fields,
       });
     }
 
@@ -153,7 +193,7 @@ const AIRTABLE_BASE_ID =
       airtable: airtableData,
     });
   } catch (err) {
-    console.error("update-event failed:", err);
+    console.error("update-event crashed:", err);
 
     return res.status(500).json({
       ok: false,
