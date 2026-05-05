@@ -1,13 +1,8 @@
-fetch("https://project-1csz2.vercel.app/api/update-event", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    recordId: item.id,
-    eventName,
-    startDateTime,
-    endDateTime,
-    estimatedDraw,
-    trafficEffect,
-    venueArea,
-  }),
-});
+export default function handler(req, res) {
+  return res.status(200).json({
+    ok: true,
+    route: "update-event",
+    method: req.method,
+    time: new Date().toISOString()
+  });
+}
