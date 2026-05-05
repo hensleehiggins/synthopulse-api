@@ -67,9 +67,8 @@ const AIRTABLE_BASE_ID =
     }
 
     if (startDateTime !== undefined && startDateTime !== "") {
-      fields["Event Sort Date"] = startDateTime;
-      fields["Start DateTime"] = startDateTime;
-    }
+  fields["Start DateTime"] = startDateTime;
+}
 
     if (endDateTime !== undefined && endDateTime !== "") {
       fields["End DateTime"] = endDateTime;
