@@ -104,9 +104,7 @@ export default async function handler(req, res) {
   fields["Start DateTime"] = localDateTimeToEasternIso(startDateTime);
 }
 
-if (endDateTime !== undefined && endDateTime !== "") {
-  fields["End DateTime"] = localDateTimeToEasternIso(endDateTime);
-}
+
 
     // Writable single-select fields.
     // Your Airtable choices are exactly:
