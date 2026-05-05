@@ -34,13 +34,14 @@ export default async function handler(req, res) {
     }
 
     const AIRTABLE_TOKEN =
-      process.env.AIRTABLE_TOKEN ||
-      process.env.AIRTABLE_API_KEY ||
-      process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
+  process.env.AIRTABLE_PAT ||
+  process.env.AIRTABLE_TOKEN ||
+  process.env.AIRTABLE_API_KEY ||
+  process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
 
-    const AIRTABLE_BASE_ID =
-      process.env.AIRTABLE_BASE_ID ||
-      process.env.KITCHENPULSE_BASE_ID;
+const AIRTABLE_BASE_ID =
+  process.env.AIRTABLE_BASE_ID ||
+  process.env.KITCHENPULSE_BASE_ID;
 
     if (!AIRTABLE_TOKEN) {
       return res.status(500).json({
