@@ -24,22 +24,7 @@ export default async function handler(req, res) {
       error: "Method not allowed",
     });
   }
-function localDateTimeToEasternIso(value) {
-  if (!value) return "";
 
-  // Softr/Vibe datetime-local sends values like "2026-05-05T16:00"
-  // Treat that as Eastern local restaurant time, then convert to UTC for Airtable.
-  const [datePart, timePart] = value.split("T");
-  if (!datePart || !timePart) return value;
-
-  const [year, month, day] = datePart.split("-").map(Number);
-  const [hour, minute] = timePart.split(":").map(Number);
-
-  // Georgia is currently Eastern Daylight Time during this May event flow: UTC-4.
-  const utcMs = Date.UTC(year, month - 1, day, hour + 4, minute || 0, 0);
-
-  return new Date(utcMs).toISOString();
-}
   
   try {
     const body = req.body || {};
@@ -100,11 +85,11 @@ function localDateTimeToEasternIso(value) {
     // Writable date fields.
     // Do NOT write Event Sort Date. It is a formula.
     if (startDateTime !== undefined && startDateTime !== "") {
-  fields["Start DateTime"] = localDateTimeToEasternIso(startDateTime);
+  fields["Start DateTime"] = startDateTime;
 }
 
 if (endDateTime !== undefined && endDateTime !== "") {
-  fields["End DateTime"] = localDateTimeToEasternIso(endDateTime);
+  fields["End DateTime"] = endDateTime;
 }
 
     // Writable single-select fields.
