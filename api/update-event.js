@@ -25,7 +25,23 @@ export default async function handler(req, res) {
     });
   }
 
-  
+  function localDateTimeToEasternIso(value) {
+  if (!value) return "";
+
+  // Softr/Vibe datetime-local sends values like "2026-05-05T17:00".
+  // Treat that as Eastern restaurant time and convert to UTC for Airtable.
+  const [datePart, timePart] = value.split("T");
+  if (!datePart || !timePart) return value;
+
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hour, minute] = timePart.split(":").map(Number);
+
+  // KitchenPulse first tenant is Georgia/Eastern.
+  // May is EDT, so Eastern local + 4 hours = UTC.
+  const utcMs = Date.UTC(year, month - 1, day, hour + 4, minute || 0, 0);
+
+  return new Date(utcMs).toISOString();
+}
   try {
     const body = req.body || {};
 
@@ -85,11 +101,11 @@ export default async function handler(req, res) {
     // Writable date fields.
     // Do NOT write Event Sort Date. It is a formula.
     if (startDateTime !== undefined && startDateTime !== "") {
-  fields["Start DateTime"] = startDateTime;
+  fields["Start DateTime"] = localDateTimeToEasternIso(startDateTime);
 }
 
 if (endDateTime !== undefined && endDateTime !== "") {
-  fields["End DateTime"] = endDateTime;
+  fields["End DateTime"] = localDateTimeToEasternIso(endDateTime);
 }
 
     // Writable single-select fields.
