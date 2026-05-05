@@ -108,19 +108,15 @@ const AIRTABLE_BASE_ID =
       tomorrow.setDate(today.getDate() + 1);
 
       if (eventDay.getTime() === today.getTime()) {
-        fields["Active"] = true;
-        fields["Needs Review"] = false;
-        fields["Event Board Column"] = "Active Today";
-      } else if (eventDay.getTime() > today.getTime()) {
-        fields["Active"] = false;
-        fields["Needs Review"] = false;
-        fields["Event Board Column"] = "Upcoming Impact";
-      } else {
-        fields["Active"] = false;
-        fields["Needs Review"] = false;
-        fields["Event Board Column"] = "Past / Stale";
-      }
-    }
+  fields["Active"] = true;
+  fields["Needs Review"] = false;
+} else if (eventDay.getTime() > today.getTime()) {
+  fields["Active"] = false;
+  fields["Needs Review"] = false;
+} else {
+  fields["Active"] = false;
+  fields["Needs Review"] = false;
+}
 
     const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
       tableName
