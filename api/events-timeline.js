@@ -13,12 +13,22 @@ export default async function handler(req, res) {
     );
 
     const records = await base("External Factors")
-      .select({
-        filterByFormula: `AND({Type} = "Event", {Active} = TRUE())`,
-        maxRecords: 40,
-        sort: [{ field: "Start DateTime", direction: "asc" }],
-      })
-      .firstPage();
+  .select({
+    filterByFormula: `
+      AND(
+        {Type} = "Event",
+        OR(
+          IS_SAME({Start DateTime}, TODAY(), 'day'),
+          IS_AFTER({Start DateTime}, TODAY()),
+          IS_SAME({Event Sort Date}, TODAY(), 'day'),
+          IS_AFTER({Event Sort Date}, TODAY())
+        )
+      )
+    `,
+    maxRecords: 40,
+    sort: [{ field: "Start DateTime", direction: "asc" }],
+  })
+  .firstPage();
 
     const events = records.map((rec) => {
       const f = rec.fields || {};
