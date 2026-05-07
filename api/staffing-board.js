@@ -256,15 +256,18 @@ function buildCoverageWarnings(todayShifts) {
     });
   }
 
-  if (todayShifts.length > 0 && activeCounts.Management === 0) {
-    warnings.push({
-      id: "no-manager",
-      type: "Manager Coverage",
-      severity: "Medium",
-      title: "No manager shift marked today",
-      detail: "No Staff Shifts record is marked as manager coverage for today.",
-    });
-  }
+  const hasManagerCoverage = activeShifts.some((shift) => shift.isManager);
+
+if (todayShifts.length > 0 && !hasManagerCoverage && activeCounts.Management === 0) {
+  warnings.push({
+    id: "no-manager",
+    type: "Manager Coverage",
+    severity: "Medium",
+    title: "No manager coverage found today",
+    detail:
+      "No active Staff Shifts record is marked as manager coverage or assigned to the Management department for today.",
+  });
+}
 
   return warnings.slice(0, 10);
 }
