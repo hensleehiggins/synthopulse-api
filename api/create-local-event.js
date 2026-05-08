@@ -1,5 +1,17 @@
 const Airtable = require("airtable");
 
+function getDefaultEventEnd(startDateTime) {
+  const start = new Date(startDateTime);
+
+  if (Number.isNaN(start.getTime())) {
+    return null;
+  }
+
+  // Default local event pressure window: 4 hours.
+  // Example: 8 PM event stays active until midnight.
+  return new Date(start.getTime() + 4 * 60 * 60 * 1000).toISOString();
+}
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -28,45 +40,58 @@ export default async function handler(req, res) {
       });
     }
 
+    const finalEndDateTime = endDateTime || getDefaultEventEnd(startDateTime);
+
+    if (!finalEndDateTime) {
+      return res.status(400).json({
+        ok: false,
+        error: "Invalid start date/time.",
+      });
+    }
+
     const base = new Airtable({ apiKey: process.env.AIRTABLE_PAT }).base(
       process.env.AIRTABLE_BASE_ID
     );
 
     const records = await base("External Factors").create([
-  {
-    fields: {
-      Type: "Event",
-      Source: "Manual",
-      "Source Type": "Manual",
+      {
+        fields: {
+          Type: "Event",
+          Source: "Manual",
+          "Source Type": "Manual",
 
-      "Event Name": eventName,
-      Description: eventName,
-      "Start DateTime": startDateTime,
-      "Start Time": startDateTime,
-      "Venue / Area": venueArea || "",
+          "Event Name": eventName,
+          Description: eventName,
 
-      Restaurant: ["recn2LoRESKN33zHW"],
+          "Start DateTime": startDateTime,
+          "End DateTime": finalEndDateTime,
+          "Start Time": startDateTime,
+          "End Time": finalEndDateTime,
 
-      Active: true,
-      "Active (Event)": true,
-      "Decision Driving Event": true,
+          "Venue / Area": venueArea || "",
+          Restaurant: ["recn2LoRESKN33zHW"],
 
-      "Traffic Effect": "Very High",
-      Confidence: "Very High",
-      "Estimated Draw": "Very High",
-      "Distance Weight": 2,
-      "Event Weight": 10,
+          Active: true,
+          "Active (Event)": true,
+          "Decision Driving Event": true,
 
-      "Needs Review": false,
-      "Auto Imported": false,
-      Notes: notes || "Submitted manually from KitchenPulse portal.",
-    },
-  },
-]);
+          "Traffic Effect": "Very High",
+          Confidence: "Very High",
+          "Estimated Draw": "Very High",
+          "Distance Weight": 2,
+          "Event Weight": 10,
+
+          "Needs Review": false,
+          "Auto Imported": false,
+          Notes: notes || "Submitted manually from KitchenPulse portal.",
+        },
+      },
+    ]);
 
     return res.status(200).json({
       ok: true,
       id: records[0].id,
+      endDateTime: finalEndDateTime,
     });
   } catch (err) {
     return res.status(500).json({
