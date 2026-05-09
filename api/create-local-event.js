@@ -74,7 +74,7 @@ export default async function handler(req, res) {
           Active: true,
           "Active (Event)": true,
           "Decision Driving Event": true,
-
+          "Show on Service Pressure": true,
           "Traffic Effect": "Very High",
           Confidence: "Very High",
           "Estimated Draw": "Very High",
