@@ -143,13 +143,26 @@ function buildAlert(record) {
     getTextField(record, "Estimated Draw") ||
     "Demand pressure";
 
-  return {
+    return {
     show: true,
     eventName,
     title: buildTitle(eventName, dateLabel),
     dateLabel,
     summary,
     pressure,
+
+    date:
+      getField(record, "Display Date") ||
+      getField(record, "Forecast Date") ||
+      getField(record, "Date") ||
+      getField(record, "Start DateTime"),
+
+    startDateTime:
+      getField(record, "Start DateTime") ||
+      getField(record, "Display Date") ||
+      getField(record, "Forecast Date") ||
+      getField(record, "Date"),
+
     source: getTextField(record, "Source") || "KitchenPulse",
     externalEventId: getTextField(record, "External Event ID"),
     recordId: record.id,
