@@ -9,8 +9,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
   "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-  "Pragma": "no-cache",
-  "Expires": "0",
+  Pragma: "no-cache",
+  Expires: "0",
   "Surrogate-Control": "no-store",
 };
 
@@ -54,8 +54,10 @@ function number(value) {
 
 function toIso(value) {
   if (!value) return null;
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
+
   return date.toISOString();
 }
 
@@ -127,6 +129,39 @@ function isToday(value) {
   return key === todayKey();
 }
 
+function isRiskStatus(status) {
+  const clean = String(status || "").toLowerCase();
+  return ["cancelled", "callout", "no show"].includes(clean);
+}
+
+function inferCoverageRisk({
+  shiftName,
+  employeeName,
+  role,
+  shiftStatus,
+  isCoverageRiskField,
+  syncNotes,
+}) {
+  const riskSource = [
+    shiftName,
+    employeeName,
+    role,
+    shiftStatus,
+    syncNotes,
+  ]
+    .join(" ")
+    .toLowerCase();
+
+  return (
+    bool(isCoverageRiskField) ||
+    isRiskStatus(shiftStatus) ||
+    riskSource.includes("coverage risk") ||
+    riskSource.includes("reliability") ||
+    riskSource.includes("flaky") ||
+    riskSource.includes("flakey")
+  );
+}
+
 function shiftRecord(record) {
   const fields = record.fields || {};
 
@@ -141,14 +176,29 @@ function shiftRecord(record) {
       ? `${startLabel} – ${endLabel}`
       : startLabel || endLabel || "";
 
+  const shiftName = text(fields["Shift Name"]) || "Unnamed shift";
+  const employeeName = text(fields["Employee Name"]);
+  const role = text(fields["Role"]);
+  const shiftStatus = text(fields["Shift Status"]);
+  const syncNotes = text(fields["Sync Notes"]);
+
+  const isCoverageRisk = inferCoverageRisk({
+    shiftName,
+    employeeName,
+    role,
+    shiftStatus,
+    isCoverageRiskField: fields["Is Coverage Risk"],
+    syncNotes,
+  });
+
   return {
     id: record.id,
-    shiftName: text(fields["Shift Name"]) || "Unnamed shift",
+    shiftName,
     source: text(fields["Source"]),
     externalShiftId: text(fields["External Shift ID"]),
-    employeeName: text(fields["Employee Name"]),
+    employeeName,
     externalEmployeeId: text(fields["External Employee ID"]),
-    role: text(fields["Role"]),
+    role,
     department: text(fields["Department"]),
     shiftDate: toIso(shiftDate),
     startDateTime: toIso(start),
@@ -156,13 +206,13 @@ function shiftRecord(record) {
     dateLabel: formatDateLabel(shiftDate),
     timeLabel,
     scheduledHours: number(fields["Scheduled Hours"]),
-    shiftStatus: text(fields["Shift Status"]),
+    shiftStatus,
     restaurant: text(fields["Restaurant"]),
     locationStation: text(fields["Location / Station"]),
     isManager: bool(fields["Is Manager"]),
-    isCoverageRisk: bool(fields["Is Coverage Risk"]),
+    isCoverageRisk,
     lastSyncedAt: toIso(fields["Last Synced At"]),
-    syncNotes: text(fields["Sync Notes"]),
+    syncNotes,
   };
 }
 
@@ -191,8 +241,12 @@ function countByDepartment(shifts) {
 
   shifts.forEach((shift) => {
     const department = shift.department || "Other";
-    if (counts[department] === undefined) counts.Other += 1;
-    else counts[department] += 1;
+
+    if (counts[department] === undefined) {
+      counts.Other += 1;
+    } else {
+      counts[department] += 1;
+    }
   });
 
   return counts;
@@ -200,11 +254,9 @@ function countByDepartment(shifts) {
 
 function buildCoverageWarnings(todayShifts) {
   const warnings = [];
-  const counts = countByDepartment(todayShifts);
 
   const activeShifts = todayShifts.filter((shift) => {
-    const status = String(shift.shiftStatus || "").toLowerCase();
-    return !["cancelled", "callout", "no show"].includes(status);
+    return !isRiskStatus(shift.shiftStatus);
   });
 
   const activeCounts = countByDepartment(activeShifts);
@@ -216,27 +268,36 @@ function buildCoverageWarnings(todayShifts) {
       id: `risk-${shift.id}`,
       type: "Coverage Risk",
       severity: "High",
-      title: `${shift.employeeName || shift.shiftName} flagged as coverage risk`,
+      title: `${shift.employeeName || shift.shiftName} is a coverage risk`,
       detail:
         shift.syncNotes ||
-        `${shift.role || "Shift"} ${shift.timeLabel ? `(${shift.timeLabel})` : ""} needs attention.`,
+        `${shift.role || "Shift"} ${
+          shift.timeLabel ? `(${shift.timeLabel})` : ""
+        } needs attention before service.`,
       shiftId: shift.id,
+      employeeName: shift.employeeName,
+      role: shift.role,
+      department: shift.department,
     });
   });
 
   todayShifts
-    .filter((shift) => {
-      const status = String(shift.shiftStatus || "").toLowerCase();
-      return ["cancelled", "callout", "no show"].includes(status);
-    })
+    .filter((shift) => isRiskStatus(shift.shiftStatus))
     .forEach((shift) => {
       warnings.push({
         id: `status-${shift.id}`,
         type: "Shift Status",
         severity: "High",
         title: `${shift.shiftStatus} — ${shift.employeeName || shift.shiftName}`,
-        detail: `${shift.role || "Shift"} ${shift.timeLabel ? `scheduled ${shift.timeLabel}` : "needs coverage review"}.`,
+        detail: `${shift.role || "Shift"} ${
+          shift.timeLabel
+            ? `scheduled ${shift.timeLabel}`
+            : "needs coverage review"
+        }.`,
         shiftId: shift.id,
+        employeeName: shift.employeeName,
+        role: shift.role,
+        department: shift.department,
       });
     });
 
@@ -260,18 +321,20 @@ function buildCoverageWarnings(todayShifts) {
     });
   }
 
-  const hasManagerCoverage = activeShifts.some((shift) => shift.isManager);
-
-if (todayShifts.length > 0 && !hasManagerCoverage && activeCounts.Management === 0) {
-  warnings.push({
-    id: "no-manager",
-    type: "Manager Coverage",
-    severity: "Medium",
-    title: "No manager coverage found today",
-    detail:
-      "No active Staff Shifts record is marked as manager coverage or assigned to the Management department for today.",
+  const hasManagerCoverage = activeShifts.some((shift) => {
+    return shift.isManager || shift.department === "Management";
   });
-}
+
+  if (todayShifts.length > 0 && !hasManagerCoverage) {
+    warnings.push({
+      id: "no-manager",
+      type: "Manager Coverage",
+      severity: "Medium",
+      title: "No manager coverage found today",
+      detail:
+        "No active Staff Shifts record is marked as manager coverage or assigned to the Management department for today.",
+    });
+  }
 
   return warnings.slice(0, 10);
 }
@@ -327,13 +390,17 @@ module.exports = async function handler(req, res) {
       .slice(0, 20);
 
     const activeTodayShifts = todayShifts.filter((shift) => {
-      const status = String(shift.shiftStatus || "").toLowerCase();
-      return !["cancelled", "callout", "no show"].includes(status);
+      return !isRiskStatus(shift.shiftStatus);
     });
 
     const byDepartment = countByDepartment(todayShifts);
     const activeByDepartment = countByDepartment(activeTodayShifts);
     const coverageWarnings = buildCoverageWarnings(todayShifts);
+
+    const riskShiftNames = todayShifts
+      .filter((shift) => shift.isCoverageRisk)
+      .map((shift) => shift.employeeName || shift.shiftName)
+      .filter(Boolean);
 
     const stats = {
       todayStaffCount: activeTodayShifts.length,
@@ -349,6 +416,13 @@ module.exports = async function handler(req, res) {
 
     return send(res, 200, {
       ok: true,
+      generatedAt: new Date().toISOString(),
+      debug: {
+        todayShiftCount: todayShifts.length,
+        riskShiftCount: riskShiftNames.length,
+        riskShiftNames,
+        warningTitles: coverageWarnings.map((warning) => warning.title),
+      },
       stats,
       byDepartment,
       activeByDepartment,
