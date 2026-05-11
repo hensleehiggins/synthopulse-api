@@ -75,7 +75,14 @@ module.exports = async function handler(req, res) {
       };
     }
   }
-
+function cleanAssistantReply(text) {
+  return safeText(text)
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/__(.*?)__/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .trim();
+}
   function extractOpenAIText(payload) {
     if (!payload) return "";
 
