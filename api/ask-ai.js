@@ -314,6 +314,360 @@ module.exports = async function handler(req, res) {
       }
     });
   }
+  async function airtableGetAll(tableId, options = {}) {
+  const {
+    fields = [],
+    sortField = "",
+    sortDirection = "desc",
+    maxRecords = 1000
+  } = options;
+
+  const records = [];
+  let offset = "";
+
+  do {
+    const params = new URLSearchParams();
+    params.set("cellFormat", "string");
+    params.set("timeZone", "America/New_York");
+    params.set("userLocale", "en");
+
+    if (maxRecords) params.set("maxRecords", String(maxRecords));
+
+    fields.forEach((field) => {
+      params.append("fields[]", field);
+    });
+
+    if (sortField) {
+      params.set("sort[0][field]", sortField);
+      params.set("sort[0][direction]", sortDirection);
+    }
+
+    if (offset) params.set("offset", offset);
+
+    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}?${params.toString()}`;
+
+    const result = await fetchJsonOrText(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_PAT}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!result.ok) {
+      return {
+        ok: false,
+        records,
+        error: result.rawText
+      };
+    }
+
+    const pageRecords = result.data?.records || [];
+    records.push(...pageRecords);
+
+    offset = result.data?.offset || "";
+
+    if (records.length >= maxRecords) break;
+  } while (offset);
+
+  return {
+    ok: true,
+    records: records.slice(0, maxRecords)
+  };
+}
+
+function normalizeForSearch(value) {
+  return safeText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseRequestedDays(message) {
+  const clean = normalizeForSearch(message);
+
+  const match = clean.match(/past\s+(\d+)\s+days|last\s+(\d+)\s+days|(\d+)\s+day/);
+  if (match) {
+    const days = Number(match[1] || match[2] || match[3]);
+    if (Number.isFinite(days) && days > 0 && days <= 365) return days;
+  }
+
+  if (clean.includes("past month") || clean.includes("last month")) return 30;
+  if (clean.includes("past week") || clean.includes("last week")) return 7;
+  if (clean.includes("yesterday")) return 1;
+  if (clean.includes("today")) return 1;
+
+  return 30;
+}
+
+function dateIsWithinDays(value, days) {
+  if (!value) return false;
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return false;
+
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+  return date >= cutoff && date <= now;
+}
+
+function detectMenuSearchTerms(message, menuRows = []) {
+  const cleanMessage = normalizeForSearch(message);
+
+  const quoted = safeText(message).match(/"([^"]+)"|'([^']+)'/);
+  if (quoted) {
+    const term = normalizeForSearch(quoted[1] || quoted[2]);
+    if (term) {
+      return {
+        label: term,
+        terms: [term]
+      };
+    }
+  }
+
+  const stopWords = new Set([
+    "what", "were", "was", "with", "from", "that", "this", "sold",
+    "sale", "sales", "margin", "profit", "past", "last", "days",
+    "much", "many", "make", "made", "have", "show", "item", "items"
+  ]);
+
+  const messageWords = cleanMessage
+    .split(" ")
+    .filter((word) => word.length >= 4 && !stopWords.has(word));
+
+  const menuNames = menuRows
+    .map((r) => safeText(r.fields?.["Item Name"]))
+    .filter(Boolean);
+
+  const scored = menuNames
+    .map((name) => {
+      const cleanName = normalizeForSearch(name);
+      const nameWords = cleanName.split(" ").filter((word) => word.length >= 4);
+
+      const matchedWords = messageWords.filter((word) =>
+        nameWords.some((nameWord) => nameWord.includes(word) || word.includes(nameWord))
+      );
+
+      return {
+        name,
+        cleanName,
+        matchedWords,
+        score: matchedWords.length
+      };
+    })
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || b.cleanName.length - a.cleanName.length);
+
+  if (!scored.length) {
+    return {
+      label: "",
+      terms: []
+    };
+  }
+
+  const best = scored[0];
+
+  return {
+    label: best.name,
+    terms: [...new Set([...best.matchedWords, best.cleanName])]
+  };
+}
+
+function salesRowMatchesTerms(row, terms = []) {
+  if (!terms.length) return true;
+
+  const item = normalizeForSearch(row["Item"]);
+  return terms.some((term) => {
+    const cleanTerm = normalizeForSearch(term);
+    return item.includes(cleanTerm) || cleanTerm.includes(item);
+  });
+}
+
+function summarizeDeepSalesQuestion({ message, salesRows = [], menuRows = [] }) {
+  const days = parseRequestedDays(message);
+  const detected = detectMenuSearchTerms(message, menuRows);
+
+  const filtered = salesRows
+    .map((r) => r.fields || {})
+    .filter((r) => dateIsWithinDays(r["Date"] || r["Date (Raw)"], days))
+    .filter((r) => salesRowMatchesTerms(r, detected.terms));
+
+  if (!filtered.length) {
+    if (detected.label) {
+      return `Deep Sales Lookup:\nNo matching sales rows found for "${detected.label}" in the past ${days} days.`;
+    }
+
+    return `Deep Sales Lookup:\nNo matching sales rows found in the past ${days} days.`;
+  }
+
+  const totalQty = filtered.reduce((sum, r) => sum + safeNumber(r["Qty"]), 0);
+  const totalNetSales = filtered.reduce((sum, r) => sum + safeNumber(r["Net Sales"]), 0);
+  const totalGrossSales = filtered.reduce((sum, r) => sum + safeNumber(r["Gross Sales"]), 0);
+  const totalCost = filtered.reduce((sum, r) => sum + safeNumber(r["Total Cost"]), 0);
+
+  const profitFromField = filtered.reduce((sum, r) => sum + safeNumber(r["Profit"]), 0);
+  const fallbackProfit = totalNetSales - totalCost;
+  const totalProfit = profitFromField || fallbackProfit;
+  const margin = totalNetSales > 0 ? totalProfit / totalNetSales : 0;
+  const avgSale = totalQty > 0 ? totalNetSales / totalQty : 0;
+
+  const byItem = new Map();
+
+  for (const r of filtered) {
+    const item = safeText(r["Item"]) || "Unknown item";
+
+    if (!byItem.has(item)) {
+      byItem.set(item, {
+        qty: 0,
+        netSales: 0,
+        grossSales: 0,
+        cost: 0,
+        profit: 0
+      });
+    }
+
+    const bucket = byItem.get(item);
+    const netSales = safeNumber(r["Net Sales"]);
+    const cost = safeNumber(r["Total Cost"]);
+    const profit = safeNumber(r["Profit"]) || netSales - cost;
+
+    bucket.qty += safeNumber(r["Qty"]);
+    bucket.netSales += netSales;
+    bucket.grossSales += safeNumber(r["Gross Sales"]);
+    bucket.cost += cost;
+    bucket.profit += profit;
+  }
+
+  const topItems = [...byItem.entries()]
+    .sort((a, b) => b[1].netSales - a[1].netSales)
+    .slice(0, 10)
+    .map(([name, v]) => {
+      const itemMargin = v.netSales > 0 ? v.profit / v.netSales : 0;
+      return `${name}: qty ${Math.round(v.qty)}, net sales $${Math.round(v.netSales)}, profit $${Math.round(v.profit)}, margin ${(itemMargin * 100).toFixed(1)}%`;
+    });
+
+  return [
+    `Deep Sales Lookup:`,
+    `Question scope: ${detected.label ? detected.label : "all matching sales"} over past ${days} days`,
+    `Rows matched: ${filtered.length}`,
+    `Total qty: ${Math.round(totalQty)}`,
+    `Total net sales: $${Math.round(totalNetSales)}`,
+    `Total gross sales: $${Math.round(totalGrossSales)}`,
+    `Estimated/realized profit: $${Math.round(totalProfit)}`,
+    `Realized margin: ${(margin * 100).toFixed(1)}%`,
+    `Avg sale price: $${avgSale.toFixed(2)}`,
+    `Matched item detail: ${topItems.join("; ")}`
+  ].join("\n");
+}
+
+function questionNeedsDeepSales(message) {
+  const clean = normalizeForSearch(message);
+
+  return (
+    clean.includes("sales") ||
+    clean.includes("sold") ||
+    clean.includes("margin") ||
+    clean.includes("profit") ||
+    clean.includes("revenue") ||
+    clean.includes("past") ||
+    clean.includes("last") ||
+    clean.includes("how many") ||
+    clean.includes("how much")
+  );
+}
+
+function questionNeedsWeatherContext(message) {
+  const clean = normalizeForSearch(message);
+
+  return (
+    clean.includes("weather") ||
+    clean.includes("rain") ||
+    clean.includes("temperature") ||
+    clean.includes("hot") ||
+    clean.includes("cold") ||
+    clean.includes("patio")
+  );
+}
+
+function summarizeWeatherSalesContext({ salesRows = [], externalRows = [] }) {
+  const recentSalesByDate = new Map();
+
+  for (const record of salesRows) {
+    const r = record.fields || {};
+    const date = safeText(r["Date"] || r["Date (Raw)"]);
+
+    if (!date || !dateIsWithinDays(date, 45)) continue;
+
+    if (!recentSalesByDate.has(date)) {
+      recentSalesByDate.set(date, {
+        netSales: 0,
+        qty: 0,
+        topItems: new Map()
+      });
+    }
+
+    const bucket = recentSalesByDate.get(date);
+    const item = safeText(r["Item"]) || "Unknown item";
+    const netSales = safeNumber(r["Net Sales"]);
+    const qty = safeNumber(r["Qty"]);
+
+    bucket.netSales += netSales;
+    bucket.qty += qty;
+
+    if (!bucket.topItems.has(item)) {
+      bucket.topItems.set(item, {
+        qty: 0,
+        netSales: 0
+      });
+    }
+
+    bucket.topItems.get(item).qty += qty;
+    bucket.topItems.get(item).netSales += netSales;
+  }
+
+  const weatherRows = externalRows
+    .map((record) => record.fields || {})
+    .filter((r) => {
+      const type = safeText(r["Type"]).toLowerCase();
+      const date = safeText(r["Forecast Date"] || r["Display Date"] || r["Date"]);
+      return type.includes("weather") && dateIsWithinDays(date, 45);
+    })
+    .slice(0, 20)
+    .map((r) => {
+      const date = safeText(r["Forecast Date"] || r["Display Date"] || r["Date"]);
+      const desc = safeText(r["Description"]);
+      const high = safeText(r["Temp High"]);
+      const low = safeText(r["Temp Low"]);
+      const rain = safeText(r["Rain Chance %"]);
+      const sales = recentSalesByDate.get(date);
+
+      const topItems = sales
+        ? [...sales.topItems.entries()]
+            .sort((a, b) => b[1].netSales - a[1].netSales)
+            .slice(0, 4)
+            .map(([name, v]) => `${name} ($${Math.round(v.netSales)}, qty ${Math.round(v.qty)})`)
+        : [];
+
+      return [
+        `${date}: ${desc || "Weather"}`,
+        high && `high ${high}`,
+        low && `low ${low}`,
+        rain && `rain ${rain}`,
+        sales && `sales $${Math.round(sales.netSales)}, qty ${Math.round(sales.qty)}`,
+        topItems.length && `top items: ${topItems.join("; ")}`
+      ]
+        .filter(Boolean)
+        .join(" • ");
+    });
+
+  if (!weatherRows.length) {
+    return "Weather/Sales Context:\nNo recent weather rows were available for comparison.";
+  }
+
+  return `Weather/Sales Context:\n${weatherRows.join("\n")}`;
+}
 
 if (req.method === "GET") {
   try {
