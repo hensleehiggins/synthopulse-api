@@ -23,9 +23,10 @@ module.exports = async function handler(req, res) {
 
   function safeText(value) {
     if (value === null || value === undefined) return "";
+
     if (Array.isArray(value)) {
       return value
-        .map(v => {
+        .map((v) => {
           if (v === null || v === undefined) return "";
           if (typeof v === "string") return v.trim();
           if (typeof v === "object") return String(v.name || v.id || "").trim();
@@ -34,14 +35,16 @@ module.exports = async function handler(req, res) {
         .filter(Boolean)
         .join(", ");
     }
+
     if (typeof value === "object") {
       return String(value.name || value.id || "").trim();
     }
+
     return String(value).trim();
   }
 
   function safeNumber(value, fallback = 0) {
-    const n = Number(value);
+    const n = Number(String(value ?? "").replace(/[$,%]/g, "").trim());
     return Number.isFinite(n) ? n : fallback;
   }
 
@@ -61,14 +64,14 @@ module.exports = async function handler(req, res) {
         ok: response.ok,
         status: response.status,
         data,
-        rawText
+        rawText,
       };
     } catch (err) {
       return {
         ok: false,
         status: "fetch_failed",
         data: null,
-        rawText: err.message
+        rawText: err.message,
       };
     }
   }
@@ -136,7 +139,7 @@ module.exports = async function handler(req, res) {
       currentRevenue: safeNumber(fields["Current Revenue"]),
       previousRevenue: safeNumber(fields["Previous Revenue"]),
       notes: safeText(fields["Notes"]),
-      currentRunId: safeText(fields["Current Run ID"])
+      currentRunId: safeText(fields["Current Run ID"]),
     };
   }
 
@@ -145,53 +148,89 @@ module.exports = async function handler(req, res) {
       return {
         summaryText: "No current-run movement rows available.",
         topRisks: [],
-        topUpside: []
+        topUpside: [],
       };
     }
 
-    const riskTypes = new Set(["Declining", "Dropped from Top", "Dropped to Low", "New Low"]);
-    const upsideTypes = new Set(["Rising", "Recovered", "Recovered to Top", "New Top"]);
-    const impactRank = { High: 3, Medium: 2, Low: 1, "": 0 };
+    const riskTypes = new Set([
+      "Declining",
+      "Dropped from Top",
+      "Dropped to Low",
+      "New Low",
+    ]);
+
+    const upsideTypes = new Set([
+      "Rising",
+      "Recovered",
+      "Recovered to Top",
+      "New Top",
+    ]);
+
+    const impactRank = {
+      High: 3,
+      Medium: 2,
+      Low: 1,
+      "": 0,
+    };
 
     const sorted = [...rows].sort((a, b) => {
-      const impactDelta = (impactRank[b.impactLevel] || 0) - (impactRank[a.impactLevel] || 0);
+      const impactDelta =
+        (impactRank[b.impactLevel] || 0) - (impactRank[a.impactLevel] || 0);
+
       if (impactDelta !== 0) return impactDelta;
 
       const aDelta = Math.abs(a.currentQty - a.previousQty);
       const bDelta = Math.abs(b.currentQty - b.previousQty);
+
       return bDelta - aDelta;
     });
 
-    const topRisks = sorted.filter(r => riskTypes.has(r.movementType)).slice(0, 5);
-    const topUpside = sorted.filter(r => upsideTypes.has(r.movementType)).slice(0, 5);
+    const topRisks = sorted.filter((r) => riskTypes.has(r.movementType)).slice(0, 5);
+    const topUpside = sorted.filter((r) => upsideTypes.has(r.movementType)).slice(0, 5);
 
     const lines = [];
+
     if (topUpside.length) {
       lines.push(
-        `Upside signals: ${topUpside.map(r => `${r.item} (${r.movementType}${r.impactLevel ? `, ${r.impactLevel}` : ""})`).join("; ")}`
+        `Upside signals: ${topUpside
+          .map(
+            (r) =>
+              `${r.item} (${r.movementType}${r.impactLevel ? `, ${r.impactLevel}` : ""})`
+          )
+          .join("; ")}`
       );
     }
+
     if (topRisks.length) {
       lines.push(
-        `Risk signals: ${topRisks.map(r => `${r.item} (${r.movementType}${r.impactLevel ? `, ${r.impactLevel}` : ""})`).join("; ")}`
+        `Risk signals: ${topRisks
+          .map(
+            (r) =>
+              `${r.item} (${r.movementType}${r.impactLevel ? `, ${r.impactLevel}` : ""})`
+          )
+          .join("; ")}`
       );
     }
+
     if (!lines.length) {
       lines.push(
-        `Mixed movement: ${sorted.slice(0, 6).map(r => `${r.item} (${r.movementType || "Signal"})`).join("; ")}`
+        `Mixed movement: ${sorted
+          .slice(0, 6)
+          .map((r) => `${r.item} (${r.movementType || "Signal"})`)
+          .join("; ")}`
       );
     }
 
     return {
       summaryText: lines.join("\n"),
       topRisks,
-      topUpside
+      topUpside,
     };
   }
 
   function summarizeExternalFactors(rows = [], restaurantName = "") {
     const filtered = rows
-      .filter(r => {
+      .filter((r) => {
         const isActive = safeText(r["Active"]).toLowerCase() === "true";
         const restaurant = safeText(r["Restaurant"]);
         return isActive && (!restaurantName || restaurant.includes(restaurantName));
@@ -202,20 +241,29 @@ module.exports = async function handler(req, res) {
       return "No active external factors available.";
     }
 
-    return filtered.map(r => {
-      const type = safeText(r["Type"]);
-      const desc = safeText(r["Description"]);
-      const note = safeText(r["Decision Note"]) || safeText(r["Notes"]);
-      const direction = safeText(r["Impact Direction"]);
-      const strength = safeText(r["Impact Strength"]);
-      return [type, direction && `impact ${direction}`, strength && `strength ${strength}`, desc, note]
-        .filter(Boolean)
-        .join(" • ");
-    }).join("\n");
+    return filtered
+      .map((r) => {
+        const type = safeText(r["Type"]);
+        const desc = safeText(r["Description"]);
+        const note = safeText(r["Decision Note"]) || safeText(r["Notes"]);
+        const direction = safeText(r["Impact Direction"]);
+        const strength = safeText(r["Impact Strength"]);
+
+        return [
+          type,
+          direction && `impact ${direction}`,
+          strength && `strength ${strength}`,
+          desc,
+          note,
+        ]
+          .filter(Boolean)
+          .join(" • ");
+      })
+      .join("\n");
   }
 
   function summarizeSales(rows = [], restaurantName = "") {
-    const filtered = rows.filter(r => {
+    const filtered = rows.filter((r) => {
       const restaurant = safeText(r["Restaurant"]);
       return !restaurantName || restaurant.includes(restaurantName);
     });
@@ -267,12 +315,12 @@ module.exports = async function handler(req, res) {
       `Total net sales in sample: $${Math.round(totalSales)}`,
       `Total quantity in sample: ${Math.round(totalQty)}`,
       `Top items by sales: ${topItems.join("; ") || "None"}`,
-      `Top revenue classes: ${topClasses.join("; ") || "None"}`
+      `Top revenue classes: ${topClasses.join("; ") || "None"}`,
     ].join("\n");
   }
 
   function summarizeMenuItems(rows = [], restaurantName = "") {
-    const filtered = rows.filter(r => {
+    const filtered = rows.filter((r) => {
       const restaurant = safeText(r["Restaurant"]);
       return !restaurantName || restaurant.includes(restaurantName);
     });
@@ -282,12 +330,12 @@ module.exports = async function handler(req, res) {
     }
 
     const topMargin = filtered
-      .filter(r => safeText(r["Decision Eligible"]).toLowerCase() === "true")
-      .map(r => ({
+      .filter((r) => safeText(r["Decision Eligible"]).toLowerCase() === "true")
+      .map((r) => ({
         item: safeText(r["Item Name"]),
         price: safeNumber(r["Price"]),
         cost: safeNumber(r["Estimated Unit Cost"]),
-        margin: safeNumber(r["Estimated Margin $"])
+        margin: safeNumber(r["Estimated Margin $"]),
       }))
       .sort((a, b) => b.margin - a.margin)
       .slice(0, 8);
@@ -297,426 +345,476 @@ module.exports = async function handler(req, res) {
     }
 
     return `Top decision-eligible margin items: ${topMargin
-      .map(x => `${x.item} (margin ~$${Math.round(x.margin)}, price $${Math.round(x.price)})`)
+      .map((x) => `${x.item} (margin ~$${Math.round(x.margin)}, price $${Math.round(x.price)})`)
       .join("; ")}`;
   }
 
   async function airtableGet(tableId, params = "") {
     const url =
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}` +
-      `?cellFormat=string&timeZone=America/New_York&userLocale=en${params ? `&${params}` : ""}`;
+      `?cellFormat=string&timeZone=America/New_York&userLocale=en${
+        params ? `&${params}` : ""
+      }`;
 
     return fetchJsonOrText(url, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${AIRTABLE_PAT}`,
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
   }
+
   async function airtableGetAll(tableId, options = {}) {
-  const {
-    fields = [],
-    sortField = "",
-    sortDirection = "desc",
-    maxRecords = 1000
-  } = options;
+    const {
+      fields = [],
+      sortField = "",
+      sortDirection = "desc",
+      maxRecords = 1000,
+    } = options;
 
-  const records = [];
-  let offset = "";
+    const records = [];
+    let offset = "";
 
-  do {
-    const params = new URLSearchParams();
-    params.set("cellFormat", "string");
-    params.set("timeZone", "America/New_York");
-    params.set("userLocale", "en");
+    do {
+      const params = new URLSearchParams();
+      params.set("cellFormat", "string");
+      params.set("timeZone", "America/New_York");
+      params.set("userLocale", "en");
 
-    if (maxRecords) params.set("maxRecords", String(maxRecords));
+      fields.forEach((field) => {
+        params.append("fields[]", field);
+      });
 
-    fields.forEach((field) => {
-      params.append("fields[]", field);
-    });
-
-    if (sortField) {
-      params.set("sort[0][field]", sortField);
-      params.set("sort[0][direction]", sortDirection);
-    }
-
-    if (offset) params.set("offset", offset);
-
-    const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}?${params.toString()}`;
-
-    const result = await fetchJsonOrText(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_PAT}`,
-        "Content-Type": "application/json"
+      if (sortField) {
+        params.set("sort[0][field]", sortField);
+        params.set("sort[0][direction]", sortDirection);
       }
-    });
 
-    if (!result.ok) {
-      return {
-        ok: false,
-        records,
-        error: result.rawText
-      };
-    }
+      if (offset) params.set("offset", offset);
 
-    const pageRecords = result.data?.records || [];
-    records.push(...pageRecords);
+      const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${tableId}?${params.toString()}`;
 
-    offset = result.data?.offset || "";
+      const result = await fetchJsonOrText(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${AIRTABLE_PAT}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-    if (records.length >= maxRecords) break;
-  } while (offset);
+      if (!result.ok) {
+        return {
+          ok: false,
+          records,
+          error: result.rawText,
+        };
+      }
 
-  return {
-    ok: true,
-    records: records.slice(0, maxRecords)
-  };
-}
+      const pageRecords = result.data?.records || [];
+      records.push(...pageRecords);
 
-function normalizeForSearch(value) {
-  return safeText(value)
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+      offset = result.data?.offset || "";
 
-function parseRequestedDays(message) {
-  const clean = normalizeForSearch(message);
+      if (records.length >= maxRecords) break;
+    } while (offset);
 
-  const match = clean.match(/past\s+(\d+)\s+days|last\s+(\d+)\s+days|(\d+)\s+day/);
-  if (match) {
-    const days = Number(match[1] || match[2] || match[3]);
-    if (Number.isFinite(days) && days > 0 && days <= 365) return days;
-  }
-
-  if (clean.includes("past month") || clean.includes("last month")) return 30;
-  if (clean.includes("past week") || clean.includes("last week")) return 7;
-  if (clean.includes("yesterday")) return 1;
-  if (clean.includes("today")) return 1;
-
-  return 30;
-}
-
-function dateIsWithinDays(value, days) {
-  if (!value) return false;
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return false;
-
-  const now = new Date();
-  const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-
-  return date >= cutoff && date <= now;
-}
-
-function detectMenuSearchTerms(message, menuRows = []) {
-  const cleanMessage = normalizeForSearch(message);
-
-  const quoted = safeText(message).match(/"([^"]+)"|'([^']+)'/);
-  if (quoted) {
-    const term = normalizeForSearch(quoted[1] || quoted[2]);
-    if (term) {
-      return {
-        label: term,
-        terms: [term]
-      };
-    }
-  }
-
-  const stopWords = new Set([
-    "what", "were", "was", "with", "from", "that", "this", "sold",
-    "sale", "sales", "margin", "profit", "past", "last", "days",
-    "much", "many", "make", "made", "have", "show", "item", "items"
-  ]);
-
-  const messageWords = cleanMessage
-    .split(" ")
-    .filter((word) => word.length >= 4 && !stopWords.has(word));
-
-  const menuNames = menuRows
-    .map((r) => safeText(r.fields?.["Item Name"]))
-    .filter(Boolean);
-
-  const scored = menuNames
-    .map((name) => {
-      const cleanName = normalizeForSearch(name);
-      const nameWords = cleanName.split(" ").filter((word) => word.length >= 4);
-
-      const matchedWords = messageWords.filter((word) =>
-        nameWords.some((nameWord) => nameWord.includes(word) || word.includes(nameWord))
-      );
-
-      return {
-        name,
-        cleanName,
-        matchedWords,
-        score: matchedWords.length
-      };
-    })
-    .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score || b.cleanName.length - a.cleanName.length);
-
-  if (!scored.length) {
     return {
-      label: "",
-      terms: []
+      ok: true,
+      records: records.slice(0, maxRecords),
     };
   }
 
-  const best = scored[0];
-
-  return {
-    label: best.name,
-    terms: [...new Set([...best.matchedWords, best.cleanName])]
-  };
-}
-
-function salesRowMatchesTerms(row, terms = []) {
-  if (!terms.length) return true;
-
-  const item = normalizeForSearch(row["Item"]);
-  return terms.some((term) => {
-    const cleanTerm = normalizeForSearch(term);
-    return item.includes(cleanTerm) || cleanTerm.includes(item);
-  });
-}
-
-function summarizeDeepSalesQuestion({ message, salesRows = [], menuRows = [] }) {
-  const days = parseRequestedDays(message);
-  const detected = detectMenuSearchTerms(message, menuRows);
-
-  const filtered = salesRows
-    .map((r) => r.fields || {})
-    .filter((r) => dateIsWithinDays(r["Date"] || r["Date (Raw)"], days))
-    .filter((r) => salesRowMatchesTerms(r, detected.terms));
-
-  if (!filtered.length) {
-    if (detected.label) {
-      return `Deep Sales Lookup:\nNo matching sales rows found for "${detected.label}" in the past ${days} days.`;
-    }
-
-    return `Deep Sales Lookup:\nNo matching sales rows found in the past ${days} days.`;
+  function normalizeForSearch(value) {
+    return safeText(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
-  const totalQty = filtered.reduce((sum, r) => sum + safeNumber(r["Qty"]), 0);
-  const totalNetSales = filtered.reduce((sum, r) => sum + safeNumber(r["Net Sales"]), 0);
-  const totalGrossSales = filtered.reduce((sum, r) => sum + safeNumber(r["Gross Sales"]), 0);
-  const totalCost = filtered.reduce((sum, r) => sum + safeNumber(r["Total Cost"]), 0);
+  function parseRequestedDays(message) {
+    const clean = normalizeForSearch(message);
 
-  const profitFromField = filtered.reduce((sum, r) => sum + safeNumber(r["Profit"]), 0);
-  const fallbackProfit = totalNetSales - totalCost;
-  const totalProfit = profitFromField || fallbackProfit;
-  const margin = totalNetSales > 0 ? totalProfit / totalNetSales : 0;
-  const avgSale = totalQty > 0 ? totalNetSales / totalQty : 0;
+    const match = clean.match(/past\s+(\d+)\s+days|last\s+(\d+)\s+days|(\d+)\s+day/);
 
-  const byItem = new Map();
-
-  for (const r of filtered) {
-    const item = safeText(r["Item"]) || "Unknown item";
-
-    if (!byItem.has(item)) {
-      byItem.set(item, {
-        qty: 0,
-        netSales: 0,
-        grossSales: 0,
-        cost: 0,
-        profit: 0
-      });
+    if (match) {
+      const days = Number(match[1] || match[2] || match[3]);
+      if (Number.isFinite(days) && days > 0 && days <= 365) return days;
     }
 
-    const bucket = byItem.get(item);
-    const netSales = safeNumber(r["Net Sales"]);
-    const cost = safeNumber(r["Total Cost"]);
-    const profit = safeNumber(r["Profit"]) || netSales - cost;
+    if (clean.includes("past month") || clean.includes("last month")) return 30;
+    if (clean.includes("past week") || clean.includes("last week")) return 7;
+    if (clean.includes("yesterday")) return 1;
+    if (clean.includes("today")) return 1;
 
-    bucket.qty += safeNumber(r["Qty"]);
-    bucket.netSales += netSales;
-    bucket.grossSales += safeNumber(r["Gross Sales"]);
-    bucket.cost += cost;
-    bucket.profit += profit;
+    return 30;
   }
 
-  const topItems = [...byItem.entries()]
-    .sort((a, b) => b[1].netSales - a[1].netSales)
-    .slice(0, 10)
-    .map(([name, v]) => {
-      const itemMargin = v.netSales > 0 ? v.profit / v.netSales : 0;
-      return `${name}: qty ${Math.round(v.qty)}, net sales $${Math.round(v.netSales)}, profit $${Math.round(v.profit)}, margin ${(itemMargin * 100).toFixed(1)}%`;
+  function dateIsWithinDays(value, days) {
+    if (!value) return false;
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return false;
+
+    const now = new Date();
+    const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+    return date >= cutoff && date <= now;
+  }
+
+  function detectMenuSearchTerms(message, menuRows = []) {
+    const cleanMessage = normalizeForSearch(message);
+
+    const quoted = safeText(message).match(/"([^"]+)"|'([^']+)'/);
+    if (quoted) {
+      const term = normalizeForSearch(quoted[1] || quoted[2]);
+      if (term) {
+        return {
+          label: term,
+          terms: [term],
+        };
+      }
+    }
+
+    const stopWords = new Set([
+      "what",
+      "were",
+      "was",
+      "with",
+      "from",
+      "that",
+      "this",
+      "sold",
+      "sale",
+      "sales",
+      "margin",
+      "profit",
+      "past",
+      "last",
+      "days",
+      "much",
+      "many",
+      "make",
+      "made",
+      "have",
+      "show",
+      "item",
+      "items",
+      "did",
+      "does",
+      "the",
+      "and",
+      "for",
+      "over",
+      "compare",
+      "comparison",
+      "revenue",
+      "qty",
+      "quantity",
+    ]);
+
+    const messageWords = cleanMessage
+      .split(" ")
+      .filter((word) => word.length >= 4 && !stopWords.has(word));
+
+    const menuNames = menuRows
+      .map((r) => safeText(r.fields?.["Item Name"]))
+      .filter(Boolean);
+
+    const scored = menuNames
+      .map((name) => {
+        const cleanName = normalizeForSearch(name);
+        const nameWords = cleanName.split(" ").filter((word) => word.length >= 4);
+
+        const matchedWords = messageWords.filter((word) =>
+          nameWords.some((nameWord) => nameWord.includes(word) || word.includes(nameWord))
+        );
+
+        return {
+          name,
+          cleanName,
+          matchedWords,
+          score: matchedWords.length,
+        };
+      })
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score || b.cleanName.length - a.cleanName.length);
+
+    if (!scored.length) {
+      return {
+        label: "",
+        terms: [],
+      };
+    }
+
+    const best = scored[0];
+
+    return {
+      label: best.name,
+      terms: [...new Set([...best.matchedWords, best.cleanName])],
+    };
+  }
+
+  function salesRowMatchesTerms(row, terms = []) {
+    if (!terms.length) return true;
+
+    const item = normalizeForSearch(row["Item"]);
+
+    return terms.some((term) => {
+      const cleanTerm = normalizeForSearch(term);
+      return item.includes(cleanTerm) || cleanTerm.includes(item);
     });
-
-  return [
-    `Deep Sales Lookup:`,
-    `Question scope: ${detected.label ? detected.label : "all matching sales"} over past ${days} days`,
-    `Rows matched: ${filtered.length}`,
-    `Total qty: ${Math.round(totalQty)}`,
-    `Total net sales: $${Math.round(totalNetSales)}`,
-    `Total gross sales: $${Math.round(totalGrossSales)}`,
-    `Estimated/realized profit: $${Math.round(totalProfit)}`,
-    `Realized margin: ${(margin * 100).toFixed(1)}%`,
-    `Avg sale price: $${avgSale.toFixed(2)}`,
-    `Matched item detail: ${topItems.join("; ")}`
-  ].join("\n");
-}
-
-function questionNeedsDeepSales(message) {
-  const clean = normalizeForSearch(message);
-
-  return (
-    clean.includes("sales") ||
-    clean.includes("sold") ||
-    clean.includes("margin") ||
-    clean.includes("profit") ||
-    clean.includes("revenue") ||
-    clean.includes("past") ||
-    clean.includes("last") ||
-    clean.includes("how many") ||
-    clean.includes("how much")
-  );
-}
-
-function questionNeedsWeatherContext(message) {
-  const clean = normalizeForSearch(message);
-
-  return (
-    clean.includes("weather") ||
-    clean.includes("rain") ||
-    clean.includes("temperature") ||
-    clean.includes("hot") ||
-    clean.includes("cold") ||
-    clean.includes("patio")
-  );
-}
-
-function summarizeWeatherSalesContext({ salesRows = [], externalRows = [] }) {
-  const recentSalesByDate = new Map();
-
-  for (const record of salesRows) {
-    const r = record.fields || {};
-    const date = safeText(r["Date"] || r["Date (Raw)"]);
-
-    if (!date || !dateIsWithinDays(date, 45)) continue;
-
-    if (!recentSalesByDate.has(date)) {
-      recentSalesByDate.set(date, {
-        netSales: 0,
-        qty: 0,
-        topItems: new Map()
-      });
-    }
-
-    const bucket = recentSalesByDate.get(date);
-    const item = safeText(r["Item"]) || "Unknown item";
-    const netSales = safeNumber(r["Net Sales"]);
-    const qty = safeNumber(r["Qty"]);
-
-    bucket.netSales += netSales;
-    bucket.qty += qty;
-
-    if (!bucket.topItems.has(item)) {
-      bucket.topItems.set(item, {
-        qty: 0,
-        netSales: 0
-      });
-    }
-
-    bucket.topItems.get(item).qty += qty;
-    bucket.topItems.get(item).netSales += netSales;
   }
 
-  const weatherRows = externalRows
-    .map((record) => record.fields || {})
-    .filter((r) => {
-      const type = safeText(r["Type"]).toLowerCase();
-      const date = safeText(r["Forecast Date"] || r["Display Date"] || r["Date"]);
-      return type.includes("weather") && dateIsWithinDays(date, 45);
-    })
-    .slice(0, 20)
-    .map((r) => {
-      const date = safeText(r["Forecast Date"] || r["Display Date"] || r["Date"]);
-      const desc = safeText(r["Description"]);
-      const high = safeText(r["Temp High"]);
-      const low = safeText(r["Temp Low"]);
-      const rain = safeText(r["Rain Chance %"]);
-      const sales = recentSalesByDate.get(date);
+  function summarizeDeepSalesQuestion({ message, salesRows = [], menuRows = [] }) {
+    const days = parseRequestedDays(message);
+    const detected = detectMenuSearchTerms(message, menuRows);
 
-      const topItems = sales
-        ? [...sales.topItems.entries()]
-            .sort((a, b) => b[1].netSales - a[1].netSales)
-            .slice(0, 4)
-            .map(([name, v]) => `${name} ($${Math.round(v.netSales)}, qty ${Math.round(v.qty)})`)
-        : [];
+    const filtered = salesRows
+      .map((r) => r.fields || {})
+      .filter((r) => dateIsWithinDays(r["Date"] || r["Date (Raw)"], days))
+      .filter((r) => salesRowMatchesTerms(r, detected.terms));
 
-      return [
-        `${date}: ${desc || "Weather"}`,
-        high && `high ${high}`,
-        low && `low ${low}`,
-        rain && `rain ${rain}`,
-        sales && `sales $${Math.round(sales.netSales)}, qty ${Math.round(sales.qty)}`,
-        topItems.length && `top items: ${topItems.join("; ")}`
-      ]
-        .filter(Boolean)
-        .join(" • ");
-    });
+    if (!filtered.length) {
+      if (detected.label) {
+        return `Deep Sales Lookup:\nNo matching sales rows found for "${detected.label}" in the past ${days} days.`;
+      }
 
-  if (!weatherRows.length) {
-    return "Weather/Sales Context:\nNo recent weather rows were available for comparison.";
+      return `Deep Sales Lookup:\nNo matching sales rows found in the past ${days} days.`;
+    }
+
+    const totalQty = filtered.reduce((sum, r) => sum + safeNumber(r["Qty"]), 0);
+    const totalNetSales = filtered.reduce((sum, r) => sum + safeNumber(r["Net Sales"]), 0);
+    const totalGrossSales = filtered.reduce((sum, r) => sum + safeNumber(r["Gross Sales"]), 0);
+    const totalCost = filtered.reduce((sum, r) => sum + safeNumber(r["Total Cost"]), 0);
+
+    const profitFromField = filtered.reduce((sum, r) => sum + safeNumber(r["Profit"]), 0);
+    const fallbackProfit = totalNetSales - totalCost;
+    const totalProfit = profitFromField || fallbackProfit;
+    const margin = totalNetSales > 0 ? totalProfit / totalNetSales : 0;
+    const avgSale = totalQty > 0 ? totalNetSales / totalQty : 0;
+
+    const byItem = new Map();
+
+    for (const r of filtered) {
+      const item = safeText(r["Item"]) || "Unknown item";
+
+      if (!byItem.has(item)) {
+        byItem.set(item, {
+          qty: 0,
+          netSales: 0,
+          grossSales: 0,
+          cost: 0,
+          profit: 0,
+        });
+      }
+
+      const bucket = byItem.get(item);
+      const netSales = safeNumber(r["Net Sales"]);
+      const cost = safeNumber(r["Total Cost"]);
+      const profit = safeNumber(r["Profit"]) || netSales - cost;
+
+      bucket.qty += safeNumber(r["Qty"]);
+      bucket.netSales += netSales;
+      bucket.grossSales += safeNumber(r["Gross Sales"]);
+      bucket.cost += cost;
+      bucket.profit += profit;
+    }
+
+    const topItems = [...byItem.entries()]
+      .sort((a, b) => b[1].netSales - a[1].netSales)
+      .slice(0, 10)
+      .map(([name, v]) => {
+        const itemMargin = v.netSales > 0 ? v.profit / v.netSales : 0;
+
+        return `${name}: qty ${Math.round(v.qty)}, net sales $${Math.round(
+          v.netSales
+        )}, profit $${Math.round(v.profit)}, margin ${(itemMargin * 100).toFixed(1)}%`;
+      });
+
+    return [
+      "Deep Sales Lookup:",
+      `Question scope: ${detected.label ? detected.label : "all matching sales"} over past ${days} days`,
+      `Rows matched: ${filtered.length}`,
+      `Total qty: ${Math.round(totalQty)}`,
+      `Total net sales: $${Math.round(totalNetSales)}`,
+      `Total gross sales: $${Math.round(totalGrossSales)}`,
+      `Estimated/realized profit: $${Math.round(totalProfit)}`,
+      `Realized margin: ${(margin * 100).toFixed(1)}%`,
+      `Avg sale price: $${avgSale.toFixed(2)}`,
+      `Matched item detail: ${topItems.join("; ")}`,
+    ].join("\n");
   }
 
-  return `Weather/Sales Context:\n${weatherRows.join("\n")}`;
-}
+  function questionNeedsDeepSales(message) {
+    const clean = normalizeForSearch(message);
 
-if (req.method === "GET") {
-  try {
-    const briefResult = await airtableGet(
-      BRIEFS_TABLE_ID,
-      `filterByFormula=${encodeURIComponent("{Is Latest Brief}=1")}&sort[0][field]=${encodeURIComponent("Brief Date")}&sort[0][direction]=desc&maxRecords=1`
+    return (
+      clean.includes("sales") ||
+      clean.includes("sold") ||
+      clean.includes("margin") ||
+      clean.includes("profit") ||
+      clean.includes("revenue") ||
+      clean.includes("past") ||
+      clean.includes("last") ||
+      clean.includes("how many") ||
+      clean.includes("how much") ||
+      clean.includes("top selling") ||
+      clean.includes("best selling")
     );
+  }
 
-    const latestBrief = briefResult.ok ? briefResult.data?.records?.[0] : null;
-    const briefFields = latestBrief?.fields || {};
+  function questionNeedsWeatherContext(message) {
+    const clean = normalizeForSearch(message);
 
-    const recommendation = safeText(briefFields["Decision Display"]);
-    const actionCallout = safeText(briefFields["Action Callout"]);
-    const priority = safeText(briefFields["Decision Priority"]);
-    const restaurantName = safeText(briefFields["Restaurant"]);
+    return (
+      clean.includes("weather") ||
+      clean.includes("rain") ||
+      clean.includes("temperature") ||
+      clean.includes("hot") ||
+      clean.includes("cold") ||
+      clean.includes("patio")
+    );
+  }
 
-    const decisionPayload = parseDecisionJson(briefFields["Decision JSON"]);
-    const topOpportunity = safeText(decisionPayload?.topOpportunity?.item);
-    const topRisk = safeText(decisionPayload?.topRisk?.item);
+  function summarizeWeatherSalesContext({ salesRows = [], externalRows = [] }) {
+    const recentSalesByDate = new Map();
 
-    let opener = "Ask me what to push today, what’s at risk, or what changed since last run.";
+    for (const record of salesRows) {
+      const r = record.fields || {};
+      const date = safeText(r["Date"] || r["Date (Raw)"]);
 
-    if (topOpportunity || topRisk) {
-      opener =
-        `Biggest opportunity right now: ${topOpportunity || "not clearly identified yet"}. ` +
-        `Biggest risk: ${topRisk || "not clearly identified yet"}. ` +
-        `Ask me what to push, what’s at risk, or how to play tonight.`;
-    } else if (recommendation || actionCallout) {
-      opener =
-        `${restaurantName ? restaurantName + " — " : ""}` +
-        `${actionCallout || recommendation}. ` +
-        `Ask me what to push, what’s at risk, or how to play tonight.`;
+      if (!date || !dateIsWithinDays(date, 45)) continue;
+
+      if (!recentSalesByDate.has(date)) {
+        recentSalesByDate.set(date, {
+          netSales: 0,
+          qty: 0,
+          topItems: new Map(),
+        });
+      }
+
+      const bucket = recentSalesByDate.get(date);
+      const item = safeText(r["Item"]) || "Unknown item";
+      const netSales = safeNumber(r["Net Sales"]);
+      const qty = safeNumber(r["Qty"]);
+
+      bucket.netSales += netSales;
+      bucket.qty += qty;
+
+      if (!bucket.topItems.has(item)) {
+        bucket.topItems.set(item, {
+          qty: 0,
+          netSales: 0,
+        });
+      }
+
+      bucket.topItems.get(item).qty += qty;
+      bucket.topItems.get(item).netSales += netSales;
     }
 
-    return sendJson(200, {
-      status: "ok",
-      opener,
-      recommendation,
-      actionCallout,
-      priority,
-      restaurant: restaurantName
-    });
-  } catch (err) {
-    return sendJson(200, {
-      status: "ok",
-      opener: "Ask me what to push today, what’s at risk, or what changed since last run."
-    });
+    const weatherRows = externalRows
+      .map((record) => record.fields || {})
+      .filter((r) => {
+        const type = safeText(r["Type"]).toLowerCase();
+        const date = safeText(r["Forecast Date"] || r["Display Date"] || r["Date"]);
+
+        return type.includes("weather") && dateIsWithinDays(date, 45);
+      })
+      .slice(0, 20)
+      .map((r) => {
+        const date = safeText(r["Forecast Date"] || r["Display Date"] || r["Date"]);
+        const desc = safeText(r["Description"]);
+        const high = safeText(r["Temp High"]);
+        const low = safeText(r["Temp Low"]);
+        const rain = safeText(r["Rain Chance %"]);
+        const sales = recentSalesByDate.get(date);
+
+        const topItems = sales
+          ? [...sales.topItems.entries()]
+              .sort((a, b) => b[1].netSales - a[1].netSales)
+              .slice(0, 4)
+              .map(
+                ([name, v]) =>
+                  `${name} ($${Math.round(v.netSales)}, qty ${Math.round(v.qty)})`
+              )
+          : [];
+
+        return [
+          `${date}: ${desc || "Weather"}`,
+          high && `high ${high}`,
+          low && `low ${low}`,
+          rain && `rain ${rain}`,
+          sales && `sales $${Math.round(sales.netSales)}, qty ${Math.round(sales.qty)}`,
+          topItems.length && `top items: ${topItems.join("; ")}`,
+        ]
+          .filter(Boolean)
+          .join(" • ");
+      });
+
+    if (!weatherRows.length) {
+      return "Weather/Sales Context:\nNo recent weather rows were available for comparison.";
+    }
+
+    return `Weather/Sales Context:\n${weatherRows.join("\n")}`;
   }
-}
+
+  if (req.method === "GET") {
+    try {
+      const briefResult = await airtableGet(
+        BRIEFS_TABLE_ID,
+        `filterByFormula=${encodeURIComponent(
+          "{Is Latest Brief}=1"
+        )}&sort[0][field]=${encodeURIComponent(
+          "Brief Date"
+        )}&sort[0][direction]=desc&maxRecords=1`
+      );
+
+      const latestBrief = briefResult.ok ? briefResult.data?.records?.[0] : null;
+      const briefFields = latestBrief?.fields || {};
+
+      const recommendation = safeText(briefFields["Decision Display"]);
+      const actionCallout = safeText(briefFields["Action Callout"]);
+      const priority = safeText(briefFields["Decision Priority"]);
+      const restaurantName = safeText(briefFields["Restaurant"]);
+
+      const decisionPayload = parseDecisionJson(briefFields["Decision JSON"]);
+      const topOpportunity = safeText(decisionPayload?.topOpportunity?.item);
+      const topRisk = safeText(decisionPayload?.topRisk?.item);
+
+      let opener =
+        "Ask me what to push today, what’s at risk, or what changed since last run.";
+
+      if (topOpportunity || topRisk) {
+        opener =
+          `Biggest opportunity right now: ${
+            topOpportunity || "not clearly identified yet"
+          }. ` +
+          `Biggest risk: ${topRisk || "not clearly identified yet"}. ` +
+          `Ask me what to push, what’s at risk, or how to play tonight.`;
+      } else if (recommendation || actionCallout) {
+        opener =
+          `${restaurantName ? restaurantName + " — " : ""}` +
+          `${actionCallout || recommendation}. ` +
+          `Ask me what to push, what’s at risk, or how to play tonight.`;
+      }
+
+      return sendJson(200, {
+        status: "ok",
+        opener,
+        recommendation,
+        actionCallout,
+        priority,
+        restaurant: restaurantName,
+      });
+    } catch (err) {
+      return sendJson(200, {
+        status: "ok",
+        opener: "Ask me what to push today, what’s at risk, or what changed since last run.",
+      });
+    }
+  }
 
   if (req.method !== "POST") {
     return sendJson(405, { error: "Method not allowed. Use POST." });
@@ -724,21 +822,25 @@ if (req.method === "GET") {
 
   try {
     const body = req.body || {};
-const rawMessage = safeText(body.message);
-const history = Array.isArray(body.history) ? body.history : [];
+    const rawMessage = safeText(body.message);
+    const history = Array.isArray(body.history) ? body.history : [];
 
-if (!rawMessage) {
-  return sendJson(400, { error: "Missing message" });
-}
+    if (!rawMessage) {
+      return sendJson(400, { error: "Missing message" });
+    }
 
     const briefResult = await airtableGet(
       BRIEFS_TABLE_ID,
-      `filterByFormula=${encodeURIComponent("{Is Latest Brief}=1")}&sort[0][field]=${encodeURIComponent("Brief Date")}&sort[0][direction]=desc&maxRecords=1`
+      `filterByFormula=${encodeURIComponent(
+        "{Is Latest Brief}=1"
+      )}&sort[0][field]=${encodeURIComponent(
+        "Brief Date"
+      )}&sort[0][direction]=desc&maxRecords=1`
     );
 
     if (!briefResult.ok) {
       return sendJson(200, {
-        reply: `Latest brief request failed\n\n${briefResult.rawText}`
+        reply: `Latest brief request failed\n\n${briefResult.rawText}`,
       });
     }
 
@@ -754,76 +856,172 @@ if (!rawMessage) {
     const formattedBrief = safeText(briefFields["Formatted Brief (Display)"]);
     const decisionPayload = parseDecisionJson(briefFields["Decision JSON"]);
 
-    const [
-      movementResult,
-      externalFactorsResult,
-      salesResult,
-      menuItemsResult
-    ] = await Promise.all([
-      airtableGet(
-        MOVEMENT_TABLE_ID,
-        `sort[0][field]=${encodeURIComponent("Created Time")}&sort[0][direction]=desc&maxRecords=100`
-      ),
-      airtableGet(
-        EXTERNAL_FACTORS_TABLE_ID,
-        `sort[0][field]=${encodeURIComponent("Display Date")}&sort[0][direction]=desc&maxRecords=50`
-      ),
-      airtableGet(
-        DAILY_SALES_TABLE_ID,
-        `sort[0][field]=${encodeURIComponent("Date")}&sort[0][direction]=desc&maxRecords=200`
-      ),
-      airtableGet(
-        MENU_ITEMS_TABLE_ID,
-        `maxRecords=200`
-      )
-    ]);
+    const [movementResult, externalFactorsResult, salesResult, menuItemsResult] =
+      await Promise.all([
+        airtableGet(
+          MOVEMENT_TABLE_ID,
+          `sort[0][field]=${encodeURIComponent(
+            "Created Time"
+          )}&sort[0][direction]=desc&maxRecords=100`
+        ),
+        airtableGet(
+          EXTERNAL_FACTORS_TABLE_ID,
+          `sort[0][field]=${encodeURIComponent(
+            "Display Date"
+          )}&sort[0][direction]=desc&maxRecords=50`
+        ),
+        airtableGet(
+          DAILY_SALES_TABLE_ID,
+          `sort[0][field]=${encodeURIComponent(
+            "Date"
+          )}&sort[0][direction]=desc&maxRecords=200`
+        ),
+        airtableGet(MENU_ITEMS_TABLE_ID, `maxRecords=200`),
+      ]);
 
     const movementRows = movementResult.ok
       ? (movementResult.data?.records || [])
-          .map(r => normalizeMovementRow(r.fields || {}))
-          .filter(r => r.item && (!runId || r.currentRunId.includes(runId)))
+          .map((r) => normalizeMovementRow(r.fields || {}))
+          .filter((r) => r.item && (!runId || r.currentRunId.includes(runId)))
       : [];
 
     const movementSummary = summarizeMovement(movementRows);
 
     const externalFactorsSummary = externalFactorsResult.ok
       ? summarizeExternalFactors(
-          (externalFactorsResult.data?.records || []).map(r => r.fields || {}),
+          (externalFactorsResult.data?.records || []).map((r) => r.fields || {}),
           restaurantName
         )
       : "External factors unavailable.";
 
     const salesSummary = salesResult.ok
       ? summarizeSales(
-          (salesResult.data?.records || []).map(r => r.fields || {}),
+          (salesResult.data?.records || []).map((r) => r.fields || {}),
           restaurantName
         )
       : "Recent sales unavailable.";
 
     const menuSummary = menuItemsResult.ok
       ? summarizeMenuItems(
-          (menuItemsResult.data?.records || []).map(r => r.fields || {}),
+          (menuItemsResult.data?.records || []).map((r) => r.fields || {}),
           restaurantName
         )
       : "Menu item context unavailable.";
+
+    let deepQuestionContext = "No deep question-specific lookup was needed.";
+
+    const menuRecordsForLookup = menuItemsResult.ok
+      ? menuItemsResult.data?.records || []
+      : [];
+
+    const needsDeepSales = questionNeedsDeepSales(rawMessage);
+    const needsWeatherContext = questionNeedsWeatherContext(rawMessage);
+
+    if (needsDeepSales || needsWeatherContext) {
+      const [deepSalesResult, deepExternalResult] = await Promise.all([
+        airtableGetAll(DAILY_SALES_TABLE_ID, {
+          fields: [
+            "Date",
+            "Date (Raw)",
+            "Restaurant",
+            "Item",
+            "Revenue Class",
+            "Department",
+            "Qty",
+            "Total Cost",
+            "Gross Sales",
+            "Net Sales",
+            "Profit",
+            "Profit Margin Percentage",
+            "Menu Item",
+            "Run",
+          ],
+          sortField: "Date",
+          sortDirection: "desc",
+          maxRecords: 1500,
+        }),
+        airtableGetAll(EXTERNAL_FACTORS_TABLE_ID, {
+          fields: [
+            "Type",
+            "Description",
+            "Temp High",
+            "Temp Low",
+            "Rain Chance %",
+            "Forecast Date",
+            "Display Date",
+            "Date",
+            "Impact Direction",
+            "Impact Strength",
+            "Decision Note",
+            "Notes",
+            "Restaurant",
+          ],
+          sortField: "Display Date",
+          sortDirection: "desc",
+          maxRecords: 300,
+        }),
+      ]);
+
+      const pieces = [];
+
+      if (needsDeepSales && deepSalesResult.ok) {
+        pieces.push(
+          summarizeDeepSalesQuestion({
+            message: rawMessage,
+            salesRows: deepSalesResult.records,
+            menuRows: menuRecordsForLookup,
+          })
+        );
+      }
+
+      if (needsWeatherContext && deepSalesResult.ok && deepExternalResult.ok) {
+        pieces.push(
+          summarizeWeatherSalesContext({
+            salesRows: deepSalesResult.records,
+            externalRows: deepExternalResult.records,
+          })
+        );
+      }
+
+      if (!deepSalesResult.ok) {
+        pieces.push(
+          `Deep sales lookup failed: ${deepSalesResult.error || "Unknown Airtable error"}`
+        );
+      }
+
+      if (needsWeatherContext && !deepExternalResult.ok) {
+        pieces.push(
+          `Weather lookup failed: ${deepExternalResult.error || "Unknown Airtable error"}`
+        );
+      }
+
+      deepQuestionContext =
+        pieces.filter(Boolean).join("\n\n") || deepQuestionContext;
+    }
 
     const decisionPayloadSummary = decisionPayload
       ? JSON.stringify(decisionPayload, null, 2)
       : "No structured decision payload available.";
 
     const movementEvidenceBlock = movementRows.length
-      ? movementRows.slice(0, 10).map(row => {
-          const delta = row.currentQty - row.previousQty;
-          return [
-            row.item,
-            row.movementType,
-            row.listType,
-            row.impactLevel,
-            `qty ${row.previousQty} → ${row.currentQty}`,
-            `delta ${delta >= 0 ? "+" : ""}${delta}`,
-            row.notes
-          ].filter(Boolean).join(" • ");
-        }).join("\n")
+      ? movementRows
+          .slice(0, 10)
+          .map((row) => {
+            const delta = row.currentQty - row.previousQty;
+
+            return [
+              row.item,
+              row.movementType,
+              row.listType,
+              row.impactLevel,
+              `qty ${row.previousQty} → ${row.currentQty}`,
+              `delta ${delta >= 0 ? "+" : ""}${delta}`,
+              row.notes,
+            ]
+              .filter(Boolean)
+              .join(" • ");
+          })
+          .join("\n")
       : "No current-run movement evidence available.";
 
     const context = `
@@ -862,20 +1060,25 @@ ${salesSummary}
 Menu Economics Summary:
 ${menuSummary}
 
+Question-Specific Deep Lookup:
+${deepQuestionContext}
+
 Decision Payload:
 ${decisionPayloadSummary}
 `.trim();
 
-const instructionText = `
+    const instructionText = `
 You are Ask AI inside KitchenPulse, an operator copilot embedded inside the KitchenPulse restaurant dashboard.
 
 You are NOT a generic chatbot.
 You are NOT onboarding the user.
 You are NOT trying to collect restaurant setup information.
-You already have the restaurant's current KitchenPulse context loaded below: latest brief, movement signals, sales summary, external factors, menu economics, and decision payload.
+You already have the restaurant's current KitchenPulse context loaded below: latest brief, movement signals, sales summary, external factors, menu economics, question-specific lookup context, and decision payload.
 
 PRIMARY RULE:
 Always answer from the current KitchenPulse context first.
+
+When the context includes "Question-Specific Deep Lookup", treat it as the most relevant source for item/date/sales/margin/weather questions. If the deep lookup gives exact totals, use those totals directly. If the lookup says no matching rows were found, say that clearly and do not invent numbers.
 
 NEVER SAY:
 - "Send me your sales data"
@@ -893,7 +1096,8 @@ Explain what you can do using the current restaurant data already available:
 - identify what is at risk
 - explain what changed since the last run
 - interpret movement signals
-- connect sales, margin, weather, events, and menu economics
+- connect sales, margin, weather, events, staffing, and menu economics
+- answer scoped item/date sales questions when a deep lookup is available
 - suggest next operator actions
 
 WHEN CONTEXT IS LIMITED:
@@ -918,6 +1122,9 @@ THINKING:
 
 BOUNDARIES:
 - Never invent numbers or projections
+- Never claim to have searched all history unless the deep lookup context says the exact scope was loaded
+- If a question asks for a date range, item total, margin, profit, or sales count, use the Question-Specific Deep Lookup when available
+- If only a sample is available, call it a sample
 - Only reference numbers if clearly supported by the provided context
 - Do not pretend to see data that is not in the KitchenPulse context
 - Do not give generic restaurant consulting when current KitchenPulse context is available
@@ -941,58 +1148,55 @@ The user should feel:
 No fluff. No onboarding. No generic setup questions. Stay inside KitchenPulse and get to the point.
 `;
 
-    const openaiResult = await fetchJsonOrText(
-      "https://api.openai.com/v1/responses",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          instructions: instructionText,
-input: [
-  {
-    role: "system",
-    content: [
-      {
-        type: "input_text",
-        text: `KitchenPulse Context:\n${context}`
-      }
-    ]
-  },
-  ...history.map((msg) => {
-  const role = msg.role === "assistant" ? "assistant" : "user";
+    const openaiResult = await fetchJsonOrText("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        instructions: instructionText,
+        input: [
+          {
+            role: "system",
+            content: [
+              {
+                type: "input_text",
+                text: `KitchenPulse Context:\n${context}`,
+              },
+            ],
+          },
+          ...history.map((msg) => {
+            const role = msg.role === "assistant" ? "assistant" : "user";
 
-  return {
-    role,
-    content: [
-      {
-        type: role === "assistant" ? "output_text" : "input_text",
-        text: safeText(msg.content)
-      }
-    ]
-  };
-}),
-  {
-    role: "user",
-    content: [
-      {
-        type: "input_text",
-        text: rawMessage
-      }
-    ]
-  }
-],
-          max_output_tokens: 1100
-        })
-      }
-    );
+            return {
+              role,
+              content: [
+                {
+                  type: role === "assistant" ? "output_text" : "input_text",
+                  text: safeText(msg.content),
+                },
+              ],
+            };
+          }),
+          {
+            role: "user",
+            content: [
+              {
+                type: "input_text",
+                text: rawMessage,
+              },
+            ],
+          },
+        ],
+        max_output_tokens: 1100,
+      }),
+    });
 
     if (!openaiResult.ok) {
       return sendJson(200, {
-        reply: `OpenAI request failed\n\n${openaiResult.rawText}`
+        reply: `OpenAI request failed\n\n${openaiResult.rawText}`,
       });
     }
 
@@ -1006,13 +1210,15 @@ input: [
         movement_rows_used: movementRows.length,
         external_factors_loaded: externalFactorsResult.ok,
         sales_loaded: salesResult.ok,
-        menu_loaded: menuItemsResult.ok
-      }
+        menu_loaded: menuItemsResult.ok,
+        deep_sales_lookup_used: needsDeepSales,
+        weather_lookup_used: needsWeatherContext,
+      },
     });
   } catch (err) {
     return sendJson(500, {
       error: "Server error",
-      details: err.message
+      details: err.message,
     });
   }
 };
