@@ -167,7 +167,13 @@ function shiftRecord(record) {
 
   const start = fields["Start DateTime"];
   const end = fields["End DateTime"];
-  const shiftDate = fields["Shift Date"] || start;
+  const rawShiftDate = fields["Shift Date"];
+
+  // Important:
+  // Use Start DateTime as the operational service date whenever available.
+  // Airtable date-only fields often come through at UTC midnight, which can
+  // read as the previous calendar day in America/New_York.
+  const operationalDate = start || rawShiftDate;
 
   const startLabel = formatTime(start);
   const endLabel = formatTime(end);
@@ -200,10 +206,11 @@ function shiftRecord(record) {
     externalEmployeeId: text(fields["External Employee ID"]),
     role,
     department: text(fields["Department"]),
-    shiftDate: toIso(shiftDate),
+    shiftDate: toIso(operationalDate),
+    rawShiftDate: toIso(rawShiftDate),
     startDateTime: toIso(start),
     endDateTime: toIso(end),
-    dateLabel: formatDateLabel(shiftDate),
+    dateLabel: formatDateLabel(operationalDate),
     timeLabel,
     scheduledHours: number(fields["Scheduled Hours"]),
     shiftStatus,
@@ -418,6 +425,7 @@ module.exports = async function handler(req, res) {
       ok: true,
       generatedAt: new Date().toISOString(),
       debug: {
+        todayKey: todayKey(),
         todayShiftCount: todayShifts.length,
         riskShiftCount: riskShiftNames.length,
         riskShiftNames,
