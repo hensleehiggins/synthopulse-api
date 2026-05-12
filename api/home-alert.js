@@ -230,15 +230,25 @@ async function fetchHomeAlert() {
 
   const record = data.records?.[0];
 
-  if (!record) {
-    return {
-      show: false,
-      message: "No home alert in window.",
-    };
-  }
-
-  return buildAlert(record);
+if (!record) {
+  return {
+    show: false,
+    message: "No home alert in window.",
+  };
 }
+
+const alert = buildAlert(record);
+const alertDate = getDateOnly(alert.date || alert.startDateTime);
+const today = getTodayDateOnly();
+
+if (alertDate && alertDate < today) {
+  return {
+    show: false,
+    message: "Home alert is past its display date.",
+  };
+}
+
+return alert;
 
 export default async function handler(req, res) {
   setCors(res);
