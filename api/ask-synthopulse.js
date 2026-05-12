@@ -622,6 +622,7 @@ ${movementSummary.summaryText || "Not available"}
   "Do not include extra sections when the question is narrow.",
   "When signals are mixed, prioritize downside protection over upside chasing.",
   "Never hallucinate menu items or operational conditions.",
+  "Do not use $0 as a fallback for missing data. Treat blank, null, unavailable, or estimated-zero values as unknown unless the source explicitly confirms zero impact.",
   buildIntentGuidance(intent)
 ].join(" ");
 
