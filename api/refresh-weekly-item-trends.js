@@ -19,10 +19,10 @@ const PRIOR_RUN_COUNT = 5;
 
 const MATERIALITY = {
   minCurrentOrPriorQty: 3,
-  minRevenueChange: 75,
-  minProfitChange: 50,
-  minQtyChange: 3,
-  minDisplayPriority: 35,
+  minRevenueChange: 150,
+  minProfitChange: 100,
+  minQtyChange: 5,
+  minDisplayPriority: 55,
 };
 
 function send(res, status, body) {
@@ -61,6 +61,7 @@ function normalizeName(value) {
 
 function getLinkedId(value) {
   if (!Array.isArray(value) || value.length === 0) return "";
+
   const first = value[0];
 
   if (typeof first === "string") return first;
@@ -79,6 +80,11 @@ function getLinkedIds(value) {
       return "";
     })
     .filter(Boolean);
+}
+
+function hasLinkedId(value, targetId) {
+  if (!targetId) return false;
+  return getLinkedIds(value).includes(targetId);
 }
 
 function parseRunDate(runId, createdTime) {
@@ -106,6 +112,26 @@ function isReportingRunId(runId) {
   if (text.includes("imported")) return false;
 
   return true;
+}
+
+function isAllowedOwnerItemName(itemName) {
+  const text = String(itemName || "").toLowerCase();
+
+  if (!text.trim()) return false;
+
+  const blockedFragments = [
+    "open food",
+    "open bar",
+    "misc",
+    "discount",
+    "gratuity",
+    "service charge",
+    "gift card",
+    "employee meal",
+    "comp",
+  ];
+
+  return !blockedFragments.some((fragment) => text.includes(fragment));
 }
 
 async function getAllRecords(tableName, options = {}) {
@@ -151,19 +177,24 @@ function addSale(bucket, sale, menuById) {
 
   if (!key) return;
 
+  const menu = sale.menuItemId ? menuById.get(sale.menuItemId) : null;
+
+  // Tenant/quality safety:
+  // Weekly owner-facing trends only use mapped, decision-eligible Menu Items.
+  if (!menu || !menu.decisionEligible) return;
+
   const existing =
     bucket.get(key) ||
     {
-      itemName,
-      menuItemId: sale.menuItemId || "",
+      itemName: menu.itemName || itemName,
+      menuItemId: sale.menuItemId,
       qty: 0,
       revenue: 0,
       profit: 0,
       runIds: new Set(),
     };
 
-  const menu = sale.menuItemId ? menuById.get(sale.menuItemId) : null;
-  const unitCost = menu?.unitCost || 0;
+  const unitCost = menu.unitCost || 0;
 
   const computedProfit =
     unitCost > 0
@@ -174,10 +205,6 @@ function addSale(bucket, sale, menuById) {
   existing.revenue += sale.revenue;
   existing.profit += computedProfit;
   existing.runIds.add(sale.runId);
-
-  if (!existing.menuItemId && sale.menuItemId) {
-    existing.menuItemId = sale.menuItemId;
-  }
 
   bucket.set(key, existing);
 }
@@ -234,28 +261,32 @@ function classifyTrend({
 
   let confidence = "Low";
 
-  if (maxQty >= 10 || maxRevenue >= 500) {
+  if (maxQty >= 20 || maxRevenue >= 1000) {
     confidence = "High";
-  } else if (maxQty >= 5 || maxRevenue >= 200) {
+  } else if (maxQty >= 10 || maxRevenue >= 500) {
     confidence = "Medium";
-  } else if (maxQty < 3 && maxRevenue < 100) {
+  } else if (maxQty < 5 && maxRevenue < 200) {
     confidence = "Insufficient Data";
   }
 
   let strength = "Watch";
 
-  if (absProfitChange >= 250 || absRevenueChange >= 500 || absQtyChange >= 10) {
+  if (absProfitChange >= 400 || absRevenueChange >= 1000 || absQtyChange >= 20) {
     strength = "High";
-  } else if (absProfitChange >= 100 || absRevenueChange >= 250 || absQtyChange >= 5) {
+  } else if (absProfitChange >= 200 || absRevenueChange >= 500 || absQtyChange >= 10) {
     strength = "Medium";
-  } else if (absProfitChange >= 50 || absRevenueChange >= 75 || absQtyChange >= 3) {
+  } else if (
+    absProfitChange >= MATERIALITY.minProfitChange ||
+    absRevenueChange >= MATERIALITY.minRevenueChange ||
+    absQtyChange >= MATERIALITY.minQtyChange
+  ) {
     strength = "Low";
   }
 
   const priority =
     Math.round(
-      Math.min(100, absProfitChange / 4 + absRevenueChange / 20 + absQtyChange * 5)
-    ) + (direction === "Declining" ? 20 : direction === "Softening" ? 10 : 0);
+      Math.min(100, absProfitChange / 4 + absRevenueChange / 25 + absQtyChange * 4)
+    ) + (direction === "Declining" ? 20 : direction === "Softening" ? 8 : 0);
 
   const material =
     maxQty >= MATERIALITY.minCurrentOrPriorQty &&
@@ -291,6 +322,7 @@ function classifyTrend({
 function formatCurrencyShort(value) {
   const n = money(value);
   const sign = n > 0 ? "+" : n < 0 ? "-" : "";
+
   return `${sign}$${Math.abs(n).toLocaleString("en-US", {
     maximumFractionDigits: 0,
   })}`;
@@ -302,29 +334,44 @@ function formatPctShort(value) {
   return `${sign}${Math.round(n * 100)}%`;
 }
 
-function buildOwnerSummary(itemName, trend, currentQty, priorQty, currentRevenue, priorRevenue, currentProfit, priorProfit) {
+function buildOwnerSummary(
+  itemName,
+  trend,
+  currentQty,
+  priorQty,
+  currentRevenue,
+  priorRevenue,
+  currentProfit,
+  priorProfit
+) {
   if (trend.direction === "Declining") {
     return `${itemName} is down across the recent reporting window: ${currentQty} sold vs ${priorQty} prior, revenue ${formatCurrencyShort(
       trend.revenueChange
-    )}, profit ${formatCurrencyShort(trend.profitChange)}. This is more meaningful than a one-run movement because it spans multiple dinner runs.`;
+    )}, profit ${formatCurrencyShort(
+      trend.profitChange
+    )}. This is more meaningful than a one-run movement because it spans multiple dinner runs.`;
   }
 
   if (trend.direction === "Softening") {
     return `${itemName} is softening across recent dinner runs. Current window: ${currentQty} sold / ${formatCurrencyShort(
       currentRevenue
-    )} revenue vs ${priorQty} sold / ${formatCurrencyShort(priorRevenue)} prior. Watch whether this continues before making a major change.`;
+    )} revenue vs ${priorQty} sold / ${formatCurrencyShort(
+      priorRevenue
+    )} prior. Watch whether this continues before making a major change.`;
   }
 
   if (trend.direction === "Improving") {
     return `${itemName} is improving across recent dinner runs: ${currentQty} sold vs ${priorQty} prior, revenue ${formatCurrencyShort(
       trend.revenueChange
-    )}, profit ${formatCurrencyShort(trend.profitChange)}. Keep visibility high if margin quality is acceptable.`;
+    )}, profit ${formatCurrencyShort(
+      trend.profitChange
+    )}. Keep visibility high if margin quality is acceptable.`;
   }
 
   return `${itemName} has movement, but not enough clean trend context to treat as a major owner risk yet.`;
 }
 
-function buildRecommendedAction(itemName, trend, currentMargin, priorMargin) {
+function buildRecommendedAction(itemName, trend, currentMargin) {
   if (trend.direction === "Declining") {
     return `Review ${itemName} for visibility, server confidence, prep quality, and whether a competing item is pulling demand. If this is a core item, check the next service before changing prep too aggressively.`;
   }
@@ -342,6 +389,49 @@ function buildRecommendedAction(itemName, trend, currentMargin, priorMargin) {
   }
 
   return `No urgent action. Keep monitoring until there is stronger volume, revenue, or profit movement.`;
+}
+
+function resolveRequestedRestaurant(req, restaurants) {
+  const requestedRestaurantId =
+    req.query.restaurantId ||
+    req.headers["x-restaurant-id"] ||
+    "";
+
+  const requestedRestaurantName = String(
+    req.query.restaurantName ||
+      req.headers["x-restaurant-name"] ||
+      ""
+  )
+    .trim()
+    .toLowerCase();
+
+  if (requestedRestaurantId) {
+    const match = restaurants.find((record) => record.id === requestedRestaurantId);
+
+    if (match) {
+      return match;
+    }
+
+    throw new Error(`No restaurant found for restaurantId=${requestedRestaurantId}`);
+  }
+
+  if (requestedRestaurantName) {
+    const match = restaurants.find((record) =>
+      String(record.fields["Restaurant Name"] || "")
+        .toLowerCase()
+        .includes(requestedRestaurantName)
+    );
+
+    if (match) {
+      return match;
+    }
+
+    throw new Error(`No restaurant found for restaurantName=${requestedRestaurantName}`);
+  }
+
+  throw new Error(
+    "Missing restaurant selector. Pass restaurantId=rec... or restaurantName=Chloe."
+  );
 }
 
 module.exports = async function handler(req, res) {
@@ -362,33 +452,53 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const [runs, menuItems, dailySales, existingTrends, restaurants] = await Promise.all([
-      getAllRecords(TABLES.runs, {
-        fields: ["Run ID", "Created Time", "Restaurant"],
-      }),
-      getAllRecords(TABLES.menuItems, {
-        fields: ["Item Name", "Actual Unit Cost", "Estimated Unit Cost", "Effective Unit Cost", "Restaurant"],
-      }),
-      getAllRecords(TABLES.dailySales, {
-        fields: ["Date", "Restaurant", "Item", "Qty", "Net Sales", "Profit", "Menu Item", "Run"],
-      }),
-      getAllRecords(TABLES.weeklyTrends, {
-        fields: ["Trend Name", "Item Name", "Is Active"],
-      }),
-      getAllRecords(TABLES.restaurants, {
-        fields: ["Restaurant Name"],
-      }),
-    ]);
+    const [restaurants, runs, menuItems, dailySales, existingTrends] =
+      await Promise.all([
+        getAllRecords(TABLES.restaurants, {
+          fields: ["Restaurant Name"],
+        }),
+        getAllRecords(TABLES.runs, {
+          fields: ["Run ID", "Created Time", "Restaurant"],
+        }),
+        getAllRecords(TABLES.menuItems, {
+          fields: [
+            "Item Name",
+            "Actual Unit Cost",
+            "Estimated Unit Cost",
+            "Effective Unit Cost",
+            "Decision Eligible",
+            "Restaurant",
+          ],
+        }),
+        getAllRecords(TABLES.dailySales, {
+          fields: [
+            "Date",
+            "Restaurant",
+            "Item",
+            "Qty",
+            "Net Sales",
+            "Profit",
+            "Menu Item",
+            "Run",
+          ],
+        }),
+        getAllRecords(TABLES.weeklyTrends, {
+          fields: ["Trend Name", "Restaurant", "Item Name", "Is Active"],
+        }),
+      ]);
 
-    const restaurantId =
-      restaurants.find((record) =>
-        String(record.fields["Restaurant Name"] || "").toLowerCase().includes("chloe")
-      )?.id || restaurants[0]?.id || "";
+    const restaurant = resolveRequestedRestaurant(req, restaurants);
+    const restaurantId = restaurant.id;
+    const restaurantName = restaurant.fields["Restaurant Name"] || restaurantId;
 
     const menuById = new Map();
 
     for (const record of menuItems) {
       const fields = record.fields || {};
+
+      if (!hasLinkedId(fields["Restaurant"], restaurantId)) continue;
+      if (fields["Decision Eligible"] !== true) continue;
+
       const actual = num(fields["Actual Unit Cost"]);
       const estimated = num(fields["Estimated Unit Cost"]);
       const effective = num(fields["Effective Unit Cost"]);
@@ -406,22 +516,30 @@ module.exports = async function handler(req, res) {
         id: record.id,
         itemName: fields["Item Name"] || "",
         unitCost,
+        decisionEligible: true,
       });
     }
 
     const reportingRuns = runs
       .map((record) => {
-        const runId = record.fields["Run ID"] || "";
-        const runDate = parseRunDate(runId, record.fields["Created Time"]);
+        const fields = record.fields || {};
+        const runId = fields["Run ID"] || "";
+        const runDate = parseRunDate(runId, fields["Created Time"]);
 
         return {
           id: record.id,
           runId,
           runDate,
-          createdTime: record.fields["Created Time"] || "",
+          createdTime: fields["Created Time"] || "",
+          restaurantIds: getLinkedIds(fields["Restaurant"]),
         };
       })
-      .filter((run) => isReportingRunId(run.runId) && run.runDate)
+      .filter(
+        (run) =>
+          isReportingRunId(run.runId) &&
+          run.runDate &&
+          run.restaurantIds.includes(restaurantId)
+      )
       .sort((a, b) => {
         if (a.runDate !== b.runDate) {
           return b.runDate.localeCompare(a.runDate);
@@ -432,12 +550,17 @@ module.exports = async function handler(req, res) {
 
     const selectedRuns = reportingRuns.slice(0, CURRENT_RUN_COUNT + PRIOR_RUN_COUNT);
     const currentRuns = selectedRuns.slice(0, CURRENT_RUN_COUNT);
-    const priorRuns = selectedRuns.slice(CURRENT_RUN_COUNT, CURRENT_RUN_COUNT + PRIOR_RUN_COUNT);
+    const priorRuns = selectedRuns.slice(
+      CURRENT_RUN_COUNT,
+      CURRENT_RUN_COUNT + PRIOR_RUN_COUNT
+    );
 
     if (currentRuns.length < 2 || priorRuns.length < 2) {
       return send(res, 200, {
         ok: false,
         reason: "Not enough reporting close runs for weekly trend comparison yet.",
+        restaurant: restaurantName,
+        restaurantId,
         reportingRuns: reportingRuns.length,
         currentRuns: currentRuns.length,
         priorRuns: priorRuns.length,
@@ -450,22 +573,45 @@ module.exports = async function handler(req, res) {
     const currentBucket = new Map();
     const priorBucket = new Map();
 
+    let skippedUnmappedOrIneligible = 0;
+    let skippedWrongRestaurant = 0;
+
     for (const record of dailySales) {
       const fields = record.fields || {};
+
+      if (!hasLinkedId(fields["Restaurant"], restaurantId)) {
+        skippedWrongRestaurant++;
+        continue;
+      }
+
       const linkedRunIds = getLinkedIds(fields["Run"]);
 
       const runId = linkedRunIds.find((id) => currentRunIds.has(id) || priorRunIds.has(id));
 
       if (!runId) continue;
 
+      const menuItemId = getLinkedId(fields["Menu Item"]);
+
+      if (!menuItemId || !menuById.has(menuItemId)) {
+        skippedUnmappedOrIneligible++;
+        continue;
+      }
+
+      const itemName = fields["Item"] || menuById.get(menuItemId)?.itemName || "";
+
+      if (!isAllowedOwnerItemName(itemName)) {
+        skippedUnmappedOrIneligible++;
+        continue;
+      }
+
       const sale = {
         recordId: record.id,
         runId,
-        itemName: fields["Item"] || "",
+        itemName,
         qty: num(fields["Qty"]),
         revenue: num(fields["Net Sales"]),
         profitFallback: num(fields["Profit"]),
-        menuItemId: getLinkedId(fields["Menu Item"]),
+        menuItemId,
       };
 
       if (!sale.itemName || (sale.qty === 0 && sale.revenue === 0)) continue;
@@ -527,14 +673,14 @@ module.exports = async function handler(req, res) {
       if (!trend.active) continue;
 
       const itemName = current.itemName || prior.itemName;
-      const trendName = `${itemName} — ${trend.direction} — ${currentWindowEnd}`;
+      const trendName = `${restaurantName} — ${itemName} — ${trend.direction} — ${currentWindowEnd}`;
 
       trendRows.push({
         trendName,
         fields: {
           "Trend Name": trendName,
-          ...(restaurantId ? { Restaurant: [restaurantId] } : {}),
-          ...((current.menuItemId || prior.menuItemId)
+          Restaurant: [restaurantId],
+          ...(current.menuItemId || prior.menuItemId
             ? { "Menu Item": [current.menuItemId || prior.menuItemId] }
             : {}),
           "Item Name": itemName,
@@ -572,7 +718,11 @@ module.exports = async function handler(req, res) {
             currentProfit,
             priorProfit
           ),
-          "Recommended Action": buildRecommendedAction(itemName, trend, currentMargin, priorMargin),
+          "Recommended Action": buildRecommendedAction(
+            itemName,
+            trend,
+            currentMargin
+          ),
           "Is Active": true,
           "Display Priority": trend.priority,
           "Last Calculated At": new Date().toISOString(),
@@ -583,11 +733,11 @@ module.exports = async function handler(req, res) {
             "Prior:",
             ...priorRuns.map((run) => run.runId),
           ].join("\n"),
-          Notes: `Current window ${currentWindowStart} to ${currentWindowEnd}; prior window ${priorWindowStart} to ${priorWindowEnd}. Qty ${currentQty} vs ${priorQty}; revenue ${money(
+          Notes: `Tenant-safe weekly trend for ${restaurantName}. Current window ${currentWindowStart} to ${currentWindowEnd}; prior window ${priorWindowStart} to ${priorWindowEnd}. Qty ${currentQty} vs ${priorQty}; revenue ${money(
             trend.revenueChange
           )}; profit ${money(trend.profitChange)}; qty pct ${formatPctShort(
             trend.qtyChangePct
-          )}.`,
+          )}. Decision Eligible required.`,
         },
       });
     }
@@ -597,11 +747,13 @@ module.exports = async function handler(req, res) {
     const existingByName = new Map();
 
     for (const record of existingTrends) {
-      const trendName = record.fields["Trend Name"];
+      const fields = record.fields || {};
+      const trendName = fields["Trend Name"];
 
-      if (trendName) {
-        existingByName.set(trendName, record.id);
-      }
+      if (!trendName) continue;
+      if (!hasLinkedId(fields["Restaurant"], restaurantId)) continue;
+
+      existingByName.set(trendName, record.id);
     }
 
     const activeNames = new Set(trendRows.map((row) => row.trendName));
@@ -625,9 +777,12 @@ module.exports = async function handler(req, res) {
     }
 
     for (const record of existingTrends) {
-      const trendName = record.fields["Trend Name"];
+      const fields = record.fields || {};
+      const trendName = fields["Trend Name"];
 
-      if (record.fields["Is Active"] && trendName && !activeNames.has(trendName)) {
+      if (!hasLinkedId(fields["Restaurant"], restaurantId)) continue;
+
+      if (fields["Is Active"] && trendName && !activeNames.has(trendName)) {
         updates.push({
           id: record.id,
           fields: {
@@ -649,10 +804,15 @@ module.exports = async function handler(req, res) {
     return send(res, 200, {
       ok: true,
       table: TABLES.weeklyTrends,
+      restaurant: restaurantName,
+      restaurantId,
       reportingRuns: reportingRuns.length,
       currentRuns: currentRuns.map((run) => run.runId),
       priorRuns: priorRuns.map((run) => run.runId),
+      decisionEligibleMenuItems: menuById.size,
       scannedDailySales: dailySales.length,
+      skippedWrongRestaurant,
+      skippedUnmappedOrIneligible,
       activeTrendRows: trendRows.length,
       created: created.length,
       updated: updated.length,
