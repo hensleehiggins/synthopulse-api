@@ -1,0 +1,678 @@
+const Airtable = require("airtable");
+
+const base = new Airtable({
+  apiKey: process.env.AIRTABLE_PAT,
+}).base(process.env.AIRTABLE_BASE_ID);
+
+const REQUIRED_SECRET = process.env.ADMIN_REFRESH_SECRET || "";
+
+const TABLES = {
+  restaurants: "Restaurants",
+  menuItems: "Menu Items",
+  dailySales: "Daily Sales",
+  runs: "Runs",
+  weeklyTrends: "Weekly Item Trends",
+};
+
+const CURRENT_RUN_COUNT = 5;
+const PRIOR_RUN_COUNT = 5;
+
+const MATERIALITY = {
+  minCurrentOrPriorQty: 3,
+  minRevenueChange: 75,
+  minProfitChange: 50,
+  minQtyChange: 3,
+  minDisplayPriority: 35,
+};
+
+function send(res, status, body) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-admin-secret");
+  return res.status(status).json(body);
+}
+
+function num(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function money(value) {
+  const n = num(value);
+  return Math.round(n * 100) / 100;
+}
+
+function pct(current, prior) {
+  if (!prior) return current > 0 ? 1 : 0;
+  return (current - prior) / Math.abs(prior);
+}
+
+function safeRatio(numerator, denominator) {
+  return denominator > 0 ? numerator / denominator : 0;
+}
+
+function normalizeName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getLinkedId(value) {
+  if (!Array.isArray(value) || value.length === 0) return "";
+  const first = value[0];
+
+  if (typeof first === "string") return first;
+  if (first && typeof first === "object" && first.id) return first.id;
+
+  return "";
+}
+
+function getLinkedIds(value) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((entry) => {
+      if (typeof entry === "string") return entry;
+      if (entry && typeof entry === "object" && entry.id) return entry.id;
+      return "";
+    })
+    .filter(Boolean);
+}
+
+function parseRunDate(runId, createdTime) {
+  const match = String(runId || "").match(/(\d{4}-\d{2}-\d{2})/);
+
+  if (match) {
+    return match[1];
+  }
+
+  if (createdTime) {
+    return new Date(createdTime).toISOString().slice(0, 10);
+  }
+
+  return "";
+}
+
+function isReportingRunId(runId) {
+  const text = String(runId || "").toLowerCase();
+
+  if (!text.includes("pos-")) return false;
+  if (!text.includes("-close-")) return false;
+  if (text.includes("test")) return false;
+  if (text.includes("fake")) return false;
+  if (text.includes("sample")) return false;
+  if (text.includes("imported")) return false;
+
+  return true;
+}
+
+async function getAllRecords(tableName, options = {}) {
+  const records = [];
+
+  await base(tableName)
+    .select(options)
+    .eachPage((page, fetchNextPage) => {
+      records.push(...page);
+      fetchNextPage();
+    });
+
+  return records;
+}
+
+async function updateBatches(tableName, updates, batchSize = 10) {
+  const out = [];
+
+  for (let i = 0; i < updates.length; i += batchSize) {
+    const batch = updates.slice(i, i + batchSize);
+    const result = await base(tableName).update(batch);
+    out.push(...result);
+  }
+
+  return out;
+}
+
+async function createBatches(tableName, creates, batchSize = 10) {
+  const out = [];
+
+  for (let i = 0; i < creates.length; i += batchSize) {
+    const batch = creates.slice(i, i + batchSize);
+    const result = await base(tableName).create(batch);
+    out.push(...result);
+  }
+
+  return out;
+}
+
+function addSale(bucket, sale, menuById) {
+  const itemName = sale.itemName;
+  const key = normalizeName(itemName);
+
+  if (!key) return;
+
+  const existing =
+    bucket.get(key) ||
+    {
+      itemName,
+      menuItemId: sale.menuItemId || "",
+      qty: 0,
+      revenue: 0,
+      profit: 0,
+      runIds: new Set(),
+    };
+
+  const menu = sale.menuItemId ? menuById.get(sale.menuItemId) : null;
+  const unitCost = menu?.unitCost || 0;
+
+  const computedProfit =
+    unitCost > 0
+      ? sale.revenue - sale.qty * unitCost
+      : sale.profitFallback;
+
+  existing.qty += sale.qty;
+  existing.revenue += sale.revenue;
+  existing.profit += computedProfit;
+  existing.runIds.add(sale.runId);
+
+  if (!existing.menuItemId && sale.menuItemId) {
+    existing.menuItemId = sale.menuItemId;
+  }
+
+  bucket.set(key, existing);
+}
+
+function classifyTrend({
+  currentQty,
+  priorQty,
+  currentRevenue,
+  priorRevenue,
+  currentProfit,
+  priorProfit,
+  currentMargin,
+  priorMargin,
+}) {
+  const qtyChange = currentQty - priorQty;
+  const revenueChange = currentRevenue - priorRevenue;
+  const profitChange = currentProfit - priorProfit;
+  const marginChange = currentMargin - priorMargin;
+
+  const qtyChangePct = pct(currentQty, priorQty);
+  const revenueChangePct = pct(currentRevenue, priorRevenue);
+  const profitChangePct = pct(currentProfit, priorProfit);
+
+  const maxQty = Math.max(currentQty, priorQty);
+  const maxRevenue = Math.max(currentRevenue, priorRevenue);
+  const absRevenueChange = Math.abs(revenueChange);
+  const absProfitChange = Math.abs(profitChange);
+  const absQtyChange = Math.abs(qtyChange);
+
+  let direction = "Stable";
+
+  if (priorQty <= 0 && currentQty > 0) {
+    direction = "New / Insufficient Baseline";
+  } else if (
+    profitChange <= -MATERIALITY.minProfitChange ||
+    revenueChange <= -MATERIALITY.minRevenueChange ||
+    qtyChange <= -MATERIALITY.minQtyChange
+  ) {
+    direction = "Declining";
+  } else if (
+    profitChange < 0 ||
+    revenueChange < 0 ||
+    qtyChange < 0 ||
+    marginChange < -0.05
+  ) {
+    direction = "Softening";
+  } else if (
+    profitChange >= MATERIALITY.minProfitChange ||
+    revenueChange >= MATERIALITY.minRevenueChange ||
+    qtyChange >= MATERIALITY.minQtyChange
+  ) {
+    direction = "Improving";
+  }
+
+  let confidence = "Low";
+
+  if (maxQty >= 10 || maxRevenue >= 500) {
+    confidence = "High";
+  } else if (maxQty >= 5 || maxRevenue >= 200) {
+    confidence = "Medium";
+  } else if (maxQty < 3 && maxRevenue < 100) {
+    confidence = "Insufficient Data";
+  }
+
+  let strength = "Watch";
+
+  if (absProfitChange >= 250 || absRevenueChange >= 500 || absQtyChange >= 10) {
+    strength = "High";
+  } else if (absProfitChange >= 100 || absRevenueChange >= 250 || absQtyChange >= 5) {
+    strength = "Medium";
+  } else if (absProfitChange >= 50 || absRevenueChange >= 75 || absQtyChange >= 3) {
+    strength = "Low";
+  }
+
+  const priority =
+    Math.round(
+      Math.min(100, absProfitChange / 4 + absRevenueChange / 20 + absQtyChange * 5)
+    ) + (direction === "Declining" ? 20 : direction === "Softening" ? 10 : 0);
+
+  const material =
+    maxQty >= MATERIALITY.minCurrentOrPriorQty &&
+    (
+      absProfitChange >= MATERIALITY.minProfitChange ||
+      absRevenueChange >= MATERIALITY.minRevenueChange ||
+      absQtyChange >= MATERIALITY.minQtyChange
+    );
+
+  const active =
+    material &&
+    priority >= MATERIALITY.minDisplayPriority &&
+    confidence !== "Insufficient Data" &&
+    direction !== "Stable" &&
+    direction !== "New / Insufficient Baseline";
+
+  return {
+    direction,
+    strength,
+    confidence,
+    priority,
+    active,
+    qtyChange,
+    revenueChange,
+    profitChange,
+    marginChange,
+    qtyChangePct,
+    revenueChangePct,
+    profitChangePct,
+  };
+}
+
+function formatCurrencyShort(value) {
+  const n = money(value);
+  const sign = n > 0 ? "+" : n < 0 ? "-" : "";
+  return `${sign}$${Math.abs(n).toLocaleString("en-US", {
+    maximumFractionDigits: 0,
+  })}`;
+}
+
+function formatPctShort(value) {
+  const n = num(value);
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${Math.round(n * 100)}%`;
+}
+
+function buildOwnerSummary(itemName, trend, currentQty, priorQty, currentRevenue, priorRevenue, currentProfit, priorProfit) {
+  if (trend.direction === "Declining") {
+    return `${itemName} is down across the recent reporting window: ${currentQty} sold vs ${priorQty} prior, revenue ${formatCurrencyShort(
+      trend.revenueChange
+    )}, profit ${formatCurrencyShort(trend.profitChange)}. This is more meaningful than a one-run movement because it spans multiple dinner runs.`;
+  }
+
+  if (trend.direction === "Softening") {
+    return `${itemName} is softening across recent dinner runs. Current window: ${currentQty} sold / ${formatCurrencyShort(
+      currentRevenue
+    )} revenue vs ${priorQty} sold / ${formatCurrencyShort(priorRevenue)} prior. Watch whether this continues before making a major change.`;
+  }
+
+  if (trend.direction === "Improving") {
+    return `${itemName} is improving across recent dinner runs: ${currentQty} sold vs ${priorQty} prior, revenue ${formatCurrencyShort(
+      trend.revenueChange
+    )}, profit ${formatCurrencyShort(trend.profitChange)}. Keep visibility high if margin quality is acceptable.`;
+  }
+
+  return `${itemName} has movement, but not enough clean trend context to treat as a major owner risk yet.`;
+}
+
+function buildRecommendedAction(itemName, trend, currentMargin, priorMargin) {
+  if (trend.direction === "Declining") {
+    return `Review ${itemName} for visibility, server confidence, prep quality, and whether a competing item is pulling demand. If this is a core item, check the next service before changing prep too aggressively.`;
+  }
+
+  if (trend.direction === "Softening") {
+    return `Keep ${itemName} on watch. Do not overreact from one slow run, but ask managers whether guest feedback, availability, or menu placement changed.`;
+  }
+
+  if (trend.direction === "Improving") {
+    if (currentMargin >= 0.6) {
+      return `Protect margin and keep ${itemName} visible. This may be an item worth leaning into while demand is improving.`;
+    }
+
+    return `Demand is improving, but margin should be checked before pushing ${itemName} harder.`;
+  }
+
+  return `No urgent action. Keep monitoring until there is stronger volume, revenue, or profit movement.`;
+}
+
+module.exports = async function handler(req, res) {
+  if (req.method === "OPTIONS") {
+    return send(res, 200, { ok: true });
+  }
+
+  if (!["GET", "POST"].includes(req.method)) {
+    return send(res, 405, { ok: false, error: "Method not allowed" });
+  }
+
+  if (REQUIRED_SECRET) {
+    const providedSecret = req.headers["x-admin-secret"] || req.query.secret || "";
+
+    if (providedSecret !== REQUIRED_SECRET) {
+      return send(res, 401, { ok: false, error: "Unauthorized" });
+    }
+  }
+
+  try {
+    const [runs, menuItems, dailySales, existingTrends, restaurants] = await Promise.all([
+      getAllRecords(TABLES.runs, {
+        fields: ["Run ID", "Created Time", "Restaurant"],
+      }),
+      getAllRecords(TABLES.menuItems, {
+        fields: ["Item Name", "Actual Unit Cost", "Estimated Unit Cost", "Effective Unit Cost", "Restaurant"],
+      }),
+      getAllRecords(TABLES.dailySales, {
+        fields: ["Date", "Restaurant", "Item", "Qty", "Net Sales", "Profit", "Menu Item", "Run"],
+      }),
+      getAllRecords(TABLES.weeklyTrends, {
+        fields: ["Trend Name", "Item Name", "Is Active"],
+      }),
+      getAllRecords(TABLES.restaurants, {
+        fields: ["Restaurant Name"],
+      }),
+    ]);
+
+    const restaurantId =
+      restaurants.find((record) =>
+        String(record.fields["Restaurant Name"] || "").toLowerCase().includes("chloe")
+      )?.id || restaurants[0]?.id || "";
+
+    const menuById = new Map();
+
+    for (const record of menuItems) {
+      const fields = record.fields || {};
+      const actual = num(fields["Actual Unit Cost"]);
+      const estimated = num(fields["Estimated Unit Cost"]);
+      const effective = num(fields["Effective Unit Cost"]);
+
+      const unitCost =
+        actual > 0
+          ? actual
+          : estimated > 0
+            ? estimated
+            : effective > 0
+              ? effective
+              : 0;
+
+      menuById.set(record.id, {
+        id: record.id,
+        itemName: fields["Item Name"] || "",
+        unitCost,
+      });
+    }
+
+    const reportingRuns = runs
+      .map((record) => {
+        const runId = record.fields["Run ID"] || "";
+        const runDate = parseRunDate(runId, record.fields["Created Time"]);
+
+        return {
+          id: record.id,
+          runId,
+          runDate,
+          createdTime: record.fields["Created Time"] || "",
+        };
+      })
+      .filter((run) => isReportingRunId(run.runId) && run.runDate)
+      .sort((a, b) => {
+        if (a.runDate !== b.runDate) {
+          return b.runDate.localeCompare(a.runDate);
+        }
+
+        return String(b.createdTime || "").localeCompare(String(a.createdTime || ""));
+      });
+
+    const selectedRuns = reportingRuns.slice(0, CURRENT_RUN_COUNT + PRIOR_RUN_COUNT);
+    const currentRuns = selectedRuns.slice(0, CURRENT_RUN_COUNT);
+    const priorRuns = selectedRuns.slice(CURRENT_RUN_COUNT, CURRENT_RUN_COUNT + PRIOR_RUN_COUNT);
+
+    if (currentRuns.length < 2 || priorRuns.length < 2) {
+      return send(res, 200, {
+        ok: false,
+        reason: "Not enough reporting close runs for weekly trend comparison yet.",
+        reportingRuns: reportingRuns.length,
+        currentRuns: currentRuns.length,
+        priorRuns: priorRuns.length,
+      });
+    }
+
+    const currentRunIds = new Set(currentRuns.map((run) => run.id));
+    const priorRunIds = new Set(priorRuns.map((run) => run.id));
+
+    const currentBucket = new Map();
+    const priorBucket = new Map();
+
+    for (const record of dailySales) {
+      const fields = record.fields || {};
+      const linkedRunIds = getLinkedIds(fields["Run"]);
+
+      const runId = linkedRunIds.find((id) => currentRunIds.has(id) || priorRunIds.has(id));
+
+      if (!runId) continue;
+
+      const sale = {
+        recordId: record.id,
+        runId,
+        itemName: fields["Item"] || "",
+        qty: num(fields["Qty"]),
+        revenue: num(fields["Net Sales"]),
+        profitFallback: num(fields["Profit"]),
+        menuItemId: getLinkedId(fields["Menu Item"]),
+      };
+
+      if (!sale.itemName || (sale.qty === 0 && sale.revenue === 0)) continue;
+
+      if (currentRunIds.has(runId)) {
+        addSale(currentBucket, sale, menuById);
+      } else if (priorRunIds.has(runId)) {
+        addSale(priorBucket, sale, menuById);
+      }
+    }
+
+    const allKeys = new Set([...currentBucket.keys(), ...priorBucket.keys()]);
+    const trendRows = [];
+
+    const currentWindowStart = currentRuns[currentRuns.length - 1].runDate;
+    const currentWindowEnd = currentRuns[0].runDate;
+    const priorWindowStart = priorRuns[priorRuns.length - 1].runDate;
+    const priorWindowEnd = priorRuns[0].runDate;
+
+    for (const key of allKeys) {
+      const current = currentBucket.get(key) || {
+        itemName: priorBucket.get(key)?.itemName || key,
+        menuItemId: priorBucket.get(key)?.menuItemId || "",
+        qty: 0,
+        revenue: 0,
+        profit: 0,
+        runIds: new Set(),
+      };
+
+      const prior = priorBucket.get(key) || {
+        itemName: current.itemName,
+        menuItemId: current.menuItemId,
+        qty: 0,
+        revenue: 0,
+        profit: 0,
+        runIds: new Set(),
+      };
+
+      const currentQty = num(current.qty);
+      const priorQty = num(prior.qty);
+      const currentRevenue = money(current.revenue);
+      const priorRevenue = money(prior.revenue);
+      const currentProfit = money(current.profit);
+      const priorProfit = money(prior.profit);
+      const currentMargin = safeRatio(currentProfit, currentRevenue);
+      const priorMargin = safeRatio(priorProfit, priorRevenue);
+
+      const trend = classifyTrend({
+        currentQty,
+        priorQty,
+        currentRevenue,
+        priorRevenue,
+        currentProfit,
+        priorProfit,
+        currentMargin,
+        priorMargin,
+      });
+
+      if (!trend.active) continue;
+
+      const itemName = current.itemName || prior.itemName;
+      const trendName = `${itemName} — ${trend.direction} — ${currentWindowEnd}`;
+
+      trendRows.push({
+        trendName,
+        fields: {
+          "Trend Name": trendName,
+          ...(restaurantId ? { Restaurant: [restaurantId] } : {}),
+          ...((current.menuItemId || prior.menuItemId)
+            ? { "Menu Item": [current.menuItemId || prior.menuItemId] }
+            : {}),
+          "Item Name": itemName,
+          "Trend Window Start": currentWindowStart,
+          "Trend Window End": currentWindowEnd,
+          "Prior Window Start": priorWindowStart,
+          "Prior Window End": priorWindowEnd,
+          "Current Runs": currentRuns.length,
+          "Prior Runs": priorRuns.length,
+          "Current Qty": currentQty,
+          "Prior Qty": priorQty,
+          "Qty Change": trend.qtyChange,
+          "Qty Change Percent": trend.qtyChangePct,
+          "Current Revenue": currentRevenue,
+          "Prior Revenue": priorRevenue,
+          "Revenue Change": money(trend.revenueChange),
+          "Revenue Change Percent": trend.revenueChangePct,
+          "Current Profit": currentProfit,
+          "Prior Profit": priorProfit,
+          "Profit Change": money(trend.profitChange),
+          "Profit Change Percent": trend.profitChangePct,
+          "Current Margin": currentMargin,
+          "Prior Margin": priorMargin,
+          "Margin Change": trend.marginChange,
+          "Trend Direction": trend.direction,
+          "Trend Strength": trend.strength,
+          Confidence: trend.confidence,
+          "Owner Summary": buildOwnerSummary(
+            itemName,
+            trend,
+            currentQty,
+            priorQty,
+            currentRevenue,
+            priorRevenue,
+            currentProfit,
+            priorProfit
+          ),
+          "Recommended Action": buildRecommendedAction(itemName, trend, currentMargin, priorMargin),
+          "Is Active": true,
+          "Display Priority": trend.priority,
+          "Last Calculated At": new Date().toISOString(),
+          "Source Run IDs": [
+            "Current:",
+            ...currentRuns.map((run) => run.runId),
+            "",
+            "Prior:",
+            ...priorRuns.map((run) => run.runId),
+          ].join("\n"),
+          Notes: `Current window ${currentWindowStart} to ${currentWindowEnd}; prior window ${priorWindowStart} to ${priorWindowEnd}. Qty ${currentQty} vs ${priorQty}; revenue ${money(
+            trend.revenueChange
+          )}; profit ${money(trend.profitChange)}; qty pct ${formatPctShort(
+            trend.qtyChangePct
+          )}.`,
+        },
+      });
+    }
+
+    trendRows.sort((a, b) => b.fields["Display Priority"] - a.fields["Display Priority"]);
+
+    const existingByName = new Map();
+
+    for (const record of existingTrends) {
+      const trendName = record.fields["Trend Name"];
+
+      if (trendName) {
+        existingByName.set(trendName, record.id);
+      }
+    }
+
+    const activeNames = new Set(trendRows.map((row) => row.trendName));
+
+    const updates = [];
+    const creates = [];
+
+    for (const row of trendRows) {
+      const existingId = existingByName.get(row.trendName);
+
+      if (existingId) {
+        updates.push({
+          id: existingId,
+          fields: row.fields,
+        });
+      } else {
+        creates.push({
+          fields: row.fields,
+        });
+      }
+    }
+
+    for (const record of existingTrends) {
+      const trendName = record.fields["Trend Name"];
+
+      if (record.fields["Is Active"] && trendName && !activeNames.has(trendName)) {
+        updates.push({
+          id: record.id,
+          fields: {
+            "Is Active": false,
+            "Last Calculated At": new Date().toISOString(),
+          },
+        });
+      }
+    }
+
+    const updated = updates.length
+      ? await updateBatches(TABLES.weeklyTrends, updates)
+      : [];
+
+    const created = creates.length
+      ? await createBatches(TABLES.weeklyTrends, creates)
+      : [];
+
+    return send(res, 200, {
+      ok: true,
+      table: TABLES.weeklyTrends,
+      reportingRuns: reportingRuns.length,
+      currentRuns: currentRuns.map((run) => run.runId),
+      priorRuns: priorRuns.map((run) => run.runId),
+      scannedDailySales: dailySales.length,
+      activeTrendRows: trendRows.length,
+      created: created.length,
+      updated: updated.length,
+      topExamples: trendRows.slice(0, 8).map((row) => ({
+        item: row.fields["Item Name"],
+        direction: row.fields["Trend Direction"],
+        strength: row.fields["Trend Strength"],
+        confidence: row.fields.Confidence,
+        priority: row.fields["Display Priority"],
+        qty: `${row.fields["Current Qty"]} vs ${row.fields["Prior Qty"]}`,
+        revenueChange: row.fields["Revenue Change"],
+        profitChange: row.fields["Profit Change"],
+      })),
+    });
+  } catch (error) {
+    console.error("refresh-weekly-item-trends error", error);
+
+    return send(res, 500, {
+      ok: false,
+      error: error.message || "Failed to refresh weekly item trends",
+    });
+  }
+};
