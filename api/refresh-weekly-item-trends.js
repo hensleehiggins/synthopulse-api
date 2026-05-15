@@ -777,21 +777,29 @@ module.exports = async function handler(req, res) {
     }
 
     for (const record of existingTrends) {
-      const fields = record.fields || {};
-      const trendName = fields["Trend Name"];
+  const fields = record.fields || {};
+  const trendName = fields["Trend Name"] || "";
+  const linkedToRestaurant = hasLinkedId(fields["Restaurant"], restaurantId);
+  const hasNoRestaurantLink = getLinkedIds(fields["Restaurant"]).length === 0;
 
-      if (!hasLinkedId(fields["Restaurant"], restaurantId)) continue;
+  const appearsToBelongToRestaurant =
+    linkedToRestaurant ||
+    hasNoRestaurantLink ||
+    String(trendName).toLowerCase().includes(String(restaurantName).toLowerCase());
 
-      if (fields["Is Active"] && trendName && !activeNames.has(trendName)) {
-        updates.push({
-          id: record.id,
-          fields: {
-            "Is Active": false,
-            "Last Calculated At": new Date().toISOString(),
-          },
-        });
-      }
-    }
+  if (!appearsToBelongToRestaurant) continue;
+
+  if (fields["Is Active"] && trendName && !activeNames.has(trendName)) {
+    updates.push({
+      id: record.id,
+      fields: {
+        "Is Active": false,
+        "Last Calculated At": new Date().toISOString(),
+        Notes: `Deactivated by tenant-safe weekly trend refresh for ${restaurantName}. Row was not part of the current active Decision Eligible trend set.`,
+      },
+    });
+  }
+}
 
     const updated = updates.length
       ? await updateBatches(TABLES.weeklyTrends, updates)
