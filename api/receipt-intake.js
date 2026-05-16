@@ -1,7 +1,3 @@
-import { put } from "@vercel/blob";
-import formidable from "formidable";
-import fs from "fs";
-
 export const config = {
   api: {
     bodyParser: false,
@@ -16,7 +12,7 @@ const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
 
 function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization"
@@ -38,25 +34,6 @@ function buildFallbackReceiptName() {
     hour: "numeric",
     minute: "2-digit",
   })}`;
-}
-
-function parseMultipartForm(req) {
-  const form = formidable({
-    multiples: false,
-    keepExtensions: true,
-    maxFileSize: 15 * 1024 * 1024,
-  });
-
-  return new Promise((resolve, reject) => {
-    form.parse(req, (error, fields, files) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      resolve({ fields, files });
-    });
-  });
 }
 
 function getFieldValue(fields, key) {
@@ -86,11 +63,38 @@ function safeFileName(name) {
     .slice(0, 120);
 }
 
+async function parseMultipartForm(req, formidable) {
+  const form = formidable({
+    multiples: false,
+    keepExtensions: true,
+    maxFileSize: 15 * 1024 * 1024,
+  });
+
+  return new Promise((resolve, reject) => {
+    form.parse(req, (error, fields, files) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve({ fields, files });
+    });
+  });
+}
+
 export default async function handler(req, res) {
   setCorsHeaders(res);
 
   if (req.method === "OPTIONS") {
     return res.status(204).end();
+  }
+
+  if (req.method === "GET") {
+    return sendJson(res, 200, {
+      ok: true,
+      route: "receipt-intake",
+      message: "Receipt intake API is reachable. Use POST to submit a receipt.",
+    });
   }
 
   if (req.method !== "POST") {
@@ -117,7 +121,43 @@ export default async function handler(req, res) {
       });
     }
 
-    const { fields: formFields, files } = await parseMultipartForm(req);
+    let put;
+    let formidable;
+    let fs;
+
+    try {
+      const blobModule = await import("@vercel/blob");
+      const formidableModule = await import("formidable");
+      const fsModule = await import("fs");
+
+      put = blobModule.put;
+      formidable =
+        formidableModule.default ||
+        formidableModule.formidable ||
+        formidableModule.default?.default;
+      fs = fsModule.default || fsModule;
+    } catch (importError) {
+      return sendJson(res, 500, {
+        ok: false,
+        error:
+          "Receipt upload dependencies are missing or failed to load. Make sure @vercel/blob and formidable are installed and redeployed.",
+        details: importError.message,
+      });
+    }
+
+    if (!put || !formidable || !fs) {
+      return sendJson(res, 500, {
+        ok: false,
+        error:
+          "Receipt upload dependencies loaded incorrectly. Check @vercel/blob, formidable, and fs imports.",
+      });
+    }
+
+    const { fields: formFields, files } = await parseMultipartForm(
+      req,
+      formidable
+    );
+
     const uploadedFile = getUploadedFile(files);
 
     if (!uploadedFile) {
@@ -134,8 +174,8 @@ export default async function handler(req, res) {
 
     const originalFileName =
       uploadedFile.originalFilename || uploadedFile.newFilename || "receipt";
-    const contentType =
-      uploadedFile.mimetype || "application/octet-stream";
+
+    const contentType = uploadedFile.mimetype || "application/octet-stream";
 
     const finalReceiptName =
       typeof receiptName === "string" && receiptName.trim()
@@ -235,6 +275,7 @@ export default async function handler(req, res) {
     return sendJson(res, 500, {
       ok: false,
       error: error.message || "Unexpected receipt intake error.",
+      stack: error.stack,
     });
   }
 }
