@@ -5,7 +5,7 @@ export const config = {
 };
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
+const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.AIRTABLE_PAT;
 const CHLOES_RESTAURANT_ID = process.env.AIRTABLE_CHLOES_RESTAURANT_ID;
 
 const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
       return sendJson(res, 500, {
         ok: false,
         error:
-          "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_TOKEN, and AIRTABLE_CHLOES_RESTAURANT_ID.",
+          "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_PAT or AIRTABLE_TOKEN, and AIRTABLE_CHLOES_RESTAURANT_ID.",
       });
     }
 
