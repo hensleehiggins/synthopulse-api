@@ -1,6 +1,10 @@
+import { put } from "@vercel/blob";
+import formidable from "formidable";
+import fs from "fs";
+
 export const config = {
   api: {
-    bodyParser: true,
+    bodyParser: false,
   },
 };
 
@@ -36,6 +40,52 @@ function buildFallbackReceiptName() {
   })}`;
 }
 
+function parseMultipartForm(req) {
+  const form = formidable({
+    multiples: false,
+    keepExtensions: true,
+    maxFileSize: 15 * 1024 * 1024,
+  });
+
+  return new Promise((resolve, reject) => {
+    form.parse(req, (error, fields, files) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve({ fields, files });
+    });
+  });
+}
+
+function getFieldValue(fields, key) {
+  const value = fields?.[key];
+
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+
+  return value;
+}
+
+function getUploadedFile(files) {
+  const file = files?.receiptFile;
+
+  if (Array.isArray(file)) {
+    return file[0];
+  }
+
+  return file;
+}
+
+function safeFileName(name) {
+  return String(name || "receipt")
+    .replace(/[^\w.\- ]+/g, "")
+    .replace(/\s+/g, "-")
+    .slice(0, 120);
+}
+
 export default async function handler(req, res) {
   setCorsHeaders(res);
 
@@ -59,38 +109,62 @@ export default async function handler(req, res) {
       });
     }
 
-    const {
-      receiptName,
-      vendor,
-      receiptDate,
-      notes,
-      fileName,
-      fileType,
-      fileSize,
-    } = req.body || {};
-
-    if (!fileName) {
-      return sendJson(res, 400, {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      return sendJson(res, 500, {
         ok: false,
-        error: "A receipt file name is required before staging.",
+        error:
+          "Missing BLOB_READ_WRITE_TOKEN. Add Vercel Blob storage to this project before uploading receipt files.",
       });
     }
+
+    const { fields: formFields, files } = await parseMultipartForm(req);
+    const uploadedFile = getUploadedFile(files);
+
+    if (!uploadedFile) {
+      return sendJson(res, 400, {
+        ok: false,
+        error: "A receipt photo, PDF, or file is required before submitting.",
+      });
+    }
+
+    const receiptName = getFieldValue(formFields, "receiptName");
+    const vendor = getFieldValue(formFields, "vendor");
+    const receiptDate = getFieldValue(formFields, "receiptDate");
+    const notes = getFieldValue(formFields, "notes");
+
+    const originalFileName =
+      uploadedFile.originalFilename || uploadedFile.newFilename || "receipt";
+    const contentType =
+      uploadedFile.mimetype || "application/octet-stream";
 
     const finalReceiptName =
       typeof receiptName === "string" && receiptName.trim()
         ? receiptName.trim()
         : buildFallbackReceiptName();
 
-    const fileSizeText = fileSize
-      ? `${Math.round(Number(fileSize) / 1024).toLocaleString()} KB`
+    const fileBuffer = fs.readFileSync(uploadedFile.filepath);
+
+    const blobPath = `receipts/chloes/${Date.now()}-${safeFileName(
+      originalFileName
+    )}`;
+
+    const blob = await put(blobPath, fileBuffer, {
+      access: "public",
+      contentType,
+      addRandomSuffix: true,
+    });
+
+    const fileSizeText = uploadedFile.size
+      ? `${Math.round(Number(uploadedFile.size) / 1024).toLocaleString()} KB`
       : "Unknown size";
 
     const intakeNotes = [
       notes ? `Staff note: ${notes}` : "",
-      "Initial Vibe upload staging pass.",
-      `Uploaded file pending attachment wiring: ${fileName}`,
-      fileType ? `File type: ${fileType}` : "",
+      "Initial Vibe receipt upload.",
+      `Uploaded file attached: ${originalFileName}`,
+      contentType ? `File type: ${contentType}` : "",
       `File size: ${fileSizeText}`,
+      `Blob URL: ${blob.url}`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -103,6 +177,12 @@ export default async function handler(req, res) {
       "Review Needed": true,
       Approved: false,
       Notes: intakeNotes,
+      "Uploaded File": [
+        {
+          url: blob.url,
+          filename: originalFileName,
+        },
+      ],
     };
 
     if (vendor && String(vendor).trim()) {
@@ -134,7 +214,7 @@ export default async function handler(req, res) {
     if (!airtableResponse.ok) {
       return sendJson(res, airtableResponse.status, {
         ok: false,
-        error: "Airtable rejected the receipt staging request.",
+        error: "Airtable rejected the receipt upload request.",
         details: airtableData,
       });
     }
@@ -143,11 +223,15 @@ export default async function handler(req, res) {
 
     return sendJson(res, 200, {
       ok: true,
-      message: "Receipt staged for review.",
+      message: "Receipt submitted for review.",
       recordId: createdRecord?.id,
       receiptName: finalReceiptName,
+      fileName: originalFileName,
+      fileUrl: blob.url,
     });
   } catch (error) {
+    console.error("Receipt intake error:", error);
+
     return sendJson(res, 500, {
       ok: false,
       error: error.message || "Unexpected receipt intake error.",
