@@ -7,6 +7,9 @@ export const config = {
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.AIRTABLE_PAT;
 const CHLOES_RESTAURANT_ID = process.env.AIRTABLE_CHLOES_RESTAURANT_ID;
+const BLOB_TOKEN =
+  process.env.BLOB_READ_WRITE_TOKEN ||
+  process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN;
 
 const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
 
@@ -113,13 +116,13 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return sendJson(res, 500, {
-        ok: false,
-        error:
-          "Missing BLOB_READ_WRITE_TOKEN. Add Vercel Blob storage to this project before uploading receipt files.",
-      });
-    }
+    if (!BLOB_TOKEN) {
+  return sendJson(res, 500, {
+    ok: false,
+    error:
+      "Missing Vercel Blob read/write token. Check that the public Blob store is connected to this project for Production and Preview.",
+  });
+}
 
     let put;
     let formidable;
@@ -189,10 +192,11 @@ export default async function handler(req, res) {
     )}`;
 
     const blob = await put(blobPath, fileBuffer, {
-      access: "public",
-      contentType,
-      addRandomSuffix: true,
-    });
+  access: "public",
+  contentType,
+  addRandomSuffix: true,
+  token: BLOB_TOKEN,
+});
 
     const fileSizeText = uploadedFile.size
       ? `${Math.round(Number(uploadedFile.size) / 1024).toLocaleString()} KB`
