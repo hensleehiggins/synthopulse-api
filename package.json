@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@airtable/blocks": "^0.12.2",
+    "airtable": "^0.12.2",
     "@vercel/blob": "latest",
     "formidable": "latest"
   }
