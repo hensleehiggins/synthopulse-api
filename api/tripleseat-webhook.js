@@ -242,6 +242,26 @@ async function upsertAirtableRecord(fields) {
   return createAirtableRecord(fields);
 }
 
+function capturedHeaders(req) {
+  return {
+    "content-type": req.headers["content-type"],
+    "user-agent": req.headers["user-agent"],
+    host: req.headers.host,
+    "x-forwarded-for": req.headers["x-forwarded-for"],
+    "x-forwarded-host": req.headers["x-forwarded-host"],
+    "x-forwarded-proto": req.headers["x-forwarded-proto"],
+    "x-tripleseat-signature": req.headers["x-tripleseat-signature"],
+    "x-tripleseat-signature-256": req.headers["x-tripleseat-signature-256"],
+    "x-tripleseat-webhook-signature": req.headers["x-tripleseat-webhook-signature"],
+    "x-webhook-signature": req.headers["x-webhook-signature"],
+    "x-webhook-signature-256": req.headers["x-webhook-signature-256"],
+    "x-hub-signature": req.headers["x-hub-signature"],
+    "x-hub-signature-256": req.headers["x-hub-signature-256"],
+    "x-signature": req.headers["x-signature"],
+    "x-signature-256": req.headers["x-signature-256"],
+  };
+}
+
 export default async function handler(req, res) {
   const receivedAt = new Date().toISOString();
 
@@ -266,23 +286,9 @@ export default async function handler(req, res) {
       receivedAt,
       method: req.method,
       query: req.query || {},
-      headers: {
-  "content-type": req.headers["content-type"],
-  "user-agent": req.headers["user-agent"],
-  host: req.headers.host,
-  "x-forwarded-for": req.headers["x-forwarded-for"],
-  "x-forwarded-host": req.headers["x-forwarded-host"],
-  "x-forwarded-proto": req.headers["x-forwarded-proto"],
-  "x-tripleseat-signature": req.headers["x-tripleseat-signature"],
-  "x-tripleseat-signature-256": req.headers["x-tripleseat-signature-256"],
-  "x-tripleseat-webhook-signature": req.headers["x-tripleseat-webhook-signature"],
-  "x-webhook-signature": req.headers["x-webhook-signature"],
-  "x-webhook-signature-256": req.headers["x-webhook-signature-256"],
-  "x-hub-signature": req.headers["x-hub-signature"],
-  "x-hub-signature-256": req.headers["x-hub-signature-256"],
-  "x-signature": req.headers["x-signature"],
-  "x-signature-256": req.headers["x-signature-256"],
-},
+      headers: capturedHeaders(req),
+      payload: req.body || {},
+    };
 
     const normalized = normalizeTripleseatPayload(req.body || {});
 
