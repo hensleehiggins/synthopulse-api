@@ -133,26 +133,72 @@ function normalizeTripleseatPayload(body) {
   };
 }
 
-async function createAirtableRecord(fields) {
+async function findExistingAirtableRecord(sourceEventId) {
+  if (!sourceEventId) return null;
+
+  const formula = `AND({Source} = "Tripleseat", {Source Event ID} = "${String(sourceEventId).replace(/"/g, '\\"')}")`;
+
+  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+    AIRTABLE_TABLE_NAME
+  )}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+    },
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Airtable lookup error ${response.status}: ${text}`);
+  }
+
+  const data = JSON.parse(text);
+  return data.records?.[0] || null;
+}
+
+async function upsertAirtableRecord(fields) {
   if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN) {
     throw new Error("Missing AIRTABLE_BASE_ID or AIRTABLE_PAT/AIRTABLE_TOKEN env var.");
   }
 
-  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+  const existingRecord = await findExistingAirtableRecord(fields["Source Event ID"]);
+
+  const baseUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
     AIRTABLE_TABLE_NAME
   )}`;
 
+  const url = existingRecord ? `${baseUrl}/${existingRecord.id}` : baseUrl;
+
   const response = await fetch(url, {
-    method: "POST",
+    method: existingRecord ? "PATCH" : "POST",
     headers: {
       Authorization: `Bearer ${AIRTABLE_TOKEN}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      records: [{ fields }],
-      typecast: true,
-    }),
+    body: JSON.stringify(
+      existingRecord
+        ? { fields, typecast: true }
+        : { records: [{ fields }], typecast: true }
+    ),
   });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Airtable upsert error ${response.status}: ${text}`);
+  }
+
+  const data = JSON.parse(text);
+
+  return {
+    action: existingRecord ? "updated" : "created",
+    recordId: existingRecord ? data.id : data.records?.[0]?.id,
+    raw: data,
+  };
+}
 
   const text = await response.text();
 
@@ -276,15 +322,16 @@ export default async function handler(req, res) {
       fields.Restaurant = [CHLOES_RESTAURANT_ID];
     }
 
-    const airtableResult = await createAirtableRecord(fields);
+   const airtableResult = await upsertAirtableRecord(fields);
 
     return res.status(200).json({
-      ok: true,
-      message: "Tripleseat webhook received and stored in Airtable.",
-      receivedAt,
-      airtableRecordId: airtableResult.records?.[0]?.id,
-      normalized,
-    });
+  ok: true,
+  message: `Tripleseat webhook received and ${airtableResult.action} in Airtable.`,
+  receivedAt,
+  airtableAction: airtableResult.action,
+  airtableRecordId: airtableResult.recordId,
+  normalized,
+});
   } catch (error) {
     console.error("Tripleseat webhook error:", error);
 
