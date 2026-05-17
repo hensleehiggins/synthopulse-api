@@ -16,32 +16,71 @@ function envStatus() {
   };
 }
 
-function buildUrl(path) {
-  const base = process.env.TRIPLESEAT_API_BASE_URL.replace(/\/$/, "");
-  return `${base}${path}`;
+function apiBase() {
+  return process.env.TRIPLESEAT_API_BASE_URL.replace(/\/$/, "");
 }
 
-async function tryEndpoint(path) {
-  const url = buildUrl(path);
+function redactedUrl(url) {
+  return url
+    .replace(/api_key=[^&]+/g, "api_key=REDACTED")
+    .replace(/auth_token=[^&]+/g, "auth_token=REDACTED")
+    .replace(/access_token=[^&]+/g, "access_token=REDACTED");
+}
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${process.env.TRIPLESEAT_API_KEY}`,
-      "X-API-Key": process.env.TRIPLESEAT_API_KEY,
-    },
-  });
-
+async function fetchWithPreview(url, options = {}) {
+  const response = await fetch(url, options);
   const text = await response.text();
 
   return {
-    path,
-    url,
     status: response.status,
     ok: response.ok,
     contentType: response.headers.get("content-type"),
-    bodyPreview: text.slice(0, 500),
+    bodyPreview: text.slice(0, 600),
+  };
+}
+
+async function tryRequest(label, path, authMode) {
+  const key = process.env.TRIPLESEAT_API_KEY;
+  let url = `${apiBase()}${path}`;
+  const headers = {
+    Accept: "application/json",
+  };
+
+  if (authMode === "bearer") {
+    headers.Authorization = `Bearer ${key}`;
+  }
+
+  if (authMode === "x-api-key") {
+    headers["X-API-Key"] = key;
+  }
+
+  if (authMode === "token-header") {
+    headers.Authorization = `Token token=${key}`;
+  }
+
+  if (authMode === "api-key-query") {
+    url += url.includes("?") ? `&api_key=${encodeURIComponent(key)}` : `?api_key=${encodeURIComponent(key)}`;
+  }
+
+  if (authMode === "auth-token-query") {
+    url += url.includes("?") ? `&auth_token=${encodeURIComponent(key)}` : `?auth_token=${encodeURIComponent(key)}`;
+  }
+
+  if (authMode === "access-token-query") {
+    url += url.includes("?") ? `&access_token=${encodeURIComponent(key)}` : `?access_token=${encodeURIComponent(key)}`;
+  }
+
+  const result = await fetchWithPreview(url, {
+    method: "GET",
+    headers,
+  });
+
+  return {
+    label,
+    path,
+    authMode,
+    url: redactedUrl(url),
+    ...result,
   };
 }
 
@@ -67,36 +106,64 @@ export default async function handler(req, res) {
     }
 
     const paths = [
-      "/events.json",
-      "/events",
       "/v1/events.json",
-      "/v1/events",
-      "/bookings.json",
-      "/bookings",
       "/v1/bookings.json",
-      "/v1/bookings",
+      "/v1/leads.json",
+      "/v1/accounts.json",
+      "/v1/contacts.json",
+    ];
+
+    const authModes = [
+      "bearer",
+      "x-api-key",
+      "token-header",
+      "api-key-query",
+      "auth-token-query",
+      "access-token-query",
     ];
 
     const results = [];
 
     for (const path of paths) {
-      try {
-        results.push(await tryEndpoint(path));
-      } catch (error) {
-        results.push({
-          path,
-          ok: false,
-          error: error.message,
-        });
+      for (const authMode of authModes) {
+        try {
+          results.push(await tryRequest(`${path} with ${authMode}`, path, authMode));
+        } catch (error) {
+          results.push({
+            label: `${path} with ${authMode}`,
+            path,
+            authMode,
+            ok: false,
+            error: error.message,
+          });
+        }
       }
     }
+
+    const usefulResults = results.filter((result) => {
+      const body = String(result.bodyPreview || "").toLowerCase();
+      return (
+        result.ok ||
+        result.status === 401 ||
+        result.status === 403 ||
+        body.includes("permission") ||
+        body.includes("unauthorized") ||
+        body.includes("invalid") ||
+        body.includes("token") ||
+        body.includes("api")
+      );
+    });
 
     return res.status(200).json({
       ok: true,
       route: "/api/tripleseat-probe",
-      message: "Tripleseat API probe completed.",
+      message: "Tripleseat API auth-style probe completed.",
       envStatus: envStatus(),
-      results,
+      summary: {
+        totalRequests: results.length,
+        usefulResults: usefulResults.length,
+      },
+      results: usefulResults,
     });
   } catch (error) {
     console.error("Tripleseat probe route error:", error);
