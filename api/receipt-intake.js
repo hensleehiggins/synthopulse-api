@@ -163,12 +163,18 @@ export default async function handler(req, res) {
 
     const uploadedFile = getUploadedFile(files);
 
-    if (!uploadedFile) {
-      return sendJson(res, 400, {
-        ok: false,
-        error: "A receipt photo, PDF, or file is required before submitting.",
-      });
-    }
+    if (
+  !uploadedFile ||
+  !uploadedFile.filepath ||
+  !(uploadedFile.originalFilename || uploadedFile.newFilename) ||
+  !uploadedFile.size ||
+  Number(uploadedFile.size) <= 0
+) {
+  return sendJson(res, 400, {
+    ok: false,
+    error: "A receipt photo, PDF, or file is required before submitting.",
+  });
+}
 
     const receiptName = getFieldValue(formFields, "receiptName");
     const vendor = getFieldValue(formFields, "vendor");
@@ -197,6 +203,12 @@ export default async function handler(req, res) {
   addRandomSuffix: true,
   token: BLOB_TOKEN,
 });
+    if (!blob?.url) {
+  return sendJson(res, 500, {
+    ok: false,
+    error: "Receipt file upload failed before Airtable record creation.",
+  });
+}
 
     const fileSizeText = uploadedFile.size
       ? `${Math.round(Number(uploadedFile.size) / 1024).toLocaleString()} KB`
