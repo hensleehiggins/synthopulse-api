@@ -1,408 +1,148 @@
-export const config = {
-  api: {
-    bodyParser: true,
-  },
-};
+// /api/tripleseat-webhook.js
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.AIRTABLE_PAT;
+const AIRTABLE_TOKEN = process.env.AIRTABLE_PAT || process.env.AIRTABLE_TOKEN;
+const AIRTABLE_TABLE_NAME = "Event Intake Queue";
 const CHLOES_RESTAURANT_ID = process.env.AIRTABLE_CHLOES_RESTAURANT_ID;
 
-const EVENT_INTAKE_TABLE = "Event Intake Queue";
-
-function setCorsHeaders(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Tripleseat-Signature, X-Webhook-Signature"
-  );
+function safeJson(value) {
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch (error) {
+    return JSON.stringify({
+      error: "Unable to stringify payload",
+      message: error.message,
+    });
+  }
 }
 
-function sendJson(res, statusCode, payload) {
-  setCorsHeaders(res);
-  return res.status(statusCode).json(payload);
+function firstDefined(...values) {
+  return values.find((value) => value !== undefined && value !== null && value !== "");
 }
 
-function safeString(value) {
-  if (value === undefined || value === null) return "";
-  if (typeof value === "string") return value.trim();
-  return String(value).trim();
-}
+function toDateOnly(value) {
+  if (!value) return undefined;
 
-function safeNumber(value) {
-  if (value === undefined || value === null || value === "") return undefined;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
-}
-
-function safeDate(value) {
-  if (!value) return "";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString();
-}
+  if (Number.isNaN(date.getTime())) return undefined;
 
-function safeDateOnly(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
   return date.toISOString().slice(0, 10);
 }
 
-function firstPresent(...values) {
-  for (const value of values) {
-    if (value !== undefined && value !== null && value !== "") return value;
-  }
-  return "";
-}
+function normalizeTripleseatPayload(body) {
+  const event =
+    body?.event ||
+    body?.data?.event ||
+    body?.booking?.event ||
+    body?.payload?.event ||
+    body?.data ||
+    body;
 
-function findNestedValue(obj, keys) {
-  if (!obj || typeof obj !== "object") return "";
-
-  for (const key of keys) {
-    if (obj[key] !== undefined && obj[key] !== null && obj[key] !== "") {
-      return obj[key];
-    }
-  }
-
-  for (const value of Object.values(obj)) {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      const nested = findNestedValue(value, keys);
-      if (nested !== "") return nested;
-    }
-  }
-
-  return "";
-}
-
-function buildEventName(payload) {
-  return (
-    safeString(
-      firstPresent(
-        findNestedValue(payload, ["event_name", "eventName", "name", "title"]),
-        payload?.event?.name,
-        payload?.booking?.name,
-        payload?.lead?.name
-      )
-    ) || "Tripleseat Event"
-  );
-}
-
-function buildExternalEventId(payload) {
-  return safeString(
-    firstPresent(
-      findNestedValue(payload, [
-        "event_id",
-        "eventId",
-        "id",
-        "booking_id",
-        "bookingId",
-        "lead_id",
-        "leadId",
-      ])
-    )
-  );
-}
-
-function buildRecordType(payload) {
-  const explicitType = safeString(
-    firstPresent(
-      payload?.type,
-      payload?.object,
-      payload?.record_type,
-      payload?.recordType,
-      payload?.event_type,
-      payload?.eventType
-    )
+  const sourceEventId = firstDefined(
+    event?.id,
+    event?.event_id,
+    event?.tripleseat_event_id,
+    body?.event_id,
+    body?.id
   );
 
-  const lower = explicitType.toLowerCase();
-
-  if (lower.includes("booking")) return "Booking";
-  if (lower.includes("lead")) return "Lead";
-  if (lower.includes("event")) return "Event";
-
-  if (payload?.booking) return "Booking";
-  if (payload?.lead) return "Lead";
-  if (payload?.event) return "Event";
-
-  return "Event";
-}
-
-function buildStatus(payload) {
-  return safeString(
-    firstPresent(
-      findNestedValue(payload, ["status", "event_status", "booking_status"]),
-      payload?.event?.status,
-      payload?.booking?.status,
-      payload?.lead?.status
-    )
+  const eventName = firstDefined(
+    event?.name,
+    event?.event_name,
+    event?.title,
+    body?.event_name,
+    body?.name,
+    "Tripleseat Event"
   );
-}
 
-function buildStartDateTime(payload) {
-  return safeDate(
-    firstPresent(
-      findNestedValue(payload, [
-        "start_at",
-        "starts_at",
-        "start_time",
-        "startTime",
-        "start_datetime",
-        "startDateTime",
-        "event_start",
-        "eventStart",
-        "date",
-        "event_date",
-        "eventDate",
-      ])
-    )
+  const startDateTime = firstDefined(
+    event?.start_time,
+    event?.starts_at,
+    event?.start_datetime,
+    event?.startDateTime,
+    event?.event_start,
+    body?.start_time,
+    body?.starts_at
   );
-}
 
-function buildEndDateTime(payload) {
-  return safeDate(
-    firstPresent(
-      findNestedValue(payload, [
-        "end_at",
-        "ends_at",
-        "end_time",
-        "endTime",
-        "end_datetime",
-        "endDateTime",
-        "event_end",
-        "eventEnd",
-      ])
-    )
+  const endDateTime = firstDefined(
+    event?.end_time,
+    event?.ends_at,
+    event?.end_datetime,
+    event?.endDateTime,
+    event?.event_end,
+    body?.end_time,
+    body?.ends_at
   );
-}
 
-function buildGuestCount(payload) {
-  return safeNumber(
-    firstPresent(
-      findNestedValue(payload, [
-        "guest_count",
-        "guestCount",
-        "guests",
-        "guest_total",
-        "guestTotal",
-        "attendees",
-        "party_size",
-        "partySize",
-      ])
-    )
+  const updatedAt = firstDefined(
+    event?.updated_at,
+    event?.updatedAt,
+    body?.updated_at,
+    body?.updatedAt
   );
-}
 
-function buildRoomSpace(payload) {
-  return safeString(
-    firstPresent(
-      findNestedValue(payload, [
-        "room",
-        "room_name",
-        "roomName",
-        "space",
-        "space_name",
-        "location",
-        "location_name",
-      ])
-    )
+  const bookedAt = firstDefined(
+    event?.created_at,
+    event?.createdAt,
+    event?.booked_at,
+    event?.bookedAt,
+    body?.created_at,
+    body?.booked_at
   );
-}
 
-function buildContactAccount(payload) {
-  return safeString(
-    firstPresent(
-      findNestedValue(payload, [
-        "contact_name",
-        "contactName",
-        "account_name",
-        "accountName",
-        "customer_name",
-        "customerName",
-        "client_name",
-        "clientName",
-      ])
-    )
-  );
-}
-
-function buildOwnerManager(payload) {
-  return safeString(
-    firstPresent(
-      findNestedValue(payload, [
-        "owner",
-        "owner_name",
-        "ownerName",
-        "manager",
-        "manager_name",
-        "managerName",
-        "event_manager",
-        "eventManager",
-      ])
-    )
-  );
-}
-
-function buildUpdatedAt(payload) {
-  return safeDate(
-    firstPresent(
-      findNestedValue(payload, [
-        "updated_at",
-        "updatedAt",
-        "modified_at",
-        "modifiedAt",
-      ])
-    )
-  );
-}
-
-function buildBookedAt(payload) {
-  return safeDate(
-    firstPresent(
-      findNestedValue(payload, [
-        "created_at",
-        "createdAt",
-        "booked_at",
-        "bookedAt",
-      ])
-    )
-  );
-}
-
-function buildMoney(payload, keys) {
-  return safeNumber(findNestedValue(payload, keys));
-}
-
-function buildRawSource(req, payload) {
-  return JSON.stringify(
-    {
-      receivedAt: new Date().toISOString(),
-      method: req.method,
-      query: req.query || {},
-      headers: {
-        "content-type": req.headers["content-type"],
-        "user-agent": req.headers["user-agent"],
-        "x-tripleseat-signature": req.headers["x-tripleseat-signature"],
-        "x-webhook-signature": req.headers["x-webhook-signature"],
-      },
-      payload,
-    },
-    null,
-    2
-  );
-}
-
-async function createEventIntakeRecord({ req, payload }) {
-  const eventName = buildEventName(payload);
-  const externalEventId = buildExternalEventId(payload);
-  const recordType = buildRecordType(payload);
-  const status = buildStatus(payload);
-  const startDateTime = buildStartDateTime(payload);
-  const endDateTime = buildEndDateTime(payload);
-  const guestCount = buildGuestCount(payload);
-  const roomSpace = buildRoomSpace(payload);
-  const contactAccount = buildContactAccount(payload);
-  const ownerManager = buildOwnerManager(payload);
-  const updatedAt = buildUpdatedAt(payload);
-  const bookedAt = buildBookedAt(payload);
-
-  const bookedRevenue = buildMoney(payload, [
-    "booked_revenue",
-    "bookedRevenue",
-    "actual_revenue",
-    "actualRevenue",
-    "revenue",
-    "total",
-    "grand_total",
-    "grandTotal",
-  ]);
-
-  const estimatedRevenue = buildMoney(payload, [
-    "estimated_revenue",
-    "estimatedRevenue",
-    "projected_revenue",
-    "projectedRevenue",
-    "estimated_total",
-    "estimatedTotal",
-  ]);
-
-  const depositPaid = buildMoney(payload, [
-    "deposit_paid",
-    "depositPaid",
-    "deposit",
-    "paid_deposit",
-    "paidDeposit",
-  ]);
-
-  const balanceDue = buildMoney(payload, [
-    "balance_due",
-    "balanceDue",
-    "remaining_balance",
-    "remainingBalance",
-  ]);
-
-  const fields = {
-    "Event Name": eventName,
-    Source: "Tripleseat",
-    "Source Event ID": externalEventId || `tripleseat-${Date.now()}`,
-    "External Event ID": externalEventId || `tripleseat-${Date.now()}`,
-    "Raw Source": buildRawSource(req, payload),
-    "Needs Review": true,
-    Status: "New",
-    Restaurant: CHLOES_RESTAURANT_ID ? [CHLOES_RESTAURANT_ID] : undefined,
-    "Tripleseat Event ID": externalEventId,
-    "Tripleseat Status": status,
-    "Tripleseat Record Type": recordType,
-    "Room / Space": roomSpace,
-    "Contact / Account": contactAccount,
-    "Owner / Event Manager": ownerManager,
-    "Booked At": bookedAt || undefined,
-    "Updated At": updatedAt || undefined,
-    Notes: "Created by Tripleseat webhook intake. Review before promotion to External Factors.",
+  return {
+    eventName,
+    sourceEventId,
+    tripleseatEventId: sourceEventId,
+    tripleseatStatus: firstDefined(event?.status, event?.event_status, body?.status),
+    guestCount: firstDefined(event?.guest_count, event?.guestCount, event?.guests, event?.attendance),
+    roomSpace: firstDefined(event?.room_name, event?.room, event?.space, event?.location_name),
+    contactAccount: firstDefined(
+      event?.contact_name,
+      event?.contact,
+      event?.account_name,
+      event?.account,
+      event?.customer_name
+    ),
+    estimatedRevenue: firstDefined(
+      event?.estimated_revenue,
+      event?.estimatedRevenue,
+      event?.revenue_estimate
+    ),
+    bookedRevenue: firstDefined(
+      event?.booked_revenue,
+      event?.bookedRevenue,
+      event?.actual_revenue,
+      event?.total_revenue
+    ),
+    depositPaid: firstDefined(event?.deposit_paid, event?.depositPaid, event?.deposit),
+    balanceDue: firstDefined(event?.balance_due, event?.balanceDue),
+    eventTypeMealPeriod: firstDefined(event?.event_type, event?.meal_period, event?.type),
+    ownerManager: firstDefined(
+      event?.owner_name,
+      event?.owner,
+      event?.manager_name,
+      event?.event_manager
+    ),
+    startDateTime,
+    endDateTime,
+    eventDate: toDateOnly(firstDefined(event?.event_date, event?.date, startDateTime)),
+    bookedAt,
+    updatedAt,
   };
+}
 
-  if (startDateTime) {
-    fields["Start DateTime"] = startDateTime;
-    fields["Event Date"] = safeDateOnly(startDateTime);
+async function createAirtableRecord(fields) {
+  if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN) {
+    throw new Error("Missing AIRTABLE_BASE_ID or AIRTABLE_PAT/AIRTABLE_TOKEN env var.");
   }
 
-  if (endDateTime) {
-    fields["End DateTime"] = endDateTime;
-  }
-
-  if (guestCount !== undefined) {
-    fields["Guest Count"] = guestCount;
-  }
-
-  if (bookedRevenue !== undefined) {
-    fields["Booked Revenue"] = bookedRevenue;
-  }
-
-  if (estimatedRevenue !== undefined) {
-    fields["Estimated Revenue"] = estimatedRevenue;
-  }
-
-  if (depositPaid !== undefined) {
-    fields["Deposit Paid"] = depositPaid;
-  }
-
-  if (balanceDue !== undefined) {
-    fields["Balance Due"] = balanceDue;
-  }
-
-  Object.keys(fields).forEach((key) => {
-    if (fields[key] === undefined || fields[key] === "") {
-      delete fields[key];
-    }
-  });
-
-  const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
-    EVENT_INTAKE_TABLE
+  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+    AIRTABLE_TABLE_NAME
   )}`;
 
-  const airtableResponse = await fetch(airtableUrl, {
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${AIRTABLE_TOKEN}`,
@@ -414,72 +154,144 @@ async function createEventIntakeRecord({ req, payload }) {
     }),
   });
 
-  const airtableData = await airtableResponse.json();
+  const text = await response.text();
 
-  if (!airtableResponse.ok) {
-    const error = new Error("Airtable rejected Tripleseat webhook intake.");
-    error.details = airtableData;
-    error.status = airtableResponse.status;
-    throw error;
+  if (!response.ok) {
+    throw new Error(`Airtable error ${response.status}: ${text}`);
   }
 
-  return airtableData?.records?.[0];
+  return JSON.parse(text);
 }
 
 export default async function handler(req, res) {
-  setCorsHeaders(res);
-
-  if (req.method === "OPTIONS") {
-    return res.status(204).end();
-  }
-
   if (req.method === "GET") {
-    return sendJson(res, 200, {
+    return res.status(200).json({
       ok: true,
-      route: "tripleseat-webhook",
-      message: "Tripleseat webhook endpoint is live. Use POST for webhook events.",
+      route: "/api/tripleseat-webhook",
+      message: "Tripleseat webhook route is live.",
+      timestamp: new Date().toISOString(),
     });
   }
 
   if (req.method !== "POST") {
-    return sendJson(res, 405, {
+    return res.status(405).json({
       ok: false,
-      error: "Method not allowed. Use POST.",
+      error: "Method not allowed",
     });
   }
 
+  const receivedAt = new Date().toISOString();
+
   try {
-    if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN) {
-      return sendJson(res, 500, {
-        ok: false,
-        error:
-          "Missing AIRTABLE_BASE_ID or AIRTABLE_PAT/AIRTABLE_TOKEN environment variable.",
-      });
+    const rawEnvelope = {
+      receivedAt,
+      method: req.method,
+      query: req.query || {},
+      headers: {
+        "content-type": req.headers["content-type"],
+        "user-agent": req.headers["user-agent"],
+        "x-tripleseat-signature": req.headers["x-tripleseat-signature"],
+        "x-webhook-signature": req.headers["x-webhook-signature"],
+        "x-hub-signature": req.headers["x-hub-signature"],
+        "x-hub-signature-256": req.headers["x-hub-signature-256"],
+      },
+      payload: req.body || {},
+    };
+
+    const normalized = normalizeTripleseatPayload(req.body || {});
+
+    const fields = {
+      "Event Name": normalized.eventName,
+      Source: "Tripleseat",
+      "Source Event ID": normalized.sourceEventId,
+      "Tripleseat Event ID": normalized.tripleseatEventId,
+      "Tripleseat Record Type": "Event",
+      "Needs Review": true,
+      Status: "New",
+      "Raw Source": safeJson(rawEnvelope),
+      Notes: "Captured from Tripleseat webhook. Review before promotion to External Factors.",
+    };
+
+    if (normalized.tripleseatStatus) {
+      fields["Tripleseat Status"] = normalized.tripleseatStatus;
     }
 
-    const payload = req.body || {};
+    if (normalized.guestCount !== undefined) {
+      fields["Guest Count"] = Number(normalized.guestCount);
+    }
 
-    const createdRecord = await createEventIntakeRecord({
-      req,
-      payload,
-    });
+    if (normalized.roomSpace) {
+      fields["Room / Space"] = normalized.roomSpace;
+    }
 
-    return sendJson(res, 200, {
+    if (normalized.contactAccount) {
+      fields["Contact / Account"] = normalized.contactAccount;
+    }
+
+    if (normalized.estimatedRevenue !== undefined) {
+      fields["Estimated Revenue"] = Number(normalized.estimatedRevenue);
+    }
+
+    if (normalized.bookedRevenue !== undefined) {
+      fields["Booked Revenue"] = Number(normalized.bookedRevenue);
+    }
+
+    if (normalized.depositPaid !== undefined) {
+      fields["Deposit Paid"] = Number(normalized.depositPaid);
+    }
+
+    if (normalized.balanceDue !== undefined) {
+      fields["Balance Due"] = Number(normalized.balanceDue);
+    }
+
+    if (normalized.eventTypeMealPeriod) {
+      fields["Event Type / Meal Period"] = normalized.eventTypeMealPeriod;
+    }
+
+    if (normalized.ownerManager) {
+      fields["Owner / Event Manager"] = normalized.ownerManager;
+    }
+
+    if (normalized.eventDate) {
+      fields["Event Date"] = normalized.eventDate;
+    }
+
+    if (normalized.startDateTime) {
+      fields["Start DateTime"] = normalized.startDateTime;
+    }
+
+    if (normalized.endDateTime) {
+      fields["End DateTime"] = normalized.endDateTime;
+    }
+
+    if (normalized.bookedAt) {
+      fields["Booked At"] = normalized.bookedAt;
+    }
+
+    if (normalized.updatedAt) {
+      fields["Updated At"] = normalized.updatedAt;
+    }
+
+    if (CHLOES_RESTAURANT_ID) {
+      fields.Restaurant = [CHLOES_RESTAURANT_ID];
+    }
+
+    const airtableResult = await createAirtableRecord(fields);
+
+    return res.status(200).json({
       ok: true,
-      message: "Tripleseat webhook received and stored for review.",
-      recordId: createdRecord?.id,
+      message: "Tripleseat webhook received and stored in Airtable.",
+      receivedAt,
+      airtableRecordId: airtableResult.records?.[0]?.id,
+      normalized,
     });
   } catch (error) {
-    console.error("Tripleseat webhook error:", {
-      message: error.message,
-      status: error.status,
-      details: error.details,
-    });
+    console.error("Tripleseat webhook error:", error);
 
-    return sendJson(res, error.status || 500, {
+    return res.status(500).json({
       ok: false,
-      error: error.message || "Unexpected Tripleseat webhook error.",
-      details: error.details || null,
+      error: error.message,
+      receivedAt,
     });
   }
 }
