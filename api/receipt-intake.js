@@ -93,12 +93,85 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "GET") {
+  const mode = req.query?.mode;
+
+  if (mode === "recent") {
+    if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN || !CHLOES_RESTAURANT_ID) {
+      return sendJson(res, 500, {
+        ok: false,
+        error:
+          "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_PAT or AIRTABLE_TOKEN, and AIRTABLE_CHLOES_RESTAURANT_ID.",
+      });
+    }
+
+    const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+      VENDOR_RECEIPTS_TABLE
+    )}?pageSize=25`;
+
+    const airtableResponse = await fetch(airtableUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const airtableData = await airtableResponse.json();
+
+    if (!airtableResponse.ok) {
+      return sendJson(res, airtableResponse.status, {
+        ok: false,
+        error: "Airtable rejected the recent receipts request.",
+        details: airtableData,
+      });
+    }
+
+    const records = Array.isArray(airtableData?.records)
+      ? airtableData.records
+      : [];
+
+    const recentReceipts = records
+      .filter((record) => {
+        const fields = record.fields || {};
+        const status = fields["Processing Status"];
+        const restaurantLinks = fields.Restaurant || [];
+        const hasRestaurant = restaurantLinks.includes(CHLOES_RESTAURANT_ID);
+
+        return hasRestaurant && status !== "Error";
+      })
+      .sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime))
+      .slice(0, 5)
+      .map((record) => {
+        const fields = record.fields || {};
+        const uploadedFiles = fields["Uploaded File"] || [];
+        const firstFile = uploadedFiles[0];
+
+        return {
+          id: record.id,
+          createdTime: record.createdTime,
+          receiptName: fields["Receipt Name"] || "Receipt upload",
+          vendor: fields.Vendor || "",
+          receiptDate: fields["Receipt Date"] || "",
+          processingStatus: fields["Processing Status"] || "Staged",
+          reviewNeeded: Boolean(fields["Review Needed"]),
+          approved: Boolean(fields.Approved),
+          fileName: firstFile?.filename || "",
+          fileUrl: firstFile?.url || "",
+        };
+      });
+
     return sendJson(res, 200, {
       ok: true,
-      route: "receipt-intake",
-      message: "Receipt intake API is reachable. Use POST to submit a receipt.",
+      receipts: recentReceipts,
     });
   }
+
+  return sendJson(res, 200, {
+    ok: true,
+    route: "receipt-intake",
+    message: "Receipt intake API is reachable. Use POST to submit a receipt.",
+  });
+}
 
   if (req.method !== "POST") {
     return sendJson(res, 405, {
