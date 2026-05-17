@@ -36,7 +36,8 @@ function normalizeTripleseatPayload(body) {
     body?.booking?.event ||
     body?.payload?.event ||
     body?.data ||
-    body;
+    body ||
+    {};
 
   const sourceEventId = firstDefined(
     event?.id,
@@ -133,14 +134,26 @@ function normalizeTripleseatPayload(body) {
   };
 }
 
+function airtableApiBaseUrl() {
+  return `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+    AIRTABLE_TABLE_NAME
+  )}`;
+}
+
+function escapeFormulaString(value) {
+  return String(value || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
 async function findExistingAirtableRecord(sourceEventId) {
   if (!sourceEventId) return null;
 
-  const formula = `AND({Source} = "Tripleseat", {Source Event ID} = "${String(sourceEventId).replace(/"/g, '\\"')}")`;
+  const formula = `AND({Source} = "Tripleseat", {Source Event ID} = "${escapeFormulaString(
+    sourceEventId
+  )}")`;
 
-  const url = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
-    AIRTABLE_TABLE_NAME
-  )}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
+  const url = `${airtableApiBaseUrl()}?filterByFormula=${encodeURIComponent(
+    formula
+  )}&maxRecords=1`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -159,6 +172,62 @@ async function findExistingAirtableRecord(sourceEventId) {
   return data.records?.[0] || null;
 }
 
+async function createAirtableRecord(fields) {
+  const response = await fetch(airtableApiBaseUrl(), {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      records: [{ fields }],
+      typecast: true,
+    }),
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Airtable create error ${response.status}: ${text}`);
+  }
+
+  const data = JSON.parse(text);
+
+  return {
+    action: "created",
+    recordId: data.records?.[0]?.id,
+    raw: data,
+  };
+}
+
+async function updateAirtableRecord(recordId, fields) {
+  const response = await fetch(`${airtableApiBaseUrl()}/${recordId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fields,
+      typecast: true,
+    }),
+  });
+
+  const text = await response.text();
+
+  if (!response.ok) {
+    throw new Error(`Airtable update error ${response.status}: ${text}`);
+  }
+
+  const data = JSON.parse(text);
+
+  return {
+    action: "updated",
+    recordId: data.id,
+    raw: data,
+  };
+}
+
 async function upsertAirtableRecord(fields) {
   if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN) {
     throw new Error("Missing AIRTABLE_BASE_ID or AIRTABLE_PAT/AIRTABLE_TOKEN env var.");
@@ -166,69 +235,33 @@ async function upsertAirtableRecord(fields) {
 
   const existingRecord = await findExistingAirtableRecord(fields["Source Event ID"]);
 
-  const baseUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
-    AIRTABLE_TABLE_NAME
-  )}`;
-
-  const url = existingRecord ? `${baseUrl}/${existingRecord.id}` : baseUrl;
-
-  const response = await fetch(url, {
-    method: existingRecord ? "PATCH" : "POST",
-    headers: {
-      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(
-      existingRecord
-        ? { fields, typecast: true }
-        : { records: [{ fields }], typecast: true }
-    ),
-  });
-
-  const text = await response.text();
-
-  if (!response.ok) {
-    throw new Error(`Airtable upsert error ${response.status}: ${text}`);
+  if (existingRecord?.id) {
+    return updateAirtableRecord(existingRecord.id, fields);
   }
 
-  const data = JSON.parse(text);
-
-  return {
-    action: existingRecord ? "updated" : "created",
-    recordId: existingRecord ? data.id : data.records?.[0]?.id,
-    raw: data,
-  };
-}
-
-  const text = await response.text();
-
-  if (!response.ok) {
-    throw new Error(`Airtable error ${response.status}: ${text}`);
-  }
-
-  return JSON.parse(text);
+  return createAirtableRecord(fields);
 }
 
 export default async function handler(req, res) {
-  if (req.method === "GET") {
-    return res.status(200).json({
-      ok: true,
-      route: "/api/tripleseat-webhook",
-      message: "Tripleseat webhook route is live.",
-      timestamp: new Date().toISOString(),
-    });
-  }
-
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      ok: false,
-      error: "Method not allowed",
-    });
-  }
-
   const receivedAt = new Date().toISOString();
 
   try {
+    if (req.method === "GET") {
+      return res.status(200).json({
+        ok: true,
+        route: "/api/tripleseat-webhook",
+        message: "Tripleseat webhook route is live.",
+        timestamp: receivedAt,
+      });
+    }
+
+    if (req.method !== "POST") {
+      return res.status(405).json({
+        ok: false,
+        error: "Method not allowed",
+      });
+    }
+
     const rawEnvelope = {
       receivedAt,
       method: req.method,
@@ -258,80 +291,36 @@ export default async function handler(req, res) {
       Notes: "Captured from Tripleseat webhook. Review before promotion to External Factors.",
     };
 
-    if (normalized.tripleseatStatus) {
-      fields["Tripleseat Status"] = normalized.tripleseatStatus;
-    }
-
-    if (normalized.guestCount !== undefined) {
-      fields["Guest Count"] = Number(normalized.guestCount);
-    }
-
-    if (normalized.roomSpace) {
-      fields["Room / Space"] = normalized.roomSpace;
-    }
-
-    if (normalized.contactAccount) {
-      fields["Contact / Account"] = normalized.contactAccount;
-    }
-
-    if (normalized.estimatedRevenue !== undefined) {
-      fields["Estimated Revenue"] = Number(normalized.estimatedRevenue);
-    }
-
-    if (normalized.bookedRevenue !== undefined) {
-      fields["Booked Revenue"] = Number(normalized.bookedRevenue);
-    }
-
-    if (normalized.depositPaid !== undefined) {
-      fields["Deposit Paid"] = Number(normalized.depositPaid);
-    }
-
-    if (normalized.balanceDue !== undefined) {
-      fields["Balance Due"] = Number(normalized.balanceDue);
-    }
-
-    if (normalized.eventTypeMealPeriod) {
-      fields["Event Type / Meal Period"] = normalized.eventTypeMealPeriod;
-    }
-
-    if (normalized.ownerManager) {
-      fields["Owner / Event Manager"] = normalized.ownerManager;
-    }
-
-    if (normalized.eventDate) {
-      fields["Event Date"] = normalized.eventDate;
-    }
-
-    if (normalized.startDateTime) {
-      fields["Start DateTime"] = normalized.startDateTime;
-    }
-
-    if (normalized.endDateTime) {
-      fields["End DateTime"] = normalized.endDateTime;
-    }
-
-    if (normalized.bookedAt) {
-      fields["Booked At"] = normalized.bookedAt;
-    }
-
-    if (normalized.updatedAt) {
-      fields["Updated At"] = normalized.updatedAt;
-    }
+    if (normalized.tripleseatStatus) fields["Tripleseat Status"] = normalized.tripleseatStatus;
+    if (normalized.guestCount !== undefined) fields["Guest Count"] = Number(normalized.guestCount);
+    if (normalized.roomSpace) fields["Room / Space"] = normalized.roomSpace;
+    if (normalized.contactAccount) fields["Contact / Account"] = normalized.contactAccount;
+    if (normalized.estimatedRevenue !== undefined) fields["Estimated Revenue"] = Number(normalized.estimatedRevenue);
+    if (normalized.bookedRevenue !== undefined) fields["Booked Revenue"] = Number(normalized.bookedRevenue);
+    if (normalized.depositPaid !== undefined) fields["Deposit Paid"] = Number(normalized.depositPaid);
+    if (normalized.balanceDue !== undefined) fields["Balance Due"] = Number(normalized.balanceDue);
+    if (normalized.eventTypeMealPeriod) fields["Event Type / Meal Period"] = normalized.eventTypeMealPeriod;
+    if (normalized.ownerManager) fields["Owner / Event Manager"] = normalized.ownerManager;
+    if (normalized.eventDate) fields["Event Date"] = normalized.eventDate;
+    if (normalized.startDateTime) fields["Start DateTime"] = normalized.startDateTime;
+    if (normalized.endDateTime) fields["End DateTime"] = normalized.endDateTime;
+    if (normalized.bookedAt) fields["Booked At"] = normalized.bookedAt;
+    if (normalized.updatedAt) fields["Updated At"] = normalized.updatedAt;
 
     if (CHLOES_RESTAURANT_ID) {
       fields.Restaurant = [CHLOES_RESTAURANT_ID];
     }
 
-   const airtableResult = await upsertAirtableRecord(fields);
+    const airtableResult = await upsertAirtableRecord(fields);
 
     return res.status(200).json({
-  ok: true,
-  message: `Tripleseat webhook received and ${airtableResult.action} in Airtable.`,
-  receivedAt,
-  airtableAction: airtableResult.action,
-  airtableRecordId: airtableResult.recordId,
-  normalized,
-});
+      ok: true,
+      message: `Tripleseat webhook received and ${airtableResult.action} in Airtable.`,
+      receivedAt,
+      airtableAction: airtableResult.action,
+      airtableRecordId: airtableResult.recordId,
+      normalized,
+    });
   } catch (error) {
     console.error("Tripleseat webhook error:", error);
 
