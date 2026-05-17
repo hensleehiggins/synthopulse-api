@@ -43,6 +43,12 @@ export default async function handler(req, res) {
         route: "/api/tripleseat/auth",
         message: "Tripleseat OAuth start route is installed, but required env vars are missing.",
         missingEnvVars: missing,
+envStatus: {
+  TRIPLESEAT_CLIENT_ID: process.env.TRIPLESEAT_CLIENT_ID ? "set" : "missing",
+  TRIPLESEAT_REDIRECT_URI: process.env.TRIPLESEAT_REDIRECT_URI ? "set" : "missing",
+  TRIPLESEAT_AUTH_URL: process.env.TRIPLESEAT_AUTH_URL ? "set" : "missing",
+  TRIPLESEAT_SCOPE: process.env.TRIPLESEAT_SCOPE ? "set" : "not set",
+},
         requiredEnvVars: REQUIRED_ENV_VARS,
         optionalEnvVars: ["TRIPLESEAT_SCOPE"],
       });
