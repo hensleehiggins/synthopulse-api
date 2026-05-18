@@ -177,6 +177,53 @@ async function createReceiptLines(lines) {
     };
   }
 
+  async function fetchExistingReceiptLinesForReceipt(receiptId) {
+  const allRecords = [];
+  let offset = "";
+
+  do {
+    const params = new URLSearchParams();
+    params.set("pageSize", "100");
+
+    if (offset) {
+      params.set("offset", offset);
+    }
+
+    const path = `${AIRTABLE_BASE_ID}/${encodeURIComponent(
+      VENDOR_RECEIPT_LINES_TABLE
+    )}?${params.toString()}`;
+
+    const result = await airtableFetch(path, {
+      method: "GET",
+    });
+
+    if (!result.ok) {
+      return result;
+    }
+
+    const records = Array.isArray(result.data?.records)
+      ? result.data.records
+      : [];
+
+    allRecords.push(...records);
+
+    offset = result.data?.offset || "";
+  } while (offset);
+
+  const matchingRecords = allRecords.filter((record) => {
+    const linkedReceipts = record.fields?.Receipt || [];
+    return linkedReceipts.includes(receiptId);
+  });
+
+  return {
+    ok: true,
+    status: 200,
+    data: {
+      records: matchingRecords,
+    },
+  };
+}
+
   const path = `${AIRTABLE_BASE_ID}/${encodeURIComponent(
     VENDOR_RECEIPT_LINES_TABLE
   )}`;
@@ -508,18 +555,43 @@ export default async function handler(req, res) {
     }
 
     if (!receipt.approved) {
-      return sendJson(res, 409, {
-        ok: false,
-        error:
-          "Receipt must be approved before parsing. Approve it in Receipt Review first.",
-      });
-    }
+  return sendJson(res, 409, {
+    ok: false,
+    error:
+      "Receipt must be approved before parsing. Approve it in Receipt Review first.",
+  });
+}
 
-    await updateReceipt(receipt.id, {
-      "Processing Status": "Parsing",
-      "Processed At": new Date().toISOString(),
-      "Error Message": "",
-    });
+const existingLinesResult = await fetchExistingReceiptLinesForReceipt(receipt.id);
+
+if (!existingLinesResult.ok) {
+  return sendJson(res, existingLinesResult.status, {
+    ok: false,
+    error: "Could not check existing receipt lines before parsing.",
+    details: existingLinesResult.data,
+  });
+}
+
+const existingLineCount = Array.isArray(existingLinesResult.data?.records)
+  ? existingLinesResult.data.records.length
+  : 0;
+
+const force = Boolean(req.body?.force);
+
+if (existingLineCount > 0 && !force) {
+  return sendJson(res, 409, {
+    ok: false,
+    error:
+      "This receipt already has parsed line records. Use force=true only if you intentionally want to parse it again.",
+    existingLineCount,
+  });
+}
+
+await updateReceipt(receipt.id, {
+  "Processing Status": "Parsing",
+  "Processed At": new Date().toISOString(),
+  "Error Message": "",
+});
 
     const openAiResult = await callOpenAIForReceipt(receipt);
 
