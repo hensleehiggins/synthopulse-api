@@ -241,6 +241,33 @@ function calculateChangePercent(currentCost, proposedCost) {
   return (proposed - current) / current;
 }
 
+function isAlreadyCurrentCost(currentCost, proposedCost) {
+  const current = asNumberOrNull(currentCost);
+  const proposed = asNumberOrNull(proposedCost);
+
+  if (current === null || proposed === null) {
+    return false;
+  }
+
+  return Math.abs(current - proposed) < 0.01;
+}
+
+function isMeaningfulCostChange(currentCost, proposedCost) {
+  const current = asNumberOrNull(currentCost);
+  const proposed = asNumberOrNull(proposedCost);
+
+  if (proposed === null || proposed <= 0) {
+    return false;
+  }
+
+  // If KitchenPulse has no current cost, applying a valid proposed cost is meaningful.
+  if (current === null) {
+    return true;
+  }
+
+  return Math.abs(current - proposed) >= 0.01;
+}
+
 function getProposedCostFromLineRecord(record) {
   const fields = record.fields || {};
 
@@ -398,6 +425,7 @@ function normalizeLineRecord(record) {
 
 function normalizeProposalRecord(record, matchSuggestions = []) {
   const fields = record.fields || {};
+
   const matchedInventoryItemIds = linkedIds(
     fields[PROPOSAL_FIELD.matchedInventoryItem]
   );
@@ -405,10 +433,19 @@ function normalizeProposalRecord(record, matchSuggestions = []) {
     fields[PROPOSAL_FIELD.matchedCostSourceItem]
   );
 
+  const currentCost = asNumberOrNull(fields[PROPOSAL_FIELD.currentCost]);
+  const proposedCost = asNumberOrNull(fields[PROPOSAL_FIELD.proposedCost]);
+
   const approved = Boolean(fields[PROPOSAL_FIELD.approved]);
   const applied = Boolean(fields[PROPOSAL_FIELD.applied]);
   const hasMatch =
     matchedInventoryItemIds.length > 0 || matchedCostSourceItemIds.length > 0;
+
+  const proposalStatus =
+    fields[PROPOSAL_FIELD.proposalStatus] || "Needs Review";
+
+  const alreadyCurrent = isAlreadyCurrentCost(currentCost, proposedCost);
+  const meaningfulChange = isMeaningfulCostChange(currentCost, proposedCost);
 
   return {
     id: record.id,
@@ -424,11 +461,11 @@ function normalizeProposalRecord(record, matchSuggestions = []) {
     vendor: fields[PROPOSAL_FIELD.vendor] || "",
     parsedItemName: fields[PROPOSAL_FIELD.parsedItemName] || "",
 
-    currentCost: asNumberOrNull(fields[PROPOSAL_FIELD.currentCost]),
-    proposedCost: asNumberOrNull(fields[PROPOSAL_FIELD.proposedCost]),
+    currentCost,
+    proposedCost,
     changePercent: asNumberOrNull(fields[PROPOSAL_FIELD.changePercent]),
 
-    proposalStatus: fields[PROPOSAL_FIELD.proposalStatus] || "Needs Review",
+    proposalStatus,
     approved,
     applied,
 
@@ -436,13 +473,23 @@ function normalizeProposalRecord(record, matchSuggestions = []) {
     notes: fields[PROPOSAL_FIELD.notes] || "",
 
     hasMatch,
+    alreadyCurrent,
+    meaningfulChange,
     matchSuggestions,
+
+    canApprove:
+      proposalStatus === "Needs Review" &&
+      hasMatch &&
+      meaningfulChange &&
+      !alreadyCurrent,
 
     canApply:
       approved &&
       !applied &&
       hasMatch &&
-      (fields[PROPOSAL_FIELD.proposalStatus] || "Needs Review") === "Approved",
+      meaningfulChange &&
+      !alreadyCurrent &&
+      proposalStatus === "Approved",
   };
 }
 
@@ -450,7 +497,8 @@ function buildProposalCounts(proposals) {
   return {
     total: proposals.length,
     needsReview: proposals.filter(
-      (proposal) => proposal.proposalStatus === "Needs Review"
+      (proposal) =>
+        proposal.proposalStatus === "Needs Review" && !proposal.alreadyCurrent
     ).length,
     approved: proposals.filter(
       (proposal) => proposal.proposalStatus === "Approved"
@@ -466,8 +514,14 @@ function buildProposalCounts(proposals) {
         proposal.matchedInventoryItemIds.length > 0 ||
         proposal.matchedCostSourceItemIds.length > 0;
 
-      return !hasMatch && proposal.proposalStatus !== "Rejected";
+      return (
+        !hasMatch &&
+        proposal.proposalStatus !== "Rejected" &&
+        proposal.proposalStatus !== "Applied"
+      );
     }).length,
+    alreadyCurrent: proposals.filter((proposal) => proposal.alreadyCurrent)
+      .length,
   };
 }
 
@@ -656,18 +710,109 @@ function buildMatchSuggestionsForProposal({
     });
   }
 
-  return suggestions
-    .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
+    const sorted = suggestions.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
 
-      const aHasCost = a.currentCost !== null && typeof a.currentCost !== "undefined";
-      const bHasCost = b.currentCost !== null && typeof b.currentCost !== "undefined";
+    const aHasCost =
+      a.currentCost !== null && typeof a.currentCost !== "undefined";
+    const bHasCost =
+      b.currentCost !== null && typeof b.currentCost !== "undefined";
 
-      if (aHasCost !== bHasCost) return bHasCost ? 1 : -1;
+    if (aHasCost !== bHasCost) return bHasCost ? 1 : -1;
 
-      return String(a.name).localeCompare(String(b.name));
-    })
-    .slice(0, 5);
+    return String(a.name).localeCompare(String(b.name));
+  });
+
+  const hasStrongMatch = sorted.some((suggestion) => suggestion.score >= 80);
+  const hasLikelyMatch = sorted.some((suggestion) => suggestion.score >= 55);
+
+  // If we have a strong match, do not distract the owner with weak "same word" guesses.
+  if (hasStrongMatch) {
+    return sorted.filter((suggestion) => suggestion.score >= 80).slice(0, 5);
+  }
+
+  // If no strong match exists, show likely matches only.
+  if (hasLikelyMatch) {
+    return sorted.filter((suggestion) => suggestion.score >= 55).slice(0, 5);
+  }
+
+  // Otherwise show only the top weak options, clearly labeled as possible matches.
+  return sorted.slice(0, 3);
+}
+
+function getProposalRecordStatus(record) {
+  const fields = record.fields || {};
+  return fields[PROPOSAL_FIELD.proposalStatus] || "Needs Review";
+}
+
+function getProposalRecordReceiptLineId(record) {
+  const fields = record.fields || {};
+  return firstLinkedId(fields[PROPOSAL_FIELD.receiptLine]);
+}
+
+function getProposalRecordCreatedTime(record) {
+  const created = new Date(record.createdTime || 0).getTime();
+  return Number.isNaN(created) ? 0 : created;
+}
+
+function hasProposalRecordMatch(record) {
+  const fields = record.fields || {};
+
+  return (
+    linkedIds(fields[PROPOSAL_FIELD.matchedInventoryItem]).length > 0 ||
+    linkedIds(fields[PROPOSAL_FIELD.matchedCostSourceItem]).length > 0
+  );
+}
+
+function rankProposalRecordForDisplay(record) {
+  const status = getProposalRecordStatus(record);
+  const hasMatch = hasProposalRecordMatch(record);
+
+  if (status === "Applied") return 1000;
+  if (status === "Approved" && hasMatch) return 900;
+  if (status === "Needs Review" && hasMatch) return 800;
+  if (status === "Approved") return 700;
+  if (status === "Needs Review") return 600;
+  if (status === "Rejected") return 100;
+
+  return 0;
+}
+
+function getCanonicalProposalRecords(records) {
+  const groups = new Map();
+  const unlinked = [];
+
+  for (const record of records) {
+    const receiptLineId = getProposalRecordReceiptLineId(record);
+
+    if (!receiptLineId) {
+      unlinked.push(record);
+      continue;
+    }
+
+    if (!groups.has(receiptLineId)) {
+      groups.set(receiptLineId, []);
+    }
+
+    groups.get(receiptLineId).push(record);
+  }
+
+  const canonical = [...unlinked];
+
+  for (const groupRecords of groups.values()) {
+    const sortedGroup = [...groupRecords].sort((a, b) => {
+      const rankDiff =
+        rankProposalRecordForDisplay(b) - rankProposalRecordForDisplay(a);
+
+      if (rankDiff !== 0) return rankDiff;
+
+      return getProposalRecordCreatedTime(b) - getProposalRecordCreatedTime(a);
+    });
+
+    canonical.push(sortedGroup[0]);
+  }
+
+  return canonical;
 }
 
 async function listProposals(req, res) {
