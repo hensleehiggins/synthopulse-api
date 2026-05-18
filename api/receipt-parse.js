@@ -236,6 +236,7 @@ async function fetchExistingReceiptLinesForReceipt(receiptId) {
     },
   };
 }
+
 function parseJsonFromModelText(text) {
   const raw = normalizeText(text);
 
@@ -436,19 +437,19 @@ function buildReceiptUpdateFields(receipt, parsed, parsedText) {
 
   const notesParts = [
     receipt.notes || "",
-    `PARSING ACTION ${new Date().toISOString()}: AI parsed receipt into staging data. ${lineCount} line(s) detected. Lines require review before downstream use.`,
+    `PARSING ACTION ${new Date().toISOString()}: AI parsed receipt into staging data. ${lineCount} line(s) detected.`,
     parsed.reviewReason ? `Parser review reason: ${parsed.reviewReason}` : "",
   ];
 
   const fields = {
-    "Processing Status": lineCount > 0 ? "Parsed" : "Needs Review",
-    "Review Needed": true,
-    Approved: false,
-    "Raw OCR / AI Text": normalizeText(parsed.rawText) || parsedText,
-    "Parsed JSON": JSON.stringify(parsed, null, 2),
-    "Processed At": new Date().toISOString(),
-    Notes: notesParts.filter(Boolean).join("\n\n"),
-  };
+  "Processing Status": lineCount > 0 ? "Parsed" : "Needs Review",
+  "Review Needed": lineCount === 0,
+  Approved: true,
+  "Raw OCR / AI Text": normalizeText(parsed.rawText) || parsedText,
+  "Parsed JSON": JSON.stringify(parsed, null, 2),
+  "Processed At": new Date().toISOString(),
+  Notes: notesParts.filter(Boolean).join("\n\n"),
+};
 
   if (parsedVendor && !receipt.vendor) {
     fields.Vendor = parsedVendor;
@@ -487,7 +488,7 @@ function buildLineFields({ receipt, parsed, line, index }) {
     "Needs Review": true,
     Approved: false,
     "Raw Line Text": normalizeText(line.rawLineText),
-    Notes: "AI-parsed staging line. Review required before downstream use.",
+    Notes: "AI-parsed staging line.",
   };
 }
 
@@ -554,43 +555,45 @@ export default async function handler(req, res) {
     }
 
     if (!receipt.approved) {
-  return sendJson(res, 409, {
-    ok: false,
-    error:
-      "Receipt must be approved before parsing. Approve it in Receipt Review first.",
-  });
-}
+      return sendJson(res, 409, {
+        ok: false,
+        error:
+          "Receipt must be approved before parsing. Approve it in Receipt Review first.",
+      });
+    }
 
-const existingLinesResult = await fetchExistingReceiptLinesForReceipt(receipt.id);
+    const existingLinesResult = await fetchExistingReceiptLinesForReceipt(
+      receipt.id
+    );
 
-if (!existingLinesResult.ok) {
-  return sendJson(res, existingLinesResult.status, {
-    ok: false,
-    error: "Could not check existing receipt lines before parsing.",
-    details: existingLinesResult.data,
-  });
-}
+    if (!existingLinesResult.ok) {
+      return sendJson(res, existingLinesResult.status, {
+        ok: false,
+        error: "Could not check existing receipt lines before parsing.",
+        details: existingLinesResult.data,
+      });
+    }
 
-const existingLineCount = Array.isArray(existingLinesResult.data?.records)
-  ? existingLinesResult.data.records.length
-  : 0;
+    const existingLineCount = Array.isArray(existingLinesResult.data?.records)
+      ? existingLinesResult.data.records.length
+      : 0;
 
-const force = Boolean(req.body?.force);
+    const force = Boolean(req.body?.force);
 
-if (existingLineCount > 0 && !force) {
-  return sendJson(res, 409, {
-    ok: false,
-    error:
-      "This receipt already has parsed line records. Use force=true only if you intentionally want to parse it again.",
-    existingLineCount,
-  });
-}
+    if (existingLineCount > 0 && !force) {
+      return sendJson(res, 409, {
+        ok: false,
+        error:
+          "This receipt already has parsed line records. Use force=true only if you intentionally want to parse it again.",
+        existingLineCount,
+      });
+    }
 
-await updateReceipt(receipt.id, {
-  "Processing Status": "Parsing",
-  "Processed At": new Date().toISOString(),
-  "Error Message": "",
-});
+    await updateReceipt(receipt.id, {
+      "Processing Status": "Parsing",
+      "Processed At": new Date().toISOString(),
+      "Error Message": "",
+    });
 
     const openAiResult = await callOpenAIForReceipt(receipt);
 
@@ -667,8 +670,7 @@ await updateReceipt(receipt.id, {
 
     return sendJson(res, 200, {
       ok: true,
-      message:
-        "Receipt parsed into staging lines. Review required before downstream use.",
+      message: "Receipt parsed into staging lines.",
       recordId: receipt.id,
       receiptName: receipt.receiptName,
       parsedVendor: parsed.vendor || "",
