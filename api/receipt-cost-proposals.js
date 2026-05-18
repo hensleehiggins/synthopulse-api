@@ -710,7 +710,7 @@ function buildMatchSuggestionsForProposal({
     });
   }
 
-    const sorted = suggestions.sort((a, b) => {
+  const sorted = suggestions.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
 
     const aHasCost =
@@ -816,11 +816,18 @@ function getCanonicalProposalRecords(records) {
 }
 
 async function listProposals(req, res) {
-  const proposalRecords = await listAirtableRecords({
+  const includeHistory =
+    String(req.query?.includeHistory || "").toLowerCase() === "true";
+
+  const proposalRecordsRaw = await listAirtableRecords({
     tableId: COST_PROPOSALS_TABLE_ID,
     fields: Object.values(PROPOSAL_FIELD),
     pageSize: 100,
   });
+
+  const proposalRecords = includeHistory
+    ? proposalRecordsRaw
+    : getCanonicalProposalRecords(proposalRecordsRaw);
 
   const baseProposals = proposalRecords.map((record) =>
     normalizeProposalRecord(record)
@@ -870,6 +877,10 @@ async function listProposals(req, res) {
       const aRank = statusRank[a.proposalStatus] || 99;
       const bRank = statusRank[b.proposalStatus] || 99;
 
+      if (a.alreadyCurrent !== b.alreadyCurrent) {
+        return a.alreadyCurrent ? 1 : -1;
+      }
+
       if (aRank !== bRank) return aRank - bRank;
 
       return String(a.parsedItemName || a.proposalName).localeCompare(
@@ -881,6 +892,9 @@ async function listProposals(req, res) {
     ok: true,
     counts: buildProposalCounts(proposals),
     proposals,
+    hiddenDuplicateCount: includeHistory
+      ? 0
+      : Math.max(0, proposalRecordsRaw.length - proposalRecords.length),
   });
 }
 
@@ -1130,9 +1144,31 @@ async function updateProposalReview(req, res, action) {
     });
   }
 
+  const proposalRecord = await airtableRequest({
+    method: "GET",
+    tableId: COST_PROPOSALS_TABLE_ID,
+    recordId,
+  });
+
+  const proposal = normalizeProposalRecord(proposalRecord);
   const fields = {};
 
   if (action === "approve") {
+    if (!proposal.hasMatch) {
+      return sendJson(res, 400, {
+        ok: false,
+        error: "Choose a KitchenPulse item match before approving this proposal.",
+      });
+    }
+
+    if (proposal.alreadyCurrent || !proposal.meaningfulChange) {
+      return sendJson(res, 400, {
+        ok: false,
+        error:
+          "This cost is already current. No approval is needed for this proposal.",
+      });
+    }
+
     fields[PROPOSAL_FIELD.proposalStatus] = "Approved";
     fields[PROPOSAL_FIELD.approved] = true;
 
@@ -1361,49 +1397,101 @@ async function applyProposal(req, res) {
     });
   }
 
+  if (proposal.alreadyCurrent || !proposal.meaningfulChange) {
+    return sendJson(res, 400, {
+      ok: false,
+      error:
+        "This cost is already current. No pricing update is needed for this proposal.",
+    });
+  }
+
   const targetUpdates = [];
 
   const inventoryItemId = proposal.matchedInventoryItemIds[0] || "";
   const costSourceItemId = proposal.matchedCostSourceItemIds[0] || "";
 
   if (inventoryItemId) {
-    await airtableRequest({
-      method: "PATCH",
+    const inventoryRecord = await airtableRequest({
+      method: "GET",
       tableId: INVENTORY_ITEMS_TABLE_ID,
       recordId: inventoryItemId,
-      body: {
-        fields: {
-          [INVENTORY_FIELD.costPerUnit]: proposal.proposedCost,
-        },
-      },
     });
 
-    targetUpdates.push({
-      table: "Inventory Items",
-      recordId: inventoryItemId,
-      field: INVENTORY_FIELD.costPerUnit,
-      value: proposal.proposedCost,
-    });
+    const previousValue = getInventoryCurrentCost(inventoryRecord);
+
+    if (!isMeaningfulCostChange(previousValue, proposal.proposedCost)) {
+      targetUpdates.push({
+        table: "Inventory Items",
+        recordId: inventoryItemId,
+        field: INVENTORY_FIELD.costPerUnit,
+        previousValue,
+        value: proposal.proposedCost,
+        skipped: true,
+        reason: "Already current",
+      });
+    } else {
+      await airtableRequest({
+        method: "PATCH",
+        tableId: INVENTORY_ITEMS_TABLE_ID,
+        recordId: inventoryItemId,
+        body: {
+          fields: {
+            [INVENTORY_FIELD.costPerUnit]: proposal.proposedCost,
+          },
+        },
+      });
+
+      targetUpdates.push({
+        table: "Inventory Items",
+        recordId: inventoryItemId,
+        field: INVENTORY_FIELD.costPerUnit,
+        previousValue,
+        value: proposal.proposedCost,
+        skipped: false,
+      });
+    }
   }
 
   if (costSourceItemId) {
-    await airtableRequest({
-      method: "PATCH",
+    const costSourceRecord = await airtableRequest({
+      method: "GET",
       tableId: COST_SOURCE_ITEMS_TABLE_ID,
       recordId: costSourceItemId,
-      body: {
-        fields: {
-          [COST_SOURCE_FIELD.unitPrice]: proposal.proposedCost,
-        },
-      },
     });
 
-    targetUpdates.push({
-      table: "Cost Source Items",
-      recordId: costSourceItemId,
-      field: COST_SOURCE_FIELD.unitPrice,
-      value: proposal.proposedCost,
-    });
+    const previousValue = getCostSourceCurrentCost(costSourceRecord);
+
+    if (!isMeaningfulCostChange(previousValue, proposal.proposedCost)) {
+      targetUpdates.push({
+        table: "Cost Source Items",
+        recordId: costSourceItemId,
+        field: COST_SOURCE_FIELD.unitPrice,
+        previousValue,
+        value: proposal.proposedCost,
+        skipped: true,
+        reason: "Already current",
+      });
+    } else {
+      await airtableRequest({
+        method: "PATCH",
+        tableId: COST_SOURCE_ITEMS_TABLE_ID,
+        recordId: costSourceItemId,
+        body: {
+          fields: {
+            [COST_SOURCE_FIELD.unitPrice]: proposal.proposedCost,
+          },
+        },
+      });
+
+      targetUpdates.push({
+        table: "Cost Source Items",
+        recordId: costSourceItemId,
+        field: COST_SOURCE_FIELD.unitPrice,
+        previousValue,
+        value: proposal.proposedCost,
+        skipped: false,
+      });
+    }
   }
 
   if (targetUpdates.length === 0) {
@@ -1411,6 +1499,17 @@ async function applyProposal(req, res) {
       ok: false,
       error:
         "This proposal is not matched to an Inventory Item or Cost Source Item yet.",
+    });
+  }
+
+  const appliedUpdates = targetUpdates.filter((update) => !update.skipped);
+
+  if (appliedUpdates.length === 0) {
+    return sendJson(res, 400, {
+      ok: false,
+      error:
+        "This cost is already current. No pricing update is needed for this proposal.",
+      targetUpdates,
     });
   }
 
