@@ -353,19 +353,18 @@ export default async function handler(req, res) {
       const updatedRecord = updateResult.data?.records?.[0];
 
       return sendJson(res, 200, {
-        ok: true,
-        message:
-          message:
-  action === "approve"
-    ? "Receipt approved. No downstream cost or inventory updates were made."
-    : action === "reject"
-    ? "Receipt rejected. No downstream cost or inventory updates were made."
-    : action === "archive"
-    ? "Receipt archived. It is hidden from the active queue."
-    : "Receipt returned to review. No downstream cost or inventory updates were made.",
-        recordId: updatedRecord?.id,
-        action,
-      });
+  ok: true,
+  message:
+    action === "approve"
+      ? "Receipt approved. No downstream cost or inventory updates were made."
+      : action === "reject"
+      ? "Receipt rejected. No downstream cost or inventory updates were made."
+      : action === "archive"
+      ? "Receipt archived. It is hidden from the active queue."
+      : "Receipt returned to review. No downstream cost or inventory updates were made.",
+  recordId: updatedRecord?.id,
+  action,
+});
     } catch (error) {
       console.error("Receipt review POST error:", error);
 
