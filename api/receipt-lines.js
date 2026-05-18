@@ -330,7 +330,7 @@ async function updateReceiptLine(req, res) {
     if (body.notes) {
       fields[FIELD.notes] = String(body.notes).trim();
     }
-  } else if (action === "update_line") {
+    } else if (action === "update_line") {
     Object.assign(fields, sanitizeUpdateFields(body.line || body));
 
     // A saved edit should not automatically approve the line.
@@ -341,6 +341,21 @@ async function updateReceiptLine(req, res) {
         error: "No editable line fields were provided.",
       });
     }
+  } else if (action === "remove_line") {
+    await fetch(`${airtableUrl(RECEIPT_LINES_TABLE_ID)}/${recordId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    return sendJson(res, 200, {
+      ok: true,
+      action,
+      message: "Line removed.",
+      removedLineId: recordId,
+    });
   } else {
     return sendJson(res, 400, {
       ok: false,
