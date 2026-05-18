@@ -177,7 +177,20 @@ async function createReceiptLines(lines) {
     };
   }
 
-  async function fetchExistingReceiptLinesForReceipt(receiptId) {
+  const path = `${AIRTABLE_BASE_ID}/${encodeURIComponent(
+    VENDOR_RECEIPT_LINES_TABLE
+  )}`;
+
+  return airtableFetch(path, {
+    method: "POST",
+    body: JSON.stringify({
+      records: lines.map((fields) => ({ fields })),
+      typecast: true,
+    }),
+  });
+}
+
+async function fetchExistingReceiptLinesForReceipt(receiptId) {
   const allRecords = [];
   let offset = "";
 
@@ -223,20 +236,6 @@ async function createReceiptLines(lines) {
     },
   };
 }
-
-  const path = `${AIRTABLE_BASE_ID}/${encodeURIComponent(
-    VENDOR_RECEIPT_LINES_TABLE
-  )}`;
-
-  return airtableFetch(path, {
-    method: "POST",
-    body: JSON.stringify({
-      records: lines.map((fields) => ({ fields })),
-      typecast: true,
-    }),
-  });
-}
-
 function parseJsonFromModelText(text) {
   const raw = normalizeText(text);
 
