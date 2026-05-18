@@ -42,11 +42,13 @@ function formatReviewNote(action, reviewerNote) {
   const now = new Date().toISOString();
 
   const actionLabel =
-    action === "approve"
-      ? "Approved"
-      : action === "reject"
-      ? "Rejected"
-      : "Returned to review";
+  action === "approve"
+    ? "Approved"
+    : action === "reject"
+    ? "Rejected"
+    : action === "archive"
+    ? "Archived"
+    : "Returned to review";
 
   const noteParts = [
     `REVIEW ACTION ${now}: ${actionLabel} from KitchenPulse Receipt Review.`,
@@ -105,6 +107,7 @@ function mapReceipt(record) {
     errorMessage: fields["Error Message"] || "",
     processedAt: fields["Processed At"] || "",
     notes: fields.Notes || "",
+    archived: Boolean(fields.Archived),
     fileName: firstFile?.filename || "",
     fileUrl: firstFile?.url || "",
   };
@@ -158,6 +161,13 @@ async function updateReceiptReview({
       Approved: false,
     };
   }
+
+  if (action === "archive") {
+    fields = {
+    ...fields,
+    Archived: true,
+    };
+}
 
   const airtableResponse = await fetch(airtableUrl, {
     method: "PATCH",
@@ -279,13 +289,13 @@ export default async function handler(req, res) {
         });
       }
 
-      if (!["approve", "reject", "needs_review"].includes(action)) {
+      if (!["approve", "reject", "needs_review", "archive"].includes(action)) {
         return sendJson(res, 400, {
-          ok: false,
-          error:
-            "Invalid review action. Use approve, reject, or needs_review.",
-        });
-      }
+        ok: false,
+        error:
+        "Invalid review action. Use approve, reject, needs_review, or archive.",
+  });
+}
 
       const currentRecordsResult = await fetchReceiptRecords();
 
@@ -345,11 +355,14 @@ export default async function handler(req, res) {
       return sendJson(res, 200, {
         ok: true,
         message:
-          action === "approve"
-            ? "Receipt approved. No downstream cost or inventory updates were made."
-            : action === "reject"
-            ? "Receipt rejected. No downstream cost or inventory updates were made."
-            : "Receipt returned to review. No downstream cost or inventory updates were made.",
+          message:
+  action === "approve"
+    ? "Receipt approved. No downstream cost or inventory updates were made."
+    : action === "reject"
+    ? "Receipt rejected. No downstream cost or inventory updates were made."
+    : action === "archive"
+    ? "Receipt archived. It is hidden from the active queue."
+    : "Receipt returned to review. No downstream cost or inventory updates were made.",
         recordId: updatedRecord?.id,
         action,
       });
