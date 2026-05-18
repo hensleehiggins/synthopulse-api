@@ -672,6 +672,39 @@ function cleanAssistantReply(text) {
     );
   }
 
+  function getProductHelpContext() {
+  return `
+KitchenPulse Product Help Context
+
+Receipt Intake:
+- Receipt Intake is a review-first workflow for vendor receipts and invoices.
+- Users can upload a receipt by file upload, PDF, or phone photo.
+- Uploaded receipts land in Receipt Queue first.
+- Approve & parse means the receipt is approved for AI reading, then KitchenPulse extracts vendor, date, totals, and line items.
+- Approve & parse does not update costs, inventory, menu items, or margins.
+- Parsed Line Review is where extracted receipt lines are checked.
+- Approve line means the line is valid enough to become a cost proposal.
+- Remove line means the parsed staging line is junk or not useful and should be removed from the review workflow.
+- Approved parsed lines generate Pricing Update Review proposals.
+- Link item & check cost links the vendor receipt line to a KitchenPulse Inventory Item or Cost Source Item and compares current cost to proposed receipt cost.
+- Link item & check cost does not update cost data.
+- Approve proposal means the proposed cost update is allowed.
+- Apply cost update is the action that actually writes the approved cost to the matched Inventory Item or Cost Source Item.
+- Already current means the matched KitchenPulse item already has the same cost as the receipt, so no cost update is needed.
+- Archive receipt hides completed receipts from the active queue without deleting history.
+- Receipt Intake currently supports vendor cost review and inventory/source cost updates.
+- Automatic menu-item costing requires Menu Item Ingredients / recipe-component mappings showing which ingredients go into each menu item and in what quantities.
+- Until recipe/component mappings exist, Receipt Intake should be described as vendor cost intelligence and controlled cost review, not full automatic menu margin updating.
+
+Receipt Intake safety rules:
+- Nothing updates inventory or costs at upload.
+- Nothing updates inventory or costs at approve & parse.
+- Nothing updates inventory or costs at approve line.
+- Nothing updates inventory or costs at link item & check cost.
+- Cost data changes only after Approve proposal and Apply cost update.
+`;
+}
+  
   function questionNeedsWeatherContext(message) {
     const clean = normalizeForSearch(message);
 
@@ -1066,6 +1099,9 @@ ${salesSummary}
 
 Menu Economics Summary:
 ${menuSummary}
+
+Product Help / UX Guide:
+${getProductHelpContext()}
 
 Question-Specific Deep Lookup:
 ${deepQuestionContext}
