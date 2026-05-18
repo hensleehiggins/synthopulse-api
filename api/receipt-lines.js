@@ -1,0 +1,405 @@
+const AIRTABLE_BASE_ID =
+  process.env.AIRTABLE_BASE_ID || "appD303evZM2SlvMR";
+
+const AIRTABLE_TOKEN =
+  process.env.AIRTABLE_TOKEN ||
+  process.env.AIRTABLE_API_KEY ||
+  process.env.AIRTABLE_PAT;
+
+const RECEIPT_LINES_TABLE_ID = "tblbQ2BwFHbHFnOht";
+
+const FIELD = {
+  lineName: "Line Name",
+  receipt: "Receipt",
+  restaurant: "Restaurant",
+  vendor: "Vendor",
+  lineItemName: "Line Item Name",
+  matchedInventoryItem: "Matched Inventory Item",
+  matchedCostSourceItem: "Matched Cost Source Item",
+  category: "Category",
+  quantity: "Quantity",
+  unit: "Unit",
+  packageSize: "Package Size",
+  unitCost: "Unit Cost",
+  lineTotal: "Line Total",
+  confidence: "Confidence",
+  needsReview: "Needs Review",
+  approved: "Approved",
+  rawLineText: "Raw Line Text",
+  notes: "Notes",
+};
+
+function setCorsHeaders(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Accept"
+  );
+}
+
+function sendJson(res, statusCode, payload) {
+  setCorsHeaders(res);
+  return res.status(statusCode).json(payload);
+}
+
+function requireAirtableConfig() {
+  if (!AIRTABLE_BASE_ID) {
+    throw new Error("Missing AIRTABLE_BASE_ID.");
+  }
+
+  if (!AIRTABLE_TOKEN) {
+    throw new Error("Missing AIRTABLE_TOKEN / AIRTABLE_API_KEY / AIRTABLE_PAT.");
+  }
+}
+
+function airtableUrl(tableId) {
+  return `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+    tableId
+  )}`;
+}
+
+async function airtableRequest({ method = "GET", tableId, recordId, body }) {
+  requireAirtableConfig();
+
+  const url = recordId
+    ? `${airtableUrl(tableId)}/${recordId}`
+    : airtableUrl(tableId);
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  const text = await response.text();
+
+  let data = null;
+
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch (error) {
+    console.error("Airtable returned non-JSON:", text);
+    throw new Error("Airtable returned a non-JSON response.");
+  }
+
+  if (!response.ok) {
+    console.error("Airtable request failed:", data);
+    throw new Error(
+      data?.error?.message ||
+        data?.error ||
+        `Airtable request failed with status ${response.status}.`
+    );
+  }
+
+  return data;
+}
+
+function firstLinkedId(value) {
+  if (Array.isArray(value) && value.length > 0) return value[0];
+  return "";
+}
+
+function linkedIds(value) {
+  if (Array.isArray(value)) return value;
+  return [];
+}
+
+function asNumberOrNull(value) {
+  if (value === "" || value === null || typeof value === "undefined") {
+    return null;
+  }
+
+  const numericValue = Number(value);
+
+  if (Number.isNaN(numericValue)) {
+    return null;
+  }
+
+  return numericValue;
+}
+
+function normalizeLineRecord(record) {
+  const fields = record.fields || {};
+
+  return {
+    id: record.id,
+    createdTime: record.createdTime,
+
+    lineName: fields[FIELD.lineName] || "",
+    receiptIds: linkedIds(fields[FIELD.receipt]),
+    receiptId: firstLinkedId(fields[FIELD.receipt]),
+    restaurantIds: linkedIds(fields[FIELD.restaurant]),
+
+    vendor: fields[FIELD.vendor] || "",
+    lineItemName: fields[FIELD.lineItemName] || "",
+    matchedInventoryItemIds: linkedIds(fields[FIELD.matchedInventoryItem]),
+    matchedCostSourceItemIds: linkedIds(fields[FIELD.matchedCostSourceItem]),
+
+    category: fields[FIELD.category] || "",
+    quantity:
+      typeof fields[FIELD.quantity] === "number" ? fields[FIELD.quantity] : null,
+    unit: fields[FIELD.unit] || "",
+    packageSize: fields[FIELD.packageSize] || "",
+    unitCost:
+      typeof fields[FIELD.unitCost] === "number" ? fields[FIELD.unitCost] : null,
+    lineTotal:
+      typeof fields[FIELD.lineTotal] === "number"
+        ? fields[FIELD.lineTotal]
+        : null,
+
+    confidence: fields[FIELD.confidence] || "",
+    needsReview: Boolean(fields[FIELD.needsReview]),
+    approved: Boolean(fields[FIELD.approved]),
+    rawLineText: fields[FIELD.rawLineText] || "",
+    notes: fields[FIELD.notes] || "",
+  };
+}
+
+function buildCounts(lines) {
+  return {
+    total: lines.length,
+    approved: lines.filter((line) => line.approved).length,
+    needsReview: lines.filter((line) => line.needsReview && !line.approved)
+      .length,
+    pending: lines.filter((line) => !line.approved && !line.needsReview).length,
+  };
+}
+
+function sanitizeUpdateFields(input = {}) {
+  const fields = {};
+
+  if (Object.prototype.hasOwnProperty.call(input, "lineItemName")) {
+    fields[FIELD.lineItemName] = String(input.lineItemName || "").trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "category")) {
+    const category = String(input.category || "").trim();
+
+    if (category) {
+      fields[FIELD.category] = category;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "quantity")) {
+    const quantity = asNumberOrNull(input.quantity);
+
+    if (quantity !== null) {
+      fields[FIELD.quantity] = quantity;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "unit")) {
+    fields[FIELD.unit] = String(input.unit || "").trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "packageSize")) {
+    fields[FIELD.packageSize] = String(input.packageSize || "").trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "unitCost")) {
+    const unitCost = asNumberOrNull(input.unitCost);
+
+    if (unitCost !== null) {
+      fields[FIELD.unitCost] = unitCost;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "lineTotal")) {
+    const lineTotal = asNumberOrNull(input.lineTotal);
+
+    if (lineTotal !== null) {
+      fields[FIELD.lineTotal] = lineTotal;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "rawLineText")) {
+    fields[FIELD.rawLineText] = String(input.rawLineText || "").trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, "notes")) {
+    fields[FIELD.notes] = String(input.notes || "").trim();
+  }
+
+  return fields;
+}
+
+async function listReceiptLines(req, res) {
+  const receiptId =
+    typeof req.query.receiptId === "string" ? req.query.receiptId.trim() : "";
+
+  const maxRecordsRaw =
+    typeof req.query.maxRecords === "string" ? Number(req.query.maxRecords) : 100;
+
+  const maxRecords =
+    Number.isFinite(maxRecordsRaw) && maxRecordsRaw > 0
+      ? Math.min(maxRecordsRaw, 100)
+      : 100;
+
+  const params = new URLSearchParams();
+  params.set("pageSize", String(maxRecords));
+
+  const fieldsToReturn = Object.values(FIELD);
+
+  for (const fieldName of fieldsToReturn) {
+    params.append("fields[]", fieldName);
+  }
+
+  const url = `${airtableUrl(RECEIPT_LINES_TABLE_ID)}?${params.toString()}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const text = await response.text();
+
+  let data = null;
+
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch (error) {
+    console.error("Airtable receipt lines returned non-JSON:", text);
+    throw new Error("Airtable receipt lines returned a non-JSON response.");
+  }
+
+  if (!response.ok) {
+    console.error("Airtable receipt lines request failed:", data);
+    throw new Error(
+      data?.error?.message ||
+        data?.error ||
+        `Could not load receipt lines. Airtable status ${response.status}.`
+    );
+  }
+
+  let lines = Array.isArray(data.records)
+    ? data.records.map(normalizeLineRecord)
+    : [];
+
+  if (receiptId) {
+    lines = lines.filter((line) => line.receiptIds.includes(receiptId));
+  }
+
+  lines.sort((a, b) => {
+    if (a.approved !== b.approved) return a.approved ? 1 : -1;
+    if (a.needsReview !== b.needsReview) return a.needsReview ? -1 : 1;
+    return String(a.lineItemName || a.lineName).localeCompare(
+      String(b.lineItemName || b.lineName)
+    );
+  });
+
+  return sendJson(res, 200, {
+    ok: true,
+    receiptId: receiptId || null,
+    counts: buildCounts(lines),
+    lines,
+  });
+}
+
+async function updateReceiptLine(req, res) {
+  const body = req.body || {};
+  const recordId = String(body.recordId || body.lineId || "").trim();
+  const action = String(body.action || "update_line").trim();
+
+  if (!recordId) {
+    return sendJson(res, 400, {
+      ok: false,
+      error: "Missing recordId.",
+    });
+  }
+
+  const fields = {};
+
+  if (action === "approve_line") {
+    fields[FIELD.approved] = true;
+    fields[FIELD.needsReview] = false;
+
+    if (body.notes) {
+      fields[FIELD.notes] = String(body.notes).trim();
+    }
+  } else if (action === "needs_review") {
+    fields[FIELD.approved] = false;
+    fields[FIELD.needsReview] = true;
+
+    if (body.notes) {
+      fields[FIELD.notes] = String(body.notes).trim();
+    }
+  } else if (action === "update_line") {
+    Object.assign(fields, sanitizeUpdateFields(body.line || body));
+
+    // A saved edit should not automatically approve the line.
+    // It simply keeps the human correction in Airtable for review.
+    if (Object.keys(fields).length === 0) {
+      return sendJson(res, 400, {
+        ok: false,
+        error: "No editable line fields were provided.",
+      });
+    }
+  } else {
+    return sendJson(res, 400, {
+      ok: false,
+      error: `Unsupported action: ${action}`,
+    });
+  }
+
+  const updated = await airtableRequest({
+    method: "PATCH",
+    tableId: RECEIPT_LINES_TABLE_ID,
+    recordId,
+    body: {
+      fields,
+    },
+  });
+
+  return sendJson(res, 200, {
+    ok: true,
+    action,
+    message:
+      action === "approve_line"
+        ? "Line approved."
+        : action === "needs_review"
+        ? "Line returned to review."
+        : "Line updated.",
+    line: normalizeLineRecord(updated),
+  });
+}
+
+export default async function handler(req, res) {
+  setCorsHeaders(res);
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
+  try {
+    requireAirtableConfig();
+
+    if (req.method === "GET") {
+      return await listReceiptLines(req, res);
+    }
+
+    if (req.method === "POST" || req.method === "PATCH") {
+      return await updateReceiptLine(req, res);
+    }
+
+    return sendJson(res, 405, {
+      ok: false,
+      error: "Method not allowed.",
+    });
+  } catch (error) {
+    console.error("receipt-lines route failed:", error);
+
+    return sendJson(res, 500, {
+      ok: false,
+      error:
+        error?.message ||
+        "Receipt lines could not be loaded or updated. Check server logs.",
+    });
+  }
+}
