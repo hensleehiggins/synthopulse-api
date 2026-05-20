@@ -299,7 +299,7 @@ module.exports = async function handler(req, res) {
         (a, b) =>
           new Date(a.startDateTime || 0) - new Date(b.startDateTime || 0)
       )
-      .slice(0, 10);
+      .slice(0, 3);
 
     const privateEvents = externalRecords
       .filter(isTripleseatOrPrivateDemand)
