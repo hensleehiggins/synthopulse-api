@@ -177,9 +177,11 @@ function getSkipReason(event) {
 
   if (!event?.id) return "missing_id";
   if (event.deleted_at) return "deleted";
+
   if (status === "Cancelled" || status === "Lost" || status === "Closed") {
     return `status_${status.toLowerCase()}`;
   }
+
   if (!isFutureOrToday(start)) return "past_event";
   if (isObviousTestRecord(event)) return "test_record";
   if (isAdminOrNonDemandEvent(event)) return "admin_or_non_demand";
@@ -247,6 +249,8 @@ function mapTripleseatEventToAirtable(event) {
       event.total_actual_amount
   );
 
+  const roomText = roomName.toLowerCase();
+
   const suggestedWeight =
     guestCount >= 100 ? 10 :
     guestCount >= 75 ? 9 :
@@ -254,6 +258,30 @@ function mapTripleseatEventToAirtable(event) {
     guestCount >= 30 ? 7 :
     guestCount >= 15 ? 5 :
     3;
+
+  const isDefinite = status === "Definite";
+
+  const isDecisionDriver =
+    isDefinite &&
+    (
+      suggestedWeight >= 8 ||
+      guestCount >= 50 ||
+      roomText.includes("bar") ||
+      roomText.includes("patio")
+    );
+
+  const isBookedDemand = isDefinite && suggestedWeight >= 4;
+
+  const needsReview = !isDefinite;
+
+  const kitchenPulseStatus =
+    isBookedDemand || isDecisionDriver ? "Processed" : "Needs Review";
+
+  const classificationNote = isDecisionDriver
+    ? "Tripleseat confirmed booked demand. Promoted as a decision driver based on guest count, room impact, or service pressure."
+    : isBookedDemand
+      ? "Tripleseat confirmed booked demand. Visible as upcoming booked demand."
+      : "Tripleseat event is not yet definite. Keep in review until Tripleseat status changes.";
 
   return {
     "Event Name": eventName,
@@ -264,13 +292,19 @@ function mapTripleseatEventToAirtable(event) {
     "Source": "Tripleseat",
     "Source Event ID": sourceEventId,
     "Raw Source": JSON.stringify(event).slice(0, 95000),
+
     "Local Confidence": suggestedWeight,
     "Suggested Event Weight": suggestedWeight,
-    "Promote to Decision": suggestedWeight >= 8,
-    "Needs Review": true,
+    "Promote to Decision": isDecisionDriver,
+    "Needs Review": needsReview,
+
     "External Event ID": `tripleseat-${sourceEventId}`,
-    "Status": "Needs Review",
-    "Notes": `Imported from Tripleseat. Status: ${status}. Guests: ${guestCount || "unknown"}.`,
+    "Status": kitchenPulseStatus,
+
+    "Notes": `Imported from Tripleseat. Status: ${status}. Guests: ${
+      guestCount || "unknown"
+    }. ${classificationNote}`,
+
     "Tripleseat Event ID": sourceEventId,
     "Tripleseat Status": status,
     "Guest Count": guestCount,
@@ -467,6 +501,9 @@ module.exports = async function handler(req, res) {
       sampleCreate: creates.slice(0, 3).map((record) => ({
         eventName: record.fields["Event Name"],
         startDateTime: record.fields["Start DateTime"],
+        status: record.fields["Status"],
+        needsReview: record.fields["Needs Review"],
+        promoteToDecision: record.fields["Promote to Decision"],
         tripleseatStatus: record.fields["Tripleseat Status"],
         guestCount: record.fields["Guest Count"],
         suggestedEventWeight: record.fields["Suggested Event Weight"],
@@ -475,6 +512,9 @@ module.exports = async function handler(req, res) {
         recordId: record.id,
         eventName: record.fields["Event Name"],
         startDateTime: record.fields["Start DateTime"],
+        status: record.fields["Status"],
+        needsReview: record.fields["Needs Review"],
+        promoteToDecision: record.fields["Promote to Decision"],
         tripleseatStatus: record.fields["Tripleseat Status"],
         guestCount: record.fields["Guest Count"],
         suggestedEventWeight: record.fields["Suggested Event Weight"],
