@@ -404,44 +404,73 @@ async function fetchTripleseatLeads() {
   const apiBaseUrl = requireEnv("TRIPLESEAT_API_BASE_URL").replace(/\/$/, "");
   const locationId = process.env.TRIPLESEAT_LOCATION_ID || "34084";
 
-  const url = new URL(`${apiBaseUrl}/leads`);
-  url.searchParams.set("location_id", locationId);
+  const allLeads = [];
+  const testedUrls = [];
 
-  const response = await fetch(url.toString(), {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      Accept: "application/json",
-      "User-Agent": "KitchenPulse/1.0",
-    },
-  });
+  let page = 1;
+  let totalPages = 1;
 
-  const raw = await response.text();
+  // Tripleseat paginates leads. Pull every available page so the pipeline
+  // is not falsely empty just because page 1 is mostly converted/closed.
+  while (page <= totalPages && page <= 10) {
+    const url = new URL(`${apiBaseUrl}/leads`);
+    url.searchParams.set("location_id", locationId);
+    url.searchParams.set("page", String(page));
 
-  let json = null;
-  try {
-    json = JSON.parse(raw);
-  } catch {
-    json = null;
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
+        "User-Agent": "KitchenPulse/1.0",
+      },
+    });
+
+    const raw = await response.text();
+
+    let json = null;
+    try {
+      json = JSON.parse(raw);
+    } catch {
+      json = null;
+    }
+
+    if (!response.ok || !json) {
+      throw new Error(
+        `Failed to fetch Tripleseat leads page ${page}. Status ${response.status}. Preview: ${raw.slice(
+          0,
+          400
+        )}`
+      );
+    }
+
+    testedUrls.push(url.toString());
+
+    const rawLeads = Array.isArray(json.results)
+      ? json.results
+      : Array.isArray(json.leads)
+        ? json.leads
+        : Array.isArray(json)
+          ? json
+          : [];
+
+    allLeads.push(...rawLeads);
+
+    totalPages = Number(json.total_pages || json.totalPages || totalPages || 1);
+
+    page += 1;
   }
 
-  if (!response.ok || !json) {
-    throw new Error(`Failed to fetch Tripleseat leads. Status ${response.status}. Preview: ${raw.slice(0, 400)}`);
-  }
-
-  const rawLeads = Array.isArray(json.results)
-    ? json.results
-    : Array.isArray(json.leads)
-      ? json.leads
-      : Array.isArray(json)
-        ? json
-        : [];
+  const deduped = Array.from(
+    new Map(allLeads.map((lead) => [String(lead.id || Math.random()), lead])).values()
+  );
 
   return {
-    url: url.toString(),
-    totalPages: json.total_pages || null,
-    rawCount: rawLeads.length,
-    rawLeads,
+    url: testedUrls[0] || `${apiBaseUrl}/leads?location_id=${locationId}`,
+    testedUrls,
+    totalPages,
+    rawCount: deduped.length,
+    rawLeads: deduped,
   };
 }
 
