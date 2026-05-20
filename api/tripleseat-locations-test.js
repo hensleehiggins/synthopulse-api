@@ -25,7 +25,9 @@ async function getTripleseatAccessToken() {
   const json = await response.json();
 
   if (!response.ok || !json.access_token) {
-    throw new Error(json.error_description || json.error || "Failed to get Tripleseat access token");
+    throw new Error(
+      json.error_description || json.error || "Failed to get Tripleseat access token"
+    );
   }
 
   return json.access_token;
@@ -33,14 +35,15 @@ async function getTripleseatAccessToken() {
 
 module.exports = async function handler(req, res) {
   try {
-    const apiBaseUrl = requireEnv("TRIPLESEAT_API_BASE_URL");
+    const apiBaseUrl = requireEnv("TRIPLESEAT_API_BASE_URL").replace(/\/$/, "");
     const accessToken = await getTripleseatAccessToken();
 
-    const response = await fetch(`${apiBaseUrl}/api/v1/locations`, {
+    const response = await fetch(`${apiBaseUrl}/locations`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "application/json",
+        "User-Agent": "KitchenPulse/1.0",
       },
     });
 
@@ -56,9 +59,14 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       ok: response.ok,
       upstreamStatus: response.status,
+      urlTested: `${apiBaseUrl}/locations`,
       parsedJson: Boolean(json),
       topLevelKeys: json && typeof json === "object" ? Object.keys(json) : [],
-      count: Array.isArray(json) ? json.length : Array.isArray(json?.locations) ? json.locations.length : null,
+      count: Array.isArray(json)
+        ? json.length
+        : Array.isArray(json?.locations)
+          ? json.locations.length
+          : null,
       sample: Array.isArray(json)
         ? json.slice(0, 3)
         : Array.isArray(json?.locations)
