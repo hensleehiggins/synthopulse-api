@@ -259,7 +259,8 @@ function mapTripleseatEventToAirtable(event) {
     guestCount >= 15 ? 5 :
     3;
 
-  const isDefinite = status === "Definite";
+    const isDefinite = status === "Definite";
+  const isTentativeOrProspect = status === "Tentative" || status === "Prospect";
 
   const isDecisionDriver =
     isDefinite &&
@@ -272,7 +273,13 @@ function mapTripleseatEventToAirtable(event) {
 
   const isBookedDemand = isDefinite && suggestedWeight >= 4;
 
-  const needsReview = !isDefinite;
+  // Important:
+  // Definite does NOT always mean deposit/confirmation workflow is complete.
+  // Until we wire payments/deposits, keep normal definite events visible for review
+  // unless they are high-impact enough to clearly drive service decisions.
+  const needsReview =
+    isTentativeOrProspect ||
+    (isDefinite && !isDecisionDriver);
 
   const kitchenPulseStatus =
     isBookedDemand || isDecisionDriver ? "Processed" : "Needs Review";
@@ -280,7 +287,7 @@ function mapTripleseatEventToAirtable(event) {
   const classificationNote = isDecisionDriver
     ? "Tripleseat confirmed booked demand. Promoted as a decision driver based on guest count, room impact, or service pressure."
     : isBookedDemand
-      ? "Tripleseat confirmed booked demand. Visible as upcoming booked demand."
+      ? "Tripleseat confirmed booked demand. Visible as upcoming booked demand, but still flagged for coordinator review until payment/deposit status is confirmed."
       : "Tripleseat event is not yet definite. Keep in review until Tripleseat status changes.";
 
   return {
