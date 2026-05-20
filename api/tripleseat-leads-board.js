@@ -499,20 +499,24 @@ module.exports = async function handler(req, res) {
       })
       .sort(sortLeadPriority);
 
-            const hotLeads = activeOpenLeads
+                const hotLeads = activeOpenLeads
       .filter((lead) => lead.bucket === "hot")
       .sort(sortLeadPriority)
       .slice(0, 3);
 
+    const hotLeadIds = new Set(hotLeads.map((lead) => lead.id));
+
     const followUpWatch = activeOpenLeads
       .filter((lead) => lead.bucket === "followUp")
+      .filter((lead) => !hotLeadIds.has(lead.id))
       .sort(sortLeadPriority)
       .slice(0, 3);
 
-    // Potential Demand is intentionally broad.
-    // It answers: "What open leads could become future room/staffing/prep demand?"
-    // So it can overlap with Hot Leads / Follow-Up Watch.
+    const followUpLeadIds = new Set(followUpWatch.map((lead) => lead.id));
+
     const potentialDemand = activeOpenLeads
+      .filter((lead) => !hotLeadIds.has(lead.id))
+      .filter((lead) => !followUpLeadIds.has(lead.id))
       .sort(sortLeadPriority)
       .slice(0, 3);
 
