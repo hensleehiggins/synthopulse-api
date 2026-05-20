@@ -4,6 +4,16 @@ function requireEnv(name) {
   return value;
 }
 
+function redactToken(value) {
+  if (!value || typeof value !== "string") return null;
+  return {
+    present: true,
+    length: value.length,
+    startsWith: value.slice(0, 8),
+    endsWith: value.slice(-6),
+  };
+}
+
 module.exports = async function handler(req, res) {
   try {
     const clientId = requireEnv("TRIPLESEAT_CLIENT_ID");
@@ -17,6 +27,7 @@ module.exports = async function handler(req, res) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({
         client_id: clientId,
@@ -25,26 +36,29 @@ module.exports = async function handler(req, res) {
       }),
     });
 
-    const text = await response.text();
+    const bodyText = await response.text();
 
     let json = null;
     try {
-      json = JSON.parse(text);
+      json = JSON.parse(bodyText);
     } catch {
       json = null;
     }
 
-    return res.status(response.status).json({
+    return res.status(200).json({
       ok: response.ok,
-      status: response.status,
+      upstreamStatus: response.status,
       tokenUrl,
+      parsedJson: Boolean(json),
+      topLevelKeys: json && typeof json === "object" ? Object.keys(json) : [],
       receivedAccessToken: Boolean(json?.access_token),
+      accessToken: redactToken(json?.access_token),
       tokenType: json?.token_type || null,
       expiresIn: json?.expires_in || null,
       scope: json?.scope || null,
       error: json?.error || null,
       errorDescription: json?.error_description || null,
-      rawPreview: response.ok ? null : text.slice(0, 500),
+      rawPreview: bodyText.slice(0, 800),
     });
   } catch (error) {
     return res.status(500).json({
