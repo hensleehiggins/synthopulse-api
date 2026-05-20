@@ -58,6 +58,7 @@ function normalizeStatus(value) {
   if (status.includes("PROSPECT")) return "Prospect";
   if (status.includes("CANCEL")) return "Cancelled";
   if (status.includes("LOST")) return "Lost";
+  if (status.includes("CLOSED")) return "Closed";
 
   return text(value) || "Unknown";
 }
@@ -103,8 +104,8 @@ function getEventStart(event) {
   );
 }
 
-function isObviousTestRecord(event) {
-  const blob = [
+function eventBlob(event) {
+  return [
     event.name,
     event.post_as,
     event.booking?.name,
@@ -112,10 +113,19 @@ function isObviousTestRecord(event) {
     event.contact?.last_name,
     event.account?.name,
     event.description,
+    event.event_type,
+    event.event_type_name,
+    event.event_style,
+    event.room?.name,
+    Array.isArray(event.rooms) ? event.rooms.map((room) => room.name).join(" ") : "",
   ]
     .map(text)
     .join(" ")
     .toLowerCase();
+}
+
+function isObviousTestRecord(event) {
+  const blob = eventBlob(event);
 
   return (
     blob.includes("test ") ||
@@ -126,17 +136,59 @@ function isObviousTestRecord(event) {
   );
 }
 
-function shouldImportTripleseatEvent(event) {
+function isAdminOrNonDemandEvent(event) {
+  const blob = eventBlob(event);
+
+  const adminPhrases = [
+    "menu finalization",
+    "menu finalisation",
+    "menu pending",
+    "final menu",
+    "deposit follow",
+    "deposit due",
+    "deposit pending",
+    "payment due",
+    "payment follow",
+    "balance due",
+    "contract pending",
+    "contract due",
+    "contract follow",
+    "beo review",
+    "beo pending",
+    "final count",
+    "guest count due",
+    "headcount due",
+    "planning call",
+    "planning meeting",
+    "internal hold",
+    "admin hold",
+    "staff meeting",
+    "manager meeting",
+    "filmed interview",
+    "interview",
+  ];
+
+  return adminPhrases.some((phrase) => blob.includes(phrase));
+}
+
+function getSkipReason(event) {
   const status = normalizeStatus(event.status);
   const start = getEventStart(event);
 
-  if (!event?.id) return false;
-  if (event.deleted_at) return false;
-  if (status === "Cancelled" || status === "Lost") return false;
-  if (!isFutureOrToday(start)) return false;
-  if (isObviousTestRecord(event)) return false;
+  if (!event?.id) return "missing_id";
+  if (event.deleted_at) return "deleted";
+  if (status === "Cancelled" || status === "Lost" || status === "Closed") {
+    return `status_${status.toLowerCase()}`;
+  }
+  if (!isFutureOrToday(start)) return "past_event";
+  if (isObviousTestRecord(event)) return "test_record";
+  if (isAdminOrNonDemandEvent(event)) return "admin_or_non_demand";
 
-  return true;
+  return null;
+}
+
+function shouldImportTripleseatEvent(event) {
+  return getSkipReason(event) === null;
 }
 
 async function getTripleseatAccessToken() {
@@ -246,7 +298,7 @@ function removeEmptyFields(fields) {
   return cleaned;
 }
 
-function summarizeEvent(event) {
+function summarizeEvent(event, reason = null) {
   return {
     id: event.id,
     name: event.name,
@@ -256,6 +308,7 @@ function summarizeEvent(event) {
     guestCount: event.guest_count || event.guaranteed_guest_count || null,
     locationId: event.location_id,
     deletedAt: event.deleted_at || null,
+    skipReason: reason,
   };
 }
 
@@ -294,10 +347,12 @@ async function fetchTripleseatEvents() {
   const events = [];
 
   for (const event of rawEvents) {
-    if (shouldImportTripleseatEvent(event)) {
+    const skipReason = getSkipReason(event);
+
+    if (!skipReason) {
       events.push(event);
     } else {
-      skipped.push(summarizeEvent(event));
+      skipped.push(summarizeEvent(event, skipReason));
     }
   }
 
@@ -424,7 +479,7 @@ module.exports = async function handler(req, res) {
         guestCount: record.fields["Guest Count"],
         suggestedEventWeight: record.fields["Suggested Event Weight"],
       })),
-      skippedSample: fetched.skipped.slice(0, 5),
+      skippedSample: fetched.skipped.slice(0, 8),
     });
   } catch (error) {
     console.error("tripleseat-sync-events error", error);
