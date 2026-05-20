@@ -470,18 +470,24 @@ module.exports = async function handler(req, res) {
       })
       .sort(sortLeadPriority);
 
-    const hotLeads = activeOpenLeads
+        const hotLeads = activeOpenLeads
       .filter((lead) => lead.bucket === "hot")
       .sort(sortLeadPriority)
       .slice(0, 3);
 
+    const hotLeadIds = new Set(hotLeads.map((lead) => lead.id));
+
     const followUpWatch = activeOpenLeads
       .filter((lead) => lead.bucket === "followUp")
+      .filter((lead) => !hotLeadIds.has(lead.id))
       .sort(sortLeadPriority)
       .slice(0, 3);
 
+    const followUpLeadIds = new Set(followUpWatch.map((lead) => lead.id));
+
     const potentialDemand = activeOpenLeads
-      .filter((lead) => lead.bucket === "potential" || lead.bucket === "followUp" || lead.bucket === "hot")
+      .filter((lead) => !hotLeadIds.has(lead.id))
+      .filter((lead) => !followUpLeadIds.has(lead.id))
       .sort(sortLeadPriority)
       .slice(0, 3);
 
