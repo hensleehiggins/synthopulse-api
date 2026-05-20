@@ -10,35 +10,6 @@ const base = new Airtable({
   apiKey: requireEnv("AIRTABLE_PAT"),
 }).base(requireEnv("AIRTABLE_BASE_ID"));
 
-async function getTripleseatAccessToken() {
-  const tokenUrl = requireEnv("TRIPLESEAT_TOKEN_URL");
-  const clientId = requireEnv("TRIPLESEAT_CLIENT_ID");
-  const clientSecret = requireEnv("TRIPLESEAT_CLIENT_SECRET");
-
-  const response = await fetch(tokenUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      Accept: "application/json",
-    },
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      grant_type: "client_credentials",
-    }).toString(),
-  });
-
-  const json = await response.json();
-
-  if (!response.ok || !json.access_token) {
-    throw new Error(
-      json.error_description || json.error || "Failed to get Tripleseat access token"
-    );
-  }
-
-  return json.access_token;
-}
-
 function text(value) {
   if (value === null || value === undefined) return "";
   return String(value).trim();
@@ -51,11 +22,32 @@ function number(value) {
 
 function toIso(value) {
   if (!value) return null;
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-
   return date.toISOString();
+}
+
+function easternDateKey(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function isFutureOrToday(value) {
+  if (!value) return false;
+
+  const eventKey = easternDateKey(value);
+  const todayKey = easternDateKey(new Date());
+
+  return Boolean(eventKey && todayKey && eventKey >= todayKey);
 }
 
 function normalizeStatus(value) {
@@ -89,7 +81,6 @@ function getContactOrAccount(event) {
   }
 
   if (account?.name) return account.name;
-
   if (event.contact_name) return event.contact_name;
 
   return "";
@@ -102,14 +93,91 @@ function getEventType(event) {
   return "";
 }
 
+function getEventStart(event) {
+  return (
+    event.event_start_iso8601 ||
+    event.event_start_utc ||
+    event.start_date ||
+    event.event_date ||
+    null
+  );
+}
+
+function isObviousTestRecord(event) {
+  const blob = [
+    event.name,
+    event.post_as,
+    event.booking?.name,
+    event.contact?.first_name,
+    event.contact?.last_name,
+    event.account?.name,
+    event.description,
+  ]
+    .map(text)
+    .join(" ")
+    .toLowerCase();
+
+  return (
+    blob.includes("test ") ||
+    blob.includes(" test") ||
+    blob.startsWith("test") ||
+    blob.includes("webhook test") ||
+    blob.includes("code test")
+  );
+}
+
+function shouldImportTripleseatEvent(event) {
+  const status = normalizeStatus(event.status);
+  const start = getEventStart(event);
+
+  if (!event?.id) return false;
+  if (event.deleted_at) return false;
+  if (status === "Cancelled" || status === "Lost") return false;
+  if (!isFutureOrToday(start)) return false;
+  if (isObviousTestRecord(event)) return false;
+
+  return true;
+}
+
+async function getTripleseatAccessToken() {
+  const tokenUrl = requireEnv("TRIPLESEAT_TOKEN_URL");
+  const clientId = requireEnv("TRIPLESEAT_CLIENT_ID");
+  const clientSecret = requireEnv("TRIPLESEAT_CLIENT_SECRET");
+
+  const response = await fetch(tokenUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+    },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "client_credentials",
+    }).toString(),
+  });
+
+  const json = await response.json();
+
+  if (!response.ok || !json.access_token) {
+    throw new Error(
+      json.error_description || json.error || "Failed to get Tripleseat access token"
+    );
+  }
+
+  return json.access_token;
+}
+
 function mapTripleseatEventToAirtable(event) {
   const sourceEventId = text(event.id);
   const eventName = text(event.name) || `Tripleseat Event ${sourceEventId}`;
   const status = normalizeStatus(event.status);
+
   const startDateTime =
     toIso(event.event_start_iso8601) ||
     toIso(event.event_start_utc) ||
-    toIso(event.start_date);
+    toIso(event.start_date) ||
+    toIso(event.event_date);
 
   const endDateTime =
     toIso(event.event_end_iso8601) ||
@@ -119,17 +187,13 @@ function mapTripleseatEventToAirtable(event) {
   const location = event.location || {};
   const roomName = getRoomName(event);
   const guestCount = number(event.guest_count || event.guaranteed_guest_count);
+
   const estimatedRevenue = number(
     event.total_event_grand_total ||
       event.grand_total ||
       event.food_and_beverage_min ||
       event.total_actual_amount
   );
-
-  const needsReview =
-    status !== "Cancelled" &&
-    status !== "Lost" &&
-    status !== "Unknown";
 
   const suggestedWeight =
     guestCount >= 100 ? 10 :
@@ -151,9 +215,9 @@ function mapTripleseatEventToAirtable(event) {
     "Local Confidence": suggestedWeight,
     "Suggested Event Weight": suggestedWeight,
     "Promote to Decision": suggestedWeight >= 8,
-    "Needs Review": needsReview,
+    "Needs Review": true,
     "External Event ID": `tripleseat-${sourceEventId}`,
-    "Status": needsReview ? "Needs Review" : "Processed",
+    "Status": "Needs Review",
     "Notes": `Imported from Tripleseat. Status: ${status}. Guests: ${guestCount || "unknown"}.`,
     "Tripleseat Event ID": sourceEventId,
     "Tripleseat Status": status,
@@ -182,6 +246,19 @@ function removeEmptyFields(fields) {
   return cleaned;
 }
 
+function summarizeEvent(event) {
+  return {
+    id: event.id,
+    name: event.name,
+    status: event.status,
+    eventDate: event.event_date,
+    start: event.event_start_iso8601 || event.event_start_utc || event.start_date,
+    guestCount: event.guest_count || event.guaranteed_guest_count || null,
+    locationId: event.location_id,
+    deletedAt: event.deleted_at || null,
+  };
+}
+
 async function fetchTripleseatEvents() {
   const accessToken = await getTripleseatAccessToken();
   const apiBaseUrl = requireEnv("TRIPLESEAT_API_BASE_URL").replace(/\/$/, "");
@@ -205,7 +282,7 @@ async function fetchTripleseatEvents() {
     throw new Error(json.error || json.message || "Failed to fetch Tripleseat events");
   }
 
-  const events = Array.isArray(json.results)
+  const rawEvents = Array.isArray(json.results)
     ? json.results
     : Array.isArray(json.events)
       ? json.events
@@ -213,11 +290,25 @@ async function fetchTripleseatEvents() {
         ? json
         : [];
 
+  const skipped = [];
+  const events = [];
+
+  for (const event of rawEvents) {
+    if (shouldImportTripleseatEvent(event)) {
+      events.push(event);
+    } else {
+      skipped.push(summarizeEvent(event));
+    }
+  }
+
   return {
     url: url.toString(),
     totalPages: json.total_pages || null,
-    count: events.length,
+    rawCount: rawEvents.length,
+    importableCount: events.length,
+    skippedCount: skipped.length,
     events,
+    skipped,
   };
 }
 
@@ -310,14 +401,30 @@ module.exports = async function handler(req, res) {
       ok: true,
       mode: write ? "write" : "dry_run",
       sourceUrl: fetched.url,
-      fetchedCount: fetched.count,
       totalPages: fetched.totalPages,
+      rawFetchedCount: fetched.rawCount,
+      importableCount: fetched.importableCount,
+      skippedCount: fetched.skippedCount,
       wouldCreate: creates.length,
       wouldUpdate: updates.length,
       createdCount,
       updatedCount,
-      sampleCreate: creates.slice(0, 2),
-      sampleUpdate: updates.slice(0, 2),
+      sampleCreate: creates.slice(0, 3).map((record) => ({
+        eventName: record.fields["Event Name"],
+        startDateTime: record.fields["Start DateTime"],
+        tripleseatStatus: record.fields["Tripleseat Status"],
+        guestCount: record.fields["Guest Count"],
+        suggestedEventWeight: record.fields["Suggested Event Weight"],
+      })),
+      sampleUpdate: updates.slice(0, 3).map((record) => ({
+        recordId: record.id,
+        eventName: record.fields["Event Name"],
+        startDateTime: record.fields["Start DateTime"],
+        tripleseatStatus: record.fields["Tripleseat Status"],
+        guestCount: record.fields["Guest Count"],
+        suggestedEventWeight: record.fields["Suggested Event Weight"],
+      })),
+      skippedSample: fetched.skipped.slice(0, 5),
     });
   } catch (error) {
     console.error("tripleseat-sync-events error", error);
