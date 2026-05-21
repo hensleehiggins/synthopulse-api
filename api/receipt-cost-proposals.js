@@ -1533,7 +1533,7 @@ async function updateProposalReview(req, res, action) {
     action,
     message:
       action === "approve"
-        ? "Cost proposal approved."
+        ? "Cost signal approved."
         : action === "reject"
         ? "Cost proposal rejected."
         : "Cost proposal returned to review.",
