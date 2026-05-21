@@ -69,6 +69,35 @@ const COST_SOURCE_FIELD = {
   finalPrice: "Final Price",
 };
 
+const COST_MOVEMENT_FIELD = {
+  movementName: "Movement Name",
+  restaurant: "Restaurant",
+  sourceCostProposal: "Source Cost Proposal",
+  receiptLine: "Receipt Line",
+  inventoryItem: "Inventory Item",
+  costSourceItem: "Cost Source Item",
+  vendor: "Vendor",
+  costItemName: "Cost Item Name",
+  vendorLineName: "Vendor Line Name",
+  previousCost: "Previous Cost",
+  latestCost: "Latest Cost",
+  costChangeAmount: "Cost Change $",
+  costChangePercent: "Cost Change %",
+  direction: "Direction",
+  severity: "Severity",
+  reviewStatus: "Review Status",
+  signalDate: "Signal Date",
+  latestReceiptDate: "Latest Receipt Date",
+  isLatest: "Is Latest",
+  showOnWhatChanged: "Show on What Changed",
+  showOnHome: "Show on Home",
+  decisionEligible: "Decision Eligible",
+  marginPressure: "Margin Pressure",
+  suggestedAction: "Suggested Action",
+  formattedCostBrief: "Formatted Cost Brief",
+  notes: "Notes",
+};
+
 const MENU_COMPONENT_FIELD = {
   componentName: "Component Name",
   restaurant: "Restaurant",
@@ -784,6 +813,233 @@ async function createCostMovementFromAppliedProposal({
   if (relatedContext.componentIds.length) {
     fields[COST_MOVEMENT_FIELD.relatedMenuComponents] =
       relatedContext.componentIds;
+  }
+
+  if (previousCost !== null) {
+    fields[COST_MOVEMENT_FIELD.previousCost] = previousCost;
+  }
+
+  if (changeAmount !== null) {
+    fields[COST_MOVEMENT_FIELD.costChangeAmount] = changeAmount;
+  }
+
+  if (changePercent !== null) {
+    fields[COST_MOVEMENT_FIELD.costChangePercent] = changePercent;
+  }
+
+  const created = await airtableRequest({
+    method: "POST",
+    tableId: COST_MOVEMENT_TABLE_ID,
+    body: {
+      records: [
+        {
+          fields,
+        },
+      ],
+      typecast: true,
+    },
+  });
+
+  return created.records?.[0] || null;
+}
+
+function todayIsoDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function percentText(value) {
+  const numberValue = asNumberOrNull(value);
+
+  if (numberValue === null) return "unknown";
+
+  return Math.abs(numberValue).toLocaleString("en-US", {
+    style: "percent",
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
+
+function getCostMovementDirection(changePercent) {
+  const value = asNumberOrNull(changePercent);
+
+  if (value === null || Math.abs(value) < 0.0001) return "Flat";
+  return value > 0 ? "Increase" : "Decrease";
+}
+
+function getCostMovementSeverity(changePercent) {
+  const value = Math.abs(asNumberOrNull(changePercent) || 0);
+
+  if (value >= 0.15) return "High";
+  if (value >= 0.08) return "Medium";
+  if (value >= 0.03) return "Low";
+  return "Watch";
+}
+
+function buildCostMovementMarginPressure({ itemName, vendor, changePercent }) {
+  const direction = getCostMovementDirection(changePercent);
+  const pct = percentText(changePercent);
+
+  if (direction === "Increase") {
+    return `${itemName} increased ${pct} from ${
+      vendor || "the latest vendor receipt"
+    }. This may pressure margin if menu price, portioning, or vendor terms stay unchanged.`;
+  }
+
+  if (direction === "Decrease") {
+    return `${itemName} decreased ${pct} from ${
+      vendor || "the latest vendor receipt"
+    }. This may create margin room or support a feature if demand is there.`;
+  }
+
+  return `${itemName} was tracked from approved receipt data. No major cost movement is showing yet.`;
+}
+
+function buildCostMovementSuggestedAction({ changePercent }) {
+  const direction = getCostMovementDirection(changePercent);
+  const severity = getCostMovementSeverity(changePercent);
+
+  if (direction === "Increase" && severity === "High") {
+    return "Review menu price, portioning, vendor pricing, or whether this item should be featured before pushing affected menu items harder.";
+  }
+
+  if (direction === "Increase") {
+    return "Watch this cost and review margin if the affected item is high-volume or already being promoted.";
+  }
+
+  if (direction === "Decrease") {
+    return "Consider whether the lower cost creates room for a feature, margin improvement, or vendor negotiation benchmark.";
+  }
+
+  return "Keep tracking this item and compare against the next approved receipt.";
+}
+
+function buildCostMovementBrief({
+  itemName,
+  vendor,
+  previousCost,
+  latestCost,
+  changePercent,
+}) {
+  const direction = getCostMovementDirection(changePercent);
+  const pct = percentText(changePercent);
+
+  if (direction === "Increase") {
+    return `${itemName} cost is up ${pct}. Latest receipt shows ${money(
+      latestCost
+    )} vs ${money(previousCost)} previously from ${
+      vendor || "the vendor"
+    }. Review margin, portioning, pricing, or vendor terms.`;
+  }
+
+  if (direction === "Decrease") {
+    return `${itemName} cost is down ${pct}. Latest receipt shows ${money(
+      latestCost
+    )} vs ${money(previousCost)} previously from ${
+      vendor || "the vendor"
+    }. This may improve margin or support a feature.`;
+  }
+
+  return `${itemName} was tracked from approved receipt data with no major cost movement.`;
+}
+
+async function createCostMovementFromAppliedProposal({
+  updatedProposalRecord,
+  proposal,
+  targetUpdates,
+}) {
+  const receiptLineId = proposal.receiptLineId || "";
+  const inventoryItemId = proposal.matchedInventoryItemIds[0] || "";
+  const costSourceItemId = proposal.matchedCostSourceItemIds[0] || "";
+
+  const lineRecord = receiptLineId
+    ? await airtableRequest({
+        method: "GET",
+        tableId: RECEIPT_LINES_TABLE_ID,
+        recordId: receiptLineId,
+      })
+    : null;
+
+  const line = lineRecord ? normalizeLineRecord(lineRecord) : null;
+
+  const appliedUpdate =
+    targetUpdates.find((update) => !update.skipped) || targetUpdates[0] || {};
+
+  const previousCost =
+    asNumberOrNull(appliedUpdate.previousValue) ?? proposal.currentCost;
+  const latestCost = proposal.proposedCost;
+  const changeAmount =
+    previousCost !== null && latestCost !== null ? latestCost - previousCost : null;
+  const changePercent = calculateChangePercent(previousCost, latestCost);
+
+  const itemName =
+    proposal.parsedItemName ||
+    line?.lineItemName ||
+    proposal.proposalName ||
+    "Tracked cost item";
+
+  const vendor = proposal.vendor || line?.vendor || "";
+  const direction = getCostMovementDirection(changePercent);
+  const severity = getCostMovementSeverity(changePercent);
+  const signalDate = todayIsoDate();
+
+  const movementName = `${itemName} cost ${
+    direction === "Increase"
+      ? "up"
+      : direction === "Decrease"
+      ? "down"
+      : "tracked"
+  } ${percentText(changePercent)} — ${vendor || "Vendor"} — ${signalDate}`;
+
+  const fields = {
+    [COST_MOVEMENT_FIELD.movementName]: movementName,
+    [COST_MOVEMENT_FIELD.sourceCostProposal]: [updatedProposalRecord.id],
+    [COST_MOVEMENT_FIELD.vendor]: vendor,
+    [COST_MOVEMENT_FIELD.costItemName]: itemName,
+    [COST_MOVEMENT_FIELD.vendorLineName]: line?.lineItemName || itemName,
+    [COST_MOVEMENT_FIELD.latestCost]: latestCost,
+    [COST_MOVEMENT_FIELD.direction]: direction,
+    [COST_MOVEMENT_FIELD.severity]: severity,
+    [COST_MOVEMENT_FIELD.reviewStatus]: "Active",
+    [COST_MOVEMENT_FIELD.signalDate]: signalDate,
+    [COST_MOVEMENT_FIELD.latestReceiptDate]: signalDate,
+    [COST_MOVEMENT_FIELD.isLatest]: true,
+    [COST_MOVEMENT_FIELD.showOnWhatChanged]: true,
+    [COST_MOVEMENT_FIELD.showOnHome]:
+      severity === "High" && direction === "Increase",
+    [COST_MOVEMENT_FIELD.decisionEligible]: true,
+    [COST_MOVEMENT_FIELD.marginPressure]: buildCostMovementMarginPressure({
+      itemName,
+      vendor,
+      changePercent,
+    }),
+    [COST_MOVEMENT_FIELD.suggestedAction]: buildCostMovementSuggestedAction({
+      changePercent,
+    }),
+    [COST_MOVEMENT_FIELD.formattedCostBrief]: buildCostMovementBrief({
+      itemName,
+      vendor,
+      previousCost,
+      latestCost,
+      changePercent,
+    }),
+    [COST_MOVEMENT_FIELD.notes]:
+      "Generated automatically when a Receipt Cost Proposal was tracked/applied.",
+  };
+
+  if (line?.restaurantIds?.length) {
+    fields[COST_MOVEMENT_FIELD.restaurant] = line.restaurantIds;
+  }
+
+  if (receiptLineId) {
+    fields[COST_MOVEMENT_FIELD.receiptLine] = [receiptLineId];
+  }
+
+  if (inventoryItemId) {
+    fields[COST_MOVEMENT_FIELD.inventoryItem] = [inventoryItemId];
+  }
+
+  if (costSourceItemId) {
+    fields[COST_MOVEMENT_FIELD.costSourceItem] = [costSourceItemId];
   }
 
   if (previousCost !== null) {
@@ -1652,7 +1908,7 @@ async function setProposalMatch(req, res) {
     costSourceRecord,
   });
 
-    const updatedProposal = await airtableRequest({
+      const updatedProposal = await airtableRequest({
     method: "PATCH",
     tableId: COST_PROPOSALS_TABLE_ID,
     recordId,
@@ -1666,6 +1922,23 @@ async function setProposalMatch(req, res) {
         )} from receipt signal and created Cost Movement output.`,
       },
     },
+  });
+
+  const normalizedUpdatedProposal = normalizeProposalRecord(updatedProposal);
+
+  const costMovementRecord = await createCostMovementFromAppliedProposal({
+    updatedProposalRecord: updatedProposal,
+    proposal: normalizedUpdatedProposal,
+    targetUpdates,
+  });
+
+  return sendJson(res, 200, {
+    ok: true,
+    action: "apply",
+    message: "Cost signal tracked and Cost Movement created.",
+    targetUpdates,
+    costMovementRecordId: costMovementRecord?.id || "",
+    proposal: normalizedUpdatedProposal,
   });
 
   const costMovementRecord = await createCostMovementFromAppliedProposal({
