@@ -69,35 +69,6 @@ const COST_SOURCE_FIELD = {
   finalPrice: "Final Price",
 };
 
-const COST_MOVEMENT_FIELD = {
-  movementName: "Movement Name",
-  restaurant: "Restaurant",
-  sourceCostProposal: "Source Cost Proposal",
-  receiptLine: "Receipt Line",
-  inventoryItem: "Inventory Item",
-  costSourceItem: "Cost Source Item",
-  vendor: "Vendor",
-  costItemName: "Cost Item Name",
-  vendorLineName: "Vendor Line Name",
-  previousCost: "Previous Cost",
-  latestCost: "Latest Cost",
-  costChangeAmount: "Cost Change $",
-  costChangePercent: "Cost Change %",
-  direction: "Direction",
-  severity: "Severity",
-  reviewStatus: "Review Status",
-  signalDate: "Signal Date",
-  latestReceiptDate: "Latest Receipt Date",
-  isLatest: "Is Latest",
-  showOnWhatChanged: "Show on What Changed",
-  showOnHome: "Show on Home",
-  decisionEligible: "Decision Eligible",
-  marginPressure: "Margin Pressure",
-  suggestedAction: "Suggested Action",
-  formattedCostBrief: "Formatted Cost Brief",
-  notes: "Notes",
-};
-
 const MENU_COMPONENT_FIELD = {
   componentName: "Component Name",
   restaurant: "Restaurant",
@@ -142,10 +113,7 @@ const COST_MOVEMENT_FIELD = {
 function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Accept"
-  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
 }
 
 function sendJson(res, statusCode, payload) {
@@ -154,19 +122,14 @@ function sendJson(res, statusCode, payload) {
 }
 
 function requireAirtableConfig() {
-  if (!AIRTABLE_BASE_ID) {
-    throw new Error("Missing AIRTABLE_BASE_ID.");
-  }
-
+  if (!AIRTABLE_BASE_ID) throw new Error("Missing AIRTABLE_BASE_ID.");
   if (!AIRTABLE_TOKEN) {
     throw new Error("Missing AIRTABLE_TOKEN / AIRTABLE_API_KEY / AIRTABLE_PAT.");
   }
 }
 
 function airtableTableUrl(tableId) {
-  return `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
-    tableId
-  )}`;
+  return `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableId)}`;
 }
 
 function airtableRecordUrl(tableId, recordId) {
@@ -189,7 +152,6 @@ async function airtableRequest({ method = "GET", tableId, recordId, body }) {
   );
 
   const text = await response.text();
-
   let data = null;
 
   try {
@@ -220,28 +182,18 @@ async function listAirtableRecords({ tableId, fields = [], pageSize = 100 }) {
   do {
     const params = new URLSearchParams();
     params.set("pageSize", String(Math.min(pageSize, 100)));
+    if (offset) params.set("offset", offset);
+    for (const fieldName of fields) params.append("fields[]", fieldName);
 
-    if (offset) {
-      params.set("offset", offset);
-    }
-
-    for (const fieldName of fields) {
-      params.append("fields[]", fieldName);
-    }
-
-    const response = await fetch(
-      `${airtableTableUrl(tableId)}?${params.toString()}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${airtableTableUrl(tableId)}?${params.toString()}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
 
     const text = await response.text();
-
     let data = null;
 
     try {
@@ -268,8 +220,7 @@ async function listAirtableRecords({ tableId, fields = [], pageSize = 100 }) {
 }
 
 function linkedIds(value) {
-  if (Array.isArray(value)) return value;
-  return [];
+  return Array.isArray(value) ? value : [];
 }
 
 function firstLinkedId(value) {
@@ -278,87 +229,48 @@ function firstLinkedId(value) {
 }
 
 function asNumberOrNull(value) {
-  if (value === "" || value === null || typeof value === "undefined") {
-    return null;
-  }
-
+  if (value === "" || value === null || typeof value === "undefined") return null;
   const numberValue = Number(value);
-
-  if (Number.isNaN(numberValue)) {
-    return null;
-  }
-
-  return numberValue;
+  return Number.isNaN(numberValue) ? null : numberValue;
 }
 
 function money(value) {
   const numberValue = asNumberOrNull(value);
-
   if (numberValue === null) return "unknown";
-
-  return numberValue.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-  });
+  return numberValue.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
 function calculateChangePercent(currentCost, proposedCost) {
   const current = asNumberOrNull(currentCost);
   const proposed = asNumberOrNull(proposedCost);
-
-  if (current === null || proposed === null || current === 0) {
-    return null;
-  }
-
+  if (current === null || proposed === null || current === 0) return null;
   return (proposed - current) / current;
 }
 
 function isAlreadyCurrentCost(currentCost, proposedCost) {
   const current = asNumberOrNull(currentCost);
   const proposed = asNumberOrNull(proposedCost);
-
-  if (current === null || proposed === null) {
-    return false;
-  }
-
+  if (current === null || proposed === null) return false;
   return Math.abs(current - proposed) < 0.01;
 }
 
 function isMeaningfulCostChange(currentCost, proposedCost) {
   const current = asNumberOrNull(currentCost);
   const proposed = asNumberOrNull(proposedCost);
-
-  if (proposed === null || proposed <= 0) {
-    return false;
-  }
-
-  // If KitchenPulse has no current cost, applying a valid proposed cost is meaningful.
-  if (current === null) {
-    return true;
-  }
-
+  if (proposed === null || proposed <= 0) return false;
+  if (current === null) return true;
   return Math.abs(current - proposed) >= 0.01;
 }
 
 function getProposedCostFromLineRecord(record) {
   const fields = record.fields || {};
-
   const unitCost = asNumberOrNull(fields[LINE_FIELD.unitCost]);
   const lineTotal = asNumberOrNull(fields[LINE_FIELD.lineTotal]);
   const quantity = asNumberOrNull(fields[LINE_FIELD.quantity]);
 
-  if (unitCost !== null && unitCost > 0) {
-    return unitCost;
-  }
-
-  if (lineTotal !== null && quantity !== null && quantity > 0) {
-    return lineTotal / quantity;
-  }
-
-  if (lineTotal !== null && lineTotal > 0) {
-    return lineTotal;
-  }
-
+  if (unitCost !== null && unitCost > 0) return unitCost;
+  if (lineTotal !== null && quantity !== null && quantity > 0) return lineTotal / quantity;
+  if (lineTotal !== null && lineTotal > 0) return lineTotal;
   return null;
 }
 
@@ -372,7 +284,6 @@ function normalizeText(value) {
 
 function tokenize(value) {
   const normalized = normalizeText(value);
-
   if (!normalized) return [];
 
   return normalized
@@ -405,26 +316,17 @@ function tokenize(value) {
 function scoreNameMatch(sourceName, targetName) {
   const source = normalizeText(sourceName);
   const target = normalizeText(targetName);
-
   if (!source || !target) return 0;
-
   if (source === target) return 100;
-
-  if (source.includes(target) || target.includes(source)) {
-    return 82;
-  }
+  if (source.includes(target) || target.includes(source)) return 82;
 
   const sourceTokens = tokenize(source);
   const targetTokens = tokenize(target);
-
-  if (sourceTokens.length === 0 || targetTokens.length === 0) {
-    return 0;
-  }
+  if (sourceTokens.length === 0 || targetTokens.length === 0) return 0;
 
   const targetSet = new Set(targetTokens);
   const overlap = sourceTokens.filter((token) => targetSet.has(token)).length;
   const union = new Set([...sourceTokens, ...targetTokens]).size;
-
   const jaccard = union > 0 ? overlap / union : 0;
   const coverage = overlap / sourceTokens.length;
 
@@ -434,9 +336,7 @@ function scoreNameMatch(sourceName, targetName) {
 function scoreVendorMatch(sourceVendor, targetSupplier) {
   const source = normalizeText(sourceVendor);
   const target = normalizeText(targetSupplier);
-
   if (!source || !target) return 0;
-
   if (source === target) return 18;
   if (source.includes(target) || target.includes(source)) return 14;
 
@@ -444,13 +344,10 @@ function scoreVendorMatch(sourceVendor, targetSupplier) {
   const targetTokens = tokenize(target);
   const targetSet = new Set(targetTokens);
   const overlap = sourceTokens.filter((token) => targetSet.has(token)).length;
-
   return overlap > 0 ? 8 : 0;
 }
-
 function getCostSourceCurrentCost(record) {
   if (!record) return null;
-
   const fields = record.fields || {};
 
   return (
@@ -462,7 +359,6 @@ function getCostSourceCurrentCost(record) {
 
 function getInventoryCurrentCost(record) {
   if (!record) return null;
-
   const fields = record.fields || {};
   return asNumberOrNull(fields[INVENTORY_FIELD.costPerUnit]);
 }
@@ -564,511 +460,6 @@ function normalizeProposalRecord(record, matchSuggestions = []) {
       proposalStatus === "Approved",
   };
 }
-function todayIsoDate() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function percentText(value) {
-  const numberValue = asNumberOrNull(value);
-
-  if (numberValue === null) return "unknown";
-
-  return Math.abs(numberValue).toLocaleString("en-US", {
-    style: "percent",
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-}
-
-function getDirection(changePercent) {
-  const value = asNumberOrNull(changePercent);
-
-  if (value === null || Math.abs(value) < 0.0001) return "Flat";
-  return value > 0 ? "Increase" : "Decrease";
-}
-
-function getSeverity(changePercent) {
-  const value = Math.abs(asNumberOrNull(changePercent) || 0);
-
-  if (value >= 0.15) return "High";
-  if (value >= 0.08) return "Medium";
-  if (value >= 0.03) return "Low";
-  return "Watch";
-}
-
-function buildMarginPressure({ itemName, vendor, changePercent }) {
-  const direction = getDirection(changePercent);
-  const pct = percentText(changePercent);
-
-  if (direction === "Increase") {
-    return `${itemName} increased ${pct} from ${
-      vendor || "the latest vendor receipt"
-    }. This may pressure margin if menu price, portioning, or vendor terms stay unchanged.`;
-  }
-
-  if (direction === "Decrease") {
-    return `${itemName} decreased ${pct} from ${
-      vendor || "the latest vendor receipt"
-    }. This may create margin room or support a feature if demand is there.`;
-  }
-
-  return `${itemName} was tracked from approved receipt data. No major cost movement is showing yet.`;
-}
-
-function buildSuggestedAction({ changePercent }) {
-  const direction = getDirection(changePercent);
-  const severity = getSeverity(changePercent);
-
-  if (direction === "Increase" && severity === "High") {
-    return "Review menu price, portioning, vendor pricing, or whether this item should be featured before pushing affected menu items harder.";
-  }
-
-  if (direction === "Increase") {
-    return "Watch this cost and review margin if the affected item is high-volume or already being promoted.";
-  }
-
-  if (direction === "Decrease") {
-    return "Consider whether the lower cost creates room for a feature, margin improvement, or vendor negotiation benchmark.";
-  }
-
-  return "Keep tracking this item and compare against the next approved receipt.";
-}
-
-function buildFormattedCostBrief({
-  itemName,
-  vendor,
-  previousCost,
-  latestCost,
-  changePercent,
-}) {
-  const direction = getDirection(changePercent);
-  const pct = percentText(changePercent);
-
-  if (direction === "Increase") {
-    return `${itemName} cost is up ${pct}. Latest receipt shows ${money(
-      latestCost
-    )} vs ${money(previousCost)} previously from ${
-      vendor || "the vendor"
-    }. Review margin, portioning, pricing, or vendor terms.`;
-  }
-
-  if (direction === "Decrease") {
-    return `${itemName} cost is down ${pct}. Latest receipt shows ${money(
-      latestCost
-    )} vs ${money(previousCost)} previously from ${
-      vendor || "the vendor"
-    }. This may improve margin or support a feature.`;
-  }
-
-  return `${itemName} was tracked from approved receipt data with no major cost movement.`;
-}
-
-function uniqueIds(ids) {
-  return [...new Set((ids || []).filter(Boolean))];
-}
-
-async function findRelatedMenuContext({ inventoryItemId, costSourceItemId }) {
-  if (!inventoryItemId && !costSourceItemId) {
-    return {
-      componentIds: [],
-      menuItemIds: [],
-    };
-  }
-
-  const componentRecords = await listAirtableRecords({
-    tableId: MENU_ITEM_INGREDIENTS_TABLE_ID,
-    fields: Object.values(MENU_COMPONENT_FIELD),
-    pageSize: 100,
-  });
-
-  const matchedComponents = componentRecords.filter((record) => {
-    const fields = record.fields || {};
-
-    if (fields[MENU_COMPONENT_FIELD.active] === false) return false;
-    if (fields[MENU_COMPONENT_FIELD.includeInMenuCost] === false) return false;
-
-    const inventoryIds = linkedIds(fields[MENU_COMPONENT_FIELD.inventoryItem]);
-    const costSourceIds = linkedIds(fields[MENU_COMPONENT_FIELD.costSourceItem]);
-
-    return (
-      (inventoryItemId && inventoryIds.includes(inventoryItemId)) ||
-      (costSourceItemId && costSourceIds.includes(costSourceItemId))
-    );
-  });
-
-  return {
-    componentIds: uniqueIds(matchedComponents.map((record) => record.id)),
-    menuItemIds: uniqueIds(
-      matchedComponents.flatMap((record) =>
-        linkedIds(record.fields?.[MENU_COMPONENT_FIELD.menuItem])
-      )
-    ),
-  };
-}
-
-async function createCostMovementFromAppliedProposal({
-  proposalRecord,
-  proposal,
-  targetUpdates,
-}) {
-  const receiptLineId = proposal.receiptLineId || "";
-  const inventoryItemId = proposal.matchedInventoryItemIds[0] || "";
-  const costSourceItemId = proposal.matchedCostSourceItemIds[0] || "";
-
-  const lineRecord = receiptLineId
-    ? await airtableRequest({
-        method: "GET",
-        tableId: RECEIPT_LINES_TABLE_ID,
-        recordId: receiptLineId,
-      })
-    : null;
-
-  const line = lineRecord ? normalizeLineRecord(lineRecord) : null;
-
-  const appliedUpdate =
-    targetUpdates.find((update) => !update.skipped) || targetUpdates[0] || {};
-
-  const previousCost =
-    asNumberOrNull(appliedUpdate.previousValue) ?? proposal.currentCost;
-  const latestCost = proposal.proposedCost;
-  const changeAmount =
-    previousCost !== null && latestCost !== null ? latestCost - previousCost : null;
-  const changePercent = calculateChangePercent(previousCost, latestCost);
-
-  const itemName =
-    proposal.parsedItemName ||
-    line?.lineItemName ||
-    proposal.proposalName ||
-    "Tracked cost item";
-
-  const vendor = proposal.vendor || line?.vendor || "";
-  const direction = getDirection(changePercent);
-  const severity = getSeverity(changePercent);
-  const signalDate = todayIsoDate();
-
-  const relatedContext = await findRelatedMenuContext({
-    inventoryItemId,
-    costSourceItemId,
-  });
-
-  const movementName = `${itemName} cost ${
-    direction === "Increase" ? "up" : direction === "Decrease" ? "down" : "tracked"
-  } ${percentText(changePercent)} — ${vendor || "Vendor"} — ${signalDate}`;
-
-  const fields = {
-    [COST_MOVEMENT_FIELD.movementName]: movementName,
-    [COST_MOVEMENT_FIELD.sourceCostProposal]: [proposalRecord.id],
-    [COST_MOVEMENT_FIELD.vendor]: vendor,
-    [COST_MOVEMENT_FIELD.costItemName]: itemName,
-    [COST_MOVEMENT_FIELD.vendorLineName]: line?.lineItemName || itemName,
-    [COST_MOVEMENT_FIELD.latestCost]: latestCost,
-    [COST_MOVEMENT_FIELD.direction]: direction,
-    [COST_MOVEMENT_FIELD.severity]: severity,
-    [COST_MOVEMENT_FIELD.reviewStatus]: "Active",
-    [COST_MOVEMENT_FIELD.signalDate]: signalDate,
-    [COST_MOVEMENT_FIELD.latestReceiptDate]: signalDate,
-    [COST_MOVEMENT_FIELD.isLatest]: true,
-    [COST_MOVEMENT_FIELD.showOnWhatChanged]: true,
-    [COST_MOVEMENT_FIELD.showOnHome]: severity === "High" && direction === "Increase",
-    [COST_MOVEMENT_FIELD.decisionEligible]: true,
-    [COST_MOVEMENT_FIELD.marginPressure]: buildMarginPressure({
-      itemName,
-      vendor,
-      changePercent,
-    }),
-    [COST_MOVEMENT_FIELD.suggestedAction]: buildSuggestedAction({
-      changePercent,
-    }),
-    [COST_MOVEMENT_FIELD.formattedCostBrief]: buildFormattedCostBrief({
-      itemName,
-      vendor,
-      previousCost,
-      latestCost,
-      changePercent,
-    }),
-    [COST_MOVEMENT_FIELD.notes]:
-      "Generated automatically when a Receipt Cost Proposal was tracked/applied.",
-  };
-
-  if (line?.restaurantIds?.length) {
-    fields[COST_MOVEMENT_FIELD.restaurant] = line.restaurantIds;
-  }
-
-  if (receiptLineId) {
-    fields[COST_MOVEMENT_FIELD.receiptLine] = [receiptLineId];
-  }
-
-  if (inventoryItemId) {
-    fields[COST_MOVEMENT_FIELD.inventoryItem] = [inventoryItemId];
-  }
-
-  if (costSourceItemId) {
-    fields[COST_MOVEMENT_FIELD.costSourceItem] = [costSourceItemId];
-  }
-
-  if (relatedContext.menuItemIds.length) {
-    fields[COST_MOVEMENT_FIELD.relatedMenuItems] = relatedContext.menuItemIds;
-  }
-
-  if (relatedContext.componentIds.length) {
-    fields[COST_MOVEMENT_FIELD.relatedMenuComponents] =
-      relatedContext.componentIds;
-  }
-
-  if (previousCost !== null) {
-    fields[COST_MOVEMENT_FIELD.previousCost] = previousCost;
-  }
-
-  if (changeAmount !== null) {
-    fields[COST_MOVEMENT_FIELD.costChangeAmount] = changeAmount;
-  }
-
-  if (changePercent !== null) {
-    fields[COST_MOVEMENT_FIELD.costChangePercent] = changePercent;
-  }
-
-  const created = await airtableRequest({
-    method: "POST",
-    tableId: COST_MOVEMENT_TABLE_ID,
-    body: {
-      records: [
-        {
-          fields,
-        },
-      ],
-      typecast: true,
-    },
-  });
-
-  return created.records?.[0] || null;
-}
-
-function todayIsoDate() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function percentText(value) {
-  const numberValue = asNumberOrNull(value);
-
-  if (numberValue === null) return "unknown";
-
-  return Math.abs(numberValue).toLocaleString("en-US", {
-    style: "percent",
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-}
-
-function getCostMovementDirection(changePercent) {
-  const value = asNumberOrNull(changePercent);
-
-  if (value === null || Math.abs(value) < 0.0001) return "Flat";
-  return value > 0 ? "Increase" : "Decrease";
-}
-
-function getCostMovementSeverity(changePercent) {
-  const value = Math.abs(asNumberOrNull(changePercent) || 0);
-
-  if (value >= 0.15) return "High";
-  if (value >= 0.08) return "Medium";
-  if (value >= 0.03) return "Low";
-  return "Watch";
-}
-
-function buildCostMovementMarginPressure({ itemName, vendor, changePercent }) {
-  const direction = getCostMovementDirection(changePercent);
-  const pct = percentText(changePercent);
-
-  if (direction === "Increase") {
-    return `${itemName} increased ${pct} from ${
-      vendor || "the latest vendor receipt"
-    }. This may pressure margin if menu price, portioning, or vendor terms stay unchanged.`;
-  }
-
-  if (direction === "Decrease") {
-    return `${itemName} decreased ${pct} from ${
-      vendor || "the latest vendor receipt"
-    }. This may create margin room or support a feature if demand is there.`;
-  }
-
-  return `${itemName} was tracked from approved receipt data. No major cost movement is showing yet.`;
-}
-
-function buildCostMovementSuggestedAction({ changePercent }) {
-  const direction = getCostMovementDirection(changePercent);
-  const severity = getCostMovementSeverity(changePercent);
-
-  if (direction === "Increase" && severity === "High") {
-    return "Review menu price, portioning, vendor pricing, or whether this item should be featured before pushing affected menu items harder.";
-  }
-
-  if (direction === "Increase") {
-    return "Watch this cost and review margin if the affected item is high-volume or already being promoted.";
-  }
-
-  if (direction === "Decrease") {
-    return "Consider whether the lower cost creates room for a feature, margin improvement, or vendor negotiation benchmark.";
-  }
-
-  return "Keep tracking this item and compare against the next approved receipt.";
-}
-
-function buildCostMovementBrief({
-  itemName,
-  vendor,
-  previousCost,
-  latestCost,
-  changePercent,
-}) {
-  const direction = getCostMovementDirection(changePercent);
-  const pct = percentText(changePercent);
-
-  if (direction === "Increase") {
-    return `${itemName} cost is up ${pct}. Latest receipt shows ${money(
-      latestCost
-    )} vs ${money(previousCost)} previously from ${
-      vendor || "the vendor"
-    }. Review margin, portioning, pricing, or vendor terms.`;
-  }
-
-  if (direction === "Decrease") {
-    return `${itemName} cost is down ${pct}. Latest receipt shows ${money(
-      latestCost
-    )} vs ${money(previousCost)} previously from ${
-      vendor || "the vendor"
-    }. This may improve margin or support a feature.`;
-  }
-
-  return `${itemName} was tracked from approved receipt data with no major cost movement.`;
-}
-
-async function createCostMovementFromAppliedProposal({
-  updatedProposalRecord,
-  proposal,
-  targetUpdates,
-}) {
-  const receiptLineId = proposal.receiptLineId || "";
-  const inventoryItemId = proposal.matchedInventoryItemIds[0] || "";
-  const costSourceItemId = proposal.matchedCostSourceItemIds[0] || "";
-
-  const lineRecord = receiptLineId
-    ? await airtableRequest({
-        method: "GET",
-        tableId: RECEIPT_LINES_TABLE_ID,
-        recordId: receiptLineId,
-      })
-    : null;
-
-  const line = lineRecord ? normalizeLineRecord(lineRecord) : null;
-
-  const appliedUpdate =
-    targetUpdates.find((update) => !update.skipped) || targetUpdates[0] || {};
-
-  const previousCost =
-    asNumberOrNull(appliedUpdate.previousValue) ?? proposal.currentCost;
-  const latestCost = proposal.proposedCost;
-  const changeAmount =
-    previousCost !== null && latestCost !== null ? latestCost - previousCost : null;
-  const changePercent = calculateChangePercent(previousCost, latestCost);
-
-  const itemName =
-    proposal.parsedItemName ||
-    line?.lineItemName ||
-    proposal.proposalName ||
-    "Tracked cost item";
-
-  const vendor = proposal.vendor || line?.vendor || "";
-  const direction = getCostMovementDirection(changePercent);
-  const severity = getCostMovementSeverity(changePercent);
-  const signalDate = todayIsoDate();
-
-  const movementName = `${itemName} cost ${
-    direction === "Increase"
-      ? "up"
-      : direction === "Decrease"
-      ? "down"
-      : "tracked"
-  } ${percentText(changePercent)} — ${vendor || "Vendor"} — ${signalDate}`;
-
-  const fields = {
-    [COST_MOVEMENT_FIELD.movementName]: movementName,
-    [COST_MOVEMENT_FIELD.sourceCostProposal]: [updatedProposalRecord.id],
-    [COST_MOVEMENT_FIELD.vendor]: vendor,
-    [COST_MOVEMENT_FIELD.costItemName]: itemName,
-    [COST_MOVEMENT_FIELD.vendorLineName]: line?.lineItemName || itemName,
-    [COST_MOVEMENT_FIELD.latestCost]: latestCost,
-    [COST_MOVEMENT_FIELD.direction]: direction,
-    [COST_MOVEMENT_FIELD.severity]: severity,
-    [COST_MOVEMENT_FIELD.reviewStatus]: "Active",
-    [COST_MOVEMENT_FIELD.signalDate]: signalDate,
-    [COST_MOVEMENT_FIELD.latestReceiptDate]: signalDate,
-    [COST_MOVEMENT_FIELD.isLatest]: true,
-    [COST_MOVEMENT_FIELD.showOnWhatChanged]: true,
-    [COST_MOVEMENT_FIELD.showOnHome]:
-      severity === "High" && direction === "Increase",
-    [COST_MOVEMENT_FIELD.decisionEligible]: true,
-    [COST_MOVEMENT_FIELD.marginPressure]: buildCostMovementMarginPressure({
-      itemName,
-      vendor,
-      changePercent,
-    }),
-    [COST_MOVEMENT_FIELD.suggestedAction]: buildCostMovementSuggestedAction({
-      changePercent,
-    }),
-    [COST_MOVEMENT_FIELD.formattedCostBrief]: buildCostMovementBrief({
-      itemName,
-      vendor,
-      previousCost,
-      latestCost,
-      changePercent,
-    }),
-    [COST_MOVEMENT_FIELD.notes]:
-      "Generated automatically when a Receipt Cost Proposal was tracked/applied.",
-  };
-
-  if (line?.restaurantIds?.length) {
-    fields[COST_MOVEMENT_FIELD.restaurant] = line.restaurantIds;
-  }
-
-  if (receiptLineId) {
-    fields[COST_MOVEMENT_FIELD.receiptLine] = [receiptLineId];
-  }
-
-  if (inventoryItemId) {
-    fields[COST_MOVEMENT_FIELD.inventoryItem] = [inventoryItemId];
-  }
-
-  if (costSourceItemId) {
-    fields[COST_MOVEMENT_FIELD.costSourceItem] = [costSourceItemId];
-  }
-
-  if (previousCost !== null) {
-    fields[COST_MOVEMENT_FIELD.previousCost] = previousCost;
-  }
-
-  if (changeAmount !== null) {
-    fields[COST_MOVEMENT_FIELD.costChangeAmount] = changeAmount;
-  }
-
-  if (changePercent !== null) {
-    fields[COST_MOVEMENT_FIELD.costChangePercent] = changePercent;
-  }
-
-  const created = await airtableRequest({
-    method: "POST",
-    tableId: COST_MOVEMENT_TABLE_ID,
-    body: {
-      records: [
-        {
-          fields,
-        },
-      ],
-      typecast: true,
-    },
-  });
-
-  return created.records?.[0] || null;
-}
 
 function buildProposalCounts(proposals) {
   return {
@@ -1122,10 +513,10 @@ function buildProposalReason({
 
   if (!targetName) {
     return [
-      "Approved receipt line is ready for pricing review, but it is not matched to an Inventory Item or Cost Source Item yet.",
+      "Approved receipt line is ready for cost signal review, but it is not matched to an Inventory Item or Cost Source Item yet.",
       `Parsed item: ${line.lineItemName || "Unnamed line"}.`,
-      `Proposed cost from receipt: ${money(proposedCost)}.`,
-      "Match this line before applying any cost update.",
+      `Receipt cost: ${money(proposedCost)}.`,
+      "Match this line before tracking any cost signal.",
     ].join(" ");
   }
 
@@ -1133,7 +524,7 @@ function buildProposalReason({
     return [
       `Approved receipt line matched to ${targetName}.`,
       `KitchenPulse does not have a current cost for this target yet.`,
-      `Proposed cost from receipt: ${money(proposedCost)}.`,
+      `Receipt cost: ${money(proposedCost)}.`,
     ].join(" ");
   }
 
@@ -1143,7 +534,7 @@ function buildProposalReason({
     return [
       `Approved receipt line matched to ${targetName}.`,
       `Current cost: ${money(currentCost)}.`,
-      `Proposed cost from receipt: ${money(proposedCost)}.`,
+      `Receipt cost: ${money(proposedCost)}.`,
     ].join(" ");
   }
 
@@ -1156,7 +547,7 @@ function buildProposalReason({
 
   return [
     `Approved receipt line matched to ${targetName}.`,
-    `Current cost is ${money(currentCost)} and proposed cost is ${money(
+    `Current cost is ${money(currentCost)} and receipt cost is ${money(
       proposedCost
     )}.`,
     `This is a ${percentText} ${direction}.`,
@@ -1168,9 +559,7 @@ async function getRecordCached({ tableId, recordId, cache }) {
 
   const key = `${tableId}:${recordId}`;
 
-  if (cache.has(key)) {
-    return cache.get(key);
-  }
+  if (cache.has(key)) return cache.get(key);
 
   const record = await airtableRequest({
     method: "GET",
@@ -1303,17 +692,14 @@ function buildMatchSuggestionsForProposal({
   const hasStrongMatch = sorted.some((suggestion) => suggestion.score >= 80);
   const hasLikelyMatch = sorted.some((suggestion) => suggestion.score >= 55);
 
-  // If we have a strong match, do not distract the owner with weak "same word" guesses.
   if (hasStrongMatch) {
     return sorted.filter((suggestion) => suggestion.score >= 80).slice(0, 5);
   }
 
-  // If no strong match exists, show likely matches only.
   if (hasLikelyMatch) {
     return sorted.filter((suggestion) => suggestion.score >= 55).slice(0, 5);
   }
 
-  // Otherwise show only the top weak options, clearly labeled as possible matches.
   return sorted.slice(0, 3);
 }
 
@@ -1367,10 +753,7 @@ function getCanonicalProposalRecords(records) {
       continue;
     }
 
-    if (!groups.has(receiptLineId)) {
-      groups.set(receiptLineId, []);
-    }
-
+    if (!groups.has(receiptLineId)) groups.set(receiptLineId, []);
     groups.get(receiptLineId).push(record);
   }
 
@@ -1390,6 +773,346 @@ function getCanonicalProposalRecords(records) {
   }
 
   return canonical;
+}
+
+function todayIsoDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function percentText(value) {
+  const numberValue = asNumberOrNull(value);
+  if (numberValue === null) return "unknown";
+
+  return Math.abs(numberValue).toLocaleString("en-US", {
+    style: "percent",
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+}
+
+function getCostMovementDirection(changePercent) {
+  const value = asNumberOrNull(changePercent);
+  if (value === null || Math.abs(value) < 0.0001) return "Flat";
+  return value > 0 ? "Increase" : "Decrease";
+}
+
+function getCostMovementSeverity(changePercent) {
+  const value = Math.abs(asNumberOrNull(changePercent) || 0);
+  if (value >= 0.15) return "High";
+  if (value >= 0.08) return "Medium";
+  if (value >= 0.03) return "Low";
+  return "Watch";
+}
+
+function buildCostMovementMarginPressure({ itemName, vendor, changePercent }) {
+  const direction = getCostMovementDirection(changePercent);
+  const pct = percentText(changePercent);
+
+  if (direction === "Increase") {
+    return `${itemName} increased ${pct} from ${
+      vendor || "the latest vendor receipt"
+    }. This may pressure margin if menu price, portioning, or vendor terms stay unchanged.`;
+  }
+
+  if (direction === "Decrease") {
+    return `${itemName} decreased ${pct} from ${
+      vendor || "the latest vendor receipt"
+    }. This may create margin room or support a feature if demand is there.`;
+  }
+
+  return `${itemName} was tracked from approved receipt data. No major cost movement is showing yet.`;
+}
+
+function buildCostMovementSuggestedAction({ changePercent }) {
+  const direction = getCostMovementDirection(changePercent);
+  const severity = getCostMovementSeverity(changePercent);
+
+  if (direction === "Increase" && severity === "High") {
+    return "Review menu price, portioning, vendor pricing, or whether this item should be featured before pushing affected menu items harder.";
+  }
+
+  if (direction === "Increase") {
+    return "Watch this cost and review margin if the affected item is high-volume or already being promoted.";
+  }
+
+  if (direction === "Decrease") {
+    return "Consider whether the lower cost creates room for a feature, margin improvement, or vendor negotiation benchmark.";
+  }
+
+  return "Keep tracking this item and compare against the next approved receipt.";
+}
+function buildCostMovementBrief({
+  itemName,
+  vendor,
+  previousCost,
+  latestCost,
+  changePercent,
+}) {
+  const direction = getCostMovementDirection(changePercent);
+  const pct = percentText(changePercent);
+
+  if (direction === "Increase") {
+    return `${itemName} cost is up ${pct}. Latest receipt shows ${money(
+      latestCost
+    )} vs ${money(previousCost)} previously from ${
+      vendor || "the vendor"
+    }. Review margin, portioning, pricing, or vendor terms.`;
+  }
+
+  if (direction === "Decrease") {
+    return `${itemName} cost is down ${pct}. Latest receipt shows ${money(
+      latestCost
+    )} vs ${money(previousCost)} previously from ${
+      vendor || "the vendor"
+    }. This may improve margin or support a feature.`;
+  }
+
+  return `${itemName} was tracked from approved receipt data with no major cost movement.`;
+}
+
+function uniqueIds(ids) {
+  return [...new Set((ids || []).filter(Boolean))];
+}
+
+async function findRelatedMenuContext({ inventoryItemId, costSourceItemId }) {
+  if (!inventoryItemId && !costSourceItemId) {
+    return {
+      componentIds: [],
+      menuItemIds: [],
+    };
+  }
+
+  const componentRecords = await listAirtableRecords({
+    tableId: MENU_ITEM_INGREDIENTS_TABLE_ID,
+    fields: Object.values(MENU_COMPONENT_FIELD),
+    pageSize: 100,
+  });
+
+  const matchedComponents = componentRecords.filter((record) => {
+    const fields = record.fields || {};
+
+    if (fields[MENU_COMPONENT_FIELD.active] === false) return false;
+    if (fields[MENU_COMPONENT_FIELD.includeInMenuCost] === false) return false;
+
+    const inventoryIds = linkedIds(fields[MENU_COMPONENT_FIELD.inventoryItem]);
+    const costSourceIds = linkedIds(fields[MENU_COMPONENT_FIELD.costSourceItem]);
+
+    return (
+      (inventoryItemId && inventoryIds.includes(inventoryItemId)) ||
+      (costSourceItemId && costSourceIds.includes(costSourceItemId))
+    );
+  });
+
+  return {
+    componentIds: uniqueIds(matchedComponents.map((record) => record.id)),
+    menuItemIds: uniqueIds(
+      matchedComponents.flatMap((record) =>
+        linkedIds(record.fields?.[MENU_COMPONENT_FIELD.menuItem])
+      )
+    ),
+  };
+}
+
+async function markOlderCostMovementsNotLatest({
+  inventoryItemId,
+  costSourceItemId,
+  currentMovementId,
+}) {
+  const movementRecords = await listAirtableRecords({
+    tableId: COST_MOVEMENT_TABLE_ID,
+    fields: [
+      COST_MOVEMENT_FIELD.inventoryItem,
+      COST_MOVEMENT_FIELD.costSourceItem,
+      COST_MOVEMENT_FIELD.isLatest,
+    ],
+    pageSize: 100,
+  });
+
+  const recordsToUpdate = movementRecords
+    .filter((record) => record.id !== currentMovementId)
+    .filter((record) => {
+      const fields = record.fields || {};
+      const inventoryIds = linkedIds(fields[COST_MOVEMENT_FIELD.inventoryItem]);
+      const costSourceIds = linkedIds(fields[COST_MOVEMENT_FIELD.costSourceItem]);
+
+      return (
+        (inventoryItemId && inventoryIds.includes(inventoryItemId)) ||
+        (costSourceItemId && costSourceIds.includes(costSourceItemId))
+      );
+    })
+    .filter((record) => Boolean(record.fields?.[COST_MOVEMENT_FIELD.isLatest]))
+    .map((record) => ({
+      id: record.id,
+      fields: {
+        [COST_MOVEMENT_FIELD.isLatest]: false,
+      },
+    }));
+
+  for (let index = 0; index < recordsToUpdate.length; index += 10) {
+    const batch = recordsToUpdate.slice(index, index + 10);
+
+    if (batch.length === 0) continue;
+
+    await airtableRequest({
+      method: "PATCH",
+      tableId: COST_MOVEMENT_TABLE_ID,
+      body: {
+        records: batch,
+      },
+    });
+  }
+}
+
+async function createCostMovementFromAppliedProposal({
+  updatedProposalRecord,
+  proposal,
+  targetUpdates,
+}) {
+  const receiptLineId = proposal.receiptLineId || "";
+  const inventoryItemId = proposal.matchedInventoryItemIds[0] || "";
+  const costSourceItemId = proposal.matchedCostSourceItemIds[0] || "";
+
+  const lineRecord = receiptLineId
+    ? await airtableRequest({
+        method: "GET",
+        tableId: RECEIPT_LINES_TABLE_ID,
+        recordId: receiptLineId,
+      })
+    : null;
+
+  const line = lineRecord ? normalizeLineRecord(lineRecord) : null;
+
+  const appliedUpdate =
+    targetUpdates.find((update) => !update.skipped) || targetUpdates[0] || {};
+
+  const previousCost =
+    asNumberOrNull(appliedUpdate.previousValue) ?? proposal.currentCost;
+  const latestCost = proposal.proposedCost;
+  const changeAmount =
+    previousCost !== null && latestCost !== null ? latestCost - previousCost : null;
+  const changePercent = calculateChangePercent(previousCost, latestCost);
+
+  const itemName =
+    proposal.parsedItemName ||
+    line?.lineItemName ||
+    proposal.proposalName ||
+    "Tracked cost item";
+
+  const vendor = proposal.vendor || line?.vendor || "";
+  const direction = getCostMovementDirection(changePercent);
+  const severity = getCostMovementSeverity(changePercent);
+  const signalDate = todayIsoDate();
+
+  const relatedContext = await findRelatedMenuContext({
+    inventoryItemId,
+    costSourceItemId,
+  });
+
+  const movementName = `${itemName} cost ${
+    direction === "Increase"
+      ? "up"
+      : direction === "Decrease"
+      ? "down"
+      : "tracked"
+  } ${percentText(changePercent)} — ${vendor || "Vendor"} — ${signalDate}`;
+
+  const fields = {
+    [COST_MOVEMENT_FIELD.movementName]: movementName,
+    [COST_MOVEMENT_FIELD.sourceCostProposal]: [updatedProposalRecord.id],
+    [COST_MOVEMENT_FIELD.vendor]: vendor,
+    [COST_MOVEMENT_FIELD.costItemName]: itemName,
+    [COST_MOVEMENT_FIELD.vendorLineName]: line?.lineItemName || itemName,
+    [COST_MOVEMENT_FIELD.latestCost]: latestCost,
+    [COST_MOVEMENT_FIELD.direction]: direction,
+    [COST_MOVEMENT_FIELD.severity]: severity,
+    [COST_MOVEMENT_FIELD.reviewStatus]: "Active",
+    [COST_MOVEMENT_FIELD.signalDate]: signalDate,
+    [COST_MOVEMENT_FIELD.latestReceiptDate]: signalDate,
+    [COST_MOVEMENT_FIELD.isLatest]: true,
+    [COST_MOVEMENT_FIELD.showOnWhatChanged]: true,
+    [COST_MOVEMENT_FIELD.showOnHome]:
+      severity === "High" && direction === "Increase",
+    [COST_MOVEMENT_FIELD.decisionEligible]: true,
+    [COST_MOVEMENT_FIELD.marginPressure]: buildCostMovementMarginPressure({
+      itemName,
+      vendor,
+      changePercent,
+    }),
+    [COST_MOVEMENT_FIELD.suggestedAction]: buildCostMovementSuggestedAction({
+      changePercent,
+    }),
+    [COST_MOVEMENT_FIELD.formattedCostBrief]: buildCostMovementBrief({
+      itemName,
+      vendor,
+      previousCost,
+      latestCost,
+      changePercent,
+    }),
+    [COST_MOVEMENT_FIELD.notes]:
+      "Generated automatically when a Receipt Cost Proposal was tracked/applied.",
+  };
+
+  if (line?.restaurantIds?.length) {
+    fields[COST_MOVEMENT_FIELD.restaurant] = line.restaurantIds;
+  }
+
+  if (receiptLineId) {
+    fields[COST_MOVEMENT_FIELD.receiptLine] = [receiptLineId];
+  }
+
+  if (inventoryItemId) {
+    fields[COST_MOVEMENT_FIELD.inventoryItem] = [inventoryItemId];
+  }
+
+  if (costSourceItemId) {
+    fields[COST_MOVEMENT_FIELD.costSourceItem] = [costSourceItemId];
+  }
+
+  if (relatedContext.menuItemIds.length) {
+    fields[COST_MOVEMENT_FIELD.relatedMenuItems] = relatedContext.menuItemIds;
+  }
+
+  if (relatedContext.componentIds.length) {
+    fields[COST_MOVEMENT_FIELD.relatedMenuComponents] =
+      relatedContext.componentIds;
+  }
+
+  if (previousCost !== null) {
+    fields[COST_MOVEMENT_FIELD.previousCost] = previousCost;
+  }
+
+  if (changeAmount !== null) {
+    fields[COST_MOVEMENT_FIELD.costChangeAmount] = changeAmount;
+  }
+
+  if (changePercent !== null) {
+    fields[COST_MOVEMENT_FIELD.costChangePercent] = changePercent;
+  }
+
+  const created = await airtableRequest({
+    method: "POST",
+    tableId: COST_MOVEMENT_TABLE_ID,
+    body: {
+      records: [
+        {
+          fields,
+        },
+      ],
+      typecast: true,
+    },
+  });
+
+  const createdRecord = created.records?.[0] || null;
+
+  if (createdRecord) {
+    await markOlderCostMovementsNotLatest({
+      inventoryItemId,
+      costSourceItemId,
+      currentMovementId: createdRecord.id,
+    });
+  }
+
+  return createdRecord;
 }
 
 async function listProposals(req, res) {
@@ -1515,7 +1238,7 @@ function buildProposalFieldsFromLine({
     [PROPOSAL_FIELD.proposalReason]: proposalReason,
     [PROPOSAL_FIELD.notes]: targetName
       ? ""
-      : "Needs match before price update can be applied.",
+      : "Needs match before cost signal can be tracked.",
   };
 
   if (matchedInventoryItemId) {
@@ -1536,7 +1259,6 @@ function buildProposalFieldsFromLine({
 
   return fields;
 }
-
 async function generateProposals(req, res) {
   const force = Boolean(req.body?.force);
 
@@ -1587,7 +1309,7 @@ async function generateProposals(req, res) {
     if (existingProposal && !force) {
       skipped.push({
         lineId: line.id,
-        reason: "Proposal already exists for this line.",
+        reason: "Cost signal already exists for this line.",
       });
       continue;
     }
@@ -1597,7 +1319,7 @@ async function generateProposals(req, res) {
     if (proposedCost === null || proposedCost <= 0) {
       skipped.push({
         lineId: line.id,
-        reason: "No usable proposed cost found on line.",
+        reason: "No usable receipt cost found on line.",
       });
       continue;
     }
@@ -1697,7 +1419,7 @@ async function generateProposals(req, res) {
 
   return sendJson(res, 200, {
     ok: true,
-    message: `Generated ${createdRecords.length} and refreshed ${updatedRecords.length} cost proposal${
+    message: `Generated ${createdRecords.length} and refreshed ${updatedRecords.length} cost signal${
       createdRecords.length + updatedRecords.length === 1 ? "" : "s"
     }.`,
     createdCount: createdRecords.length,
@@ -1734,7 +1456,7 @@ async function updateProposalReview(req, res, action) {
     if (!proposal.hasMatch) {
       return sendJson(res, 400, {
         ok: false,
-        error: "Choose a KitchenPulse item match before approving this proposal.",
+        error: "Choose a KitchenPulse item match before approving this signal.",
       });
     }
 
@@ -1742,7 +1464,7 @@ async function updateProposalReview(req, res, action) {
       return sendJson(res, 400, {
         ok: false,
         error:
-          "This cost is already current. No approval is needed for this proposal.",
+          "This cost is already current. No approval is needed for this signal.",
       });
     }
 
@@ -1771,7 +1493,7 @@ async function updateProposalReview(req, res, action) {
   } else {
     return sendJson(res, 400, {
       ok: false,
-      error: `Unsupported proposal review action: ${action}`,
+      error: `Unsupported signal review action: ${action}`,
     });
   }
 
@@ -1791,8 +1513,8 @@ async function updateProposalReview(req, res, action) {
       action === "approve"
         ? "Cost signal approved."
         : action === "reject"
-        ? "Cost proposal rejected."
-        : "Cost proposal returned to review.",
+        ? "Cost signal rejected."
+        : "Cost signal returned to review.",
     proposal: normalizeProposalRecord(updated),
   });
 }
@@ -1837,7 +1559,7 @@ async function setProposalMatch(req, res) {
   if (!receiptLineId) {
     return sendJson(res, 400, {
       ok: false,
-      error: "This proposal is not linked to a receipt line.",
+      error: "This signal is not linked to a receipt line.",
     });
   }
 
@@ -1854,7 +1576,7 @@ async function setProposalMatch(req, res) {
   if (proposedCost === null || proposedCost <= 0) {
     return sendJson(res, 400, {
       ok: false,
-      error: "This proposal does not have a usable proposed cost.",
+      error: "This signal does not have a usable receipt cost.",
     });
   }
 
@@ -1908,62 +1630,32 @@ async function setProposalMatch(req, res) {
     costSourceRecord,
   });
 
-      const updatedProposal = await airtableRequest({
+  const updatedProposal = await airtableRequest({
     method: "PATCH",
     tableId: COST_PROPOSALS_TABLE_ID,
-    recordId,
+    recordId: proposalId,
     body: {
       fields: {
-        [PROPOSAL_FIELD.proposalStatus]: "Applied",
-        [PROPOSAL_FIELD.approved]: true,
-        [PROPOSAL_FIELD.applied]: true,
-        [PROPOSAL_FIELD.notes]: `Tracked proposed cost ${money(
-          proposal.proposedCost
-        )} from receipt signal and created Cost Movement output.`,
+        ...proposalFields,
+        [PROPOSAL_FIELD.proposalStatus]:
+          proposal.proposalStatus === "Rejected"
+            ? "Needs Review"
+            : proposal.proposalStatus,
+        [PROPOSAL_FIELD.approved]:
+          proposal.proposalStatus === "Approved" ? true : proposal.approved,
+        [PROPOSAL_FIELD.applied]: false,
       },
+      typecast: true,
     },
-  });
-
-  const normalizedUpdatedProposal = normalizeProposalRecord(updatedProposal);
-
-  const costMovementRecord = await createCostMovementFromAppliedProposal({
-    updatedProposalRecord: updatedProposal,
-    proposal: normalizedUpdatedProposal,
-    targetUpdates,
-  });
-
-  return sendJson(res, 200, {
-    ok: true,
-    action: "apply",
-    message: "Cost signal tracked and Cost Movement created.",
-    targetUpdates,
-    costMovementRecordId: costMovementRecord?.id || "",
-    proposal: normalizedUpdatedProposal,
-  });
-
-  const costMovementRecord = await createCostMovementFromAppliedProposal({
-    proposalRecord: updatedProposal,
-    proposal: normalizeProposalRecord(updatedProposal),
-    targetUpdates,
-  });
-
-  return sendJson(res, 200, {
-    ok: true,
-    action: "apply",
-    message: "Cost signal tracked and Cost Movement created.",
-    targetUpdates,
-    costMovementRecordId: costMovementRecord?.id || "",
-    proposal: normalizeProposalRecord(updatedProposal),
   });
 
   return sendJson(res, 200, {
     ok: true,
     action: "set_match",
-    message: "Match saved. Cost proposal refreshed.",
+    message: "Match saved. Cost signal refreshed.",
     proposal: normalizeProposalRecord(updatedProposal),
   });
 }
-
 async function applyProposal(req, res) {
   const recordId = String(req.body?.recordId || req.body?.proposalId || "").trim();
 
@@ -1985,21 +1677,21 @@ async function applyProposal(req, res) {
   if (proposal.applied || proposal.proposalStatus === "Applied") {
     return sendJson(res, 400, {
       ok: false,
-      error: "This proposal has already been applied.",
+      error: "This cost signal has already been tracked.",
     });
   }
 
   if (!proposal.approved || proposal.proposalStatus !== "Approved") {
     return sendJson(res, 400, {
       ok: false,
-      error: "Approve this cost proposal before applying it.",
+      error: "Approve this cost signal before tracking it.",
     });
   }
 
   if (proposal.proposedCost === null || proposal.proposedCost <= 0) {
     return sendJson(res, 400, {
       ok: false,
-      error: "This proposal does not have a usable proposed cost.",
+      error: "This signal does not have a usable receipt cost.",
     });
   }
 
@@ -2007,7 +1699,7 @@ async function applyProposal(req, res) {
     return sendJson(res, 400, {
       ok: false,
       error:
-        "This cost is already current. No pricing update is needed for this proposal.",
+        "This cost is already current. No cost movement is needed for this signal.",
     });
   }
 
@@ -2104,7 +1796,7 @@ async function applyProposal(req, res) {
     return sendJson(res, 400, {
       ok: false,
       error:
-        "This proposal is not matched to an Inventory Item or Cost Source Item yet.",
+        "This signal is not matched to an Inventory Item or Cost Source Item yet.",
     });
   }
 
@@ -2114,7 +1806,7 @@ async function applyProposal(req, res) {
     return sendJson(res, 400, {
       ok: false,
       error:
-        "This cost is already current. No pricing update is needed for this proposal.",
+        "This cost is already current. No cost movement is needed for this signal.",
       targetUpdates,
     });
   }
@@ -2128,19 +1820,28 @@ async function applyProposal(req, res) {
         [PROPOSAL_FIELD.proposalStatus]: "Applied",
         [PROPOSAL_FIELD.approved]: true,
         [PROPOSAL_FIELD.applied]: true,
-        [PROPOSAL_FIELD.notes]: `Applied proposed cost ${money(
+        [PROPOSAL_FIELD.notes]: `Tracked receipt cost ${money(
           proposal.proposedCost
-        )} from receipt proposal.`,
+        )} and created Cost Movement output.`,
       },
     },
+  });
+
+  const normalizedUpdatedProposal = normalizeProposalRecord(updatedProposal);
+
+  const costMovementRecord = await createCostMovementFromAppliedProposal({
+    updatedProposalRecord: updatedProposal,
+    proposal: normalizedUpdatedProposal,
+    targetUpdates,
   });
 
   return sendJson(res, 200, {
     ok: true,
     action: "apply",
-    message: "Cost proposal applied.",
+    message: "Cost signal tracked and Cost Movement created.",
     targetUpdates,
-    proposal: normalizeProposalRecord(updatedProposal),
+    costMovementRecordId: costMovementRecord?.id || "",
+    proposal: normalizedUpdatedProposal,
   });
 }
 
@@ -2199,7 +1900,7 @@ export default async function handler(req, res) {
       ok: false,
       error:
         error?.message ||
-        "Receipt cost proposals could not be loaded or updated. Check server logs.",
+        "Receipt cost signals could not be loaded or updated. Check server logs.",
     });
   }
 }
