@@ -1298,6 +1298,28 @@ function buildProposalFieldsFromLine({
   inventoryRecord,
   costSourceRecord,
 }) {
+  function buildCostSourceFieldsFromLine({ line, proposedCost }) {
+  const itemName =
+    line.lineItemName ||
+    line.lineName ||
+    "New receipt cost item";
+
+  const fields = {
+    [COST_SOURCE_FIELD.sourceItemName]: itemName,
+    [COST_SOURCE_FIELD.supplier]: line.vendor || "",
+    [COST_SOURCE_FIELD.unitPrice]: proposedCost,
+  };
+
+  if (line.category) {
+    fields[COST_SOURCE_FIELD.category] = line.category;
+  }
+
+  if (line.unit) {
+    fields[COST_SOURCE_FIELD.unit] = line.unit;
+  }
+
+  return fields;
+}
   const inventoryCurrentCost = getInventoryCurrentCost(inventoryRecord);
   const costSourceCurrentCost = getCostSourceCurrentCost(costSourceRecord);
 
@@ -1750,6 +1772,161 @@ async function setProposalMatch(req, res) {
     proposal: normalizeProposalRecord(updatedProposal),
   });
 }
+async function createCostSourceItemFromProposal(req, res) {
+  const proposalId = String(
+    req.body?.proposalId || req.body?.recordId || ""
+  ).trim();
+
+  if (!proposalId) {
+    return sendJson(res, 400, {
+      ok: false,
+      error: "Missing proposalId.",
+    });
+  }
+
+  const proposalRecord = await airtableRequest({
+    method: "GET",
+    tableId: COST_PROPOSALS_TABLE_ID,
+    recordId: proposalId,
+  });
+
+  const proposal = normalizeProposalRecord(proposalRecord);
+
+  if (proposal.hasMatch) {
+    return sendJson(res, 400, {
+      ok: false,
+      error: "This cost signal already has a KitchenPulse item match.",
+    });
+  }
+
+  const receiptLineId = proposal.receiptLineId;
+
+  if (!receiptLineId) {
+    return sendJson(res, 400, {
+      ok: false,
+      error: "This signal is not linked to a receipt line.",
+    });
+  }
+
+  const lineRecord = await airtableRequest({
+    method: "GET",
+    tableId: RECEIPT_LINES_TABLE_ID,
+    recordId: receiptLineId,
+  });
+
+  const line = normalizeLineRecord(lineRecord);
+
+  const proposedCost =
+    proposal.proposedCost || getProposedCostFromLineRecord(lineRecord);
+
+  if (proposedCost === null || proposedCost <= 0) {
+    return sendJson(res, 400, {
+      ok: false,
+      error: "This signal does not have a usable receipt cost.",
+    });
+  }
+
+  const matchData = await getMatchData();
+
+  const duplicateSuggestions = buildMatchSuggestionsForProposal({
+    proposal: {
+      ...proposal,
+      parsedItemName:
+        proposal.parsedItemName ||
+        line.lineItemName ||
+        line.lineName ||
+        "",
+      vendor: proposal.vendor || line.vendor || "",
+      proposedCost,
+    },
+    inventoryRecords: matchData.inventoryRecords,
+    costSourceRecords: matchData.costSourceRecords,
+  }).filter((suggestion) => suggestion.score >= 80);
+
+  if (duplicateSuggestions.length > 0 && !Boolean(req.body?.forceCreate)) {
+    return sendJson(res, 409, {
+      ok: false,
+      error:
+        "KitchenPulse found a likely existing item. Review the match suggestion before creating a new cost item.",
+      action: "possible_duplicate",
+      suggestions: duplicateSuggestions,
+    });
+  }
+
+  const created = await airtableRequest({
+    method: "POST",
+    tableId: COST_SOURCE_ITEMS_TABLE_ID,
+    body: {
+      records: [
+        {
+          fields: buildCostSourceFieldsFromLine({
+            line,
+            proposedCost,
+          }),
+        },
+      ],
+      typecast: true,
+    },
+  });
+
+  const createdCostSourceRecord = created.records?.[0] || null;
+
+  if (!createdCostSourceRecord?.id) {
+    return sendJson(res, 500, {
+      ok: false,
+      error: "Cost Source Item could not be created.",
+    });
+  }
+
+  await airtableRequest({
+    method: "PATCH",
+    tableId: RECEIPT_LINES_TABLE_ID,
+    recordId: receiptLineId,
+    body: {
+      fields: {
+        [LINE_FIELD.matchedInventoryItem]: [],
+        [LINE_FIELD.matchedCostSourceItem]: [createdCostSourceRecord.id],
+      },
+    },
+  });
+
+  const proposalFields = buildProposalFieldsFromLine({
+    line,
+    proposedCost,
+    inventoryRecord: null,
+    costSourceRecord: createdCostSourceRecord,
+  });
+
+  const updatedProposal = await airtableRequest({
+    method: "PATCH",
+    tableId: COST_PROPOSALS_TABLE_ID,
+    recordId: proposalId,
+    body: {
+      fields: {
+        ...proposalFields,
+        [PROPOSAL_FIELD.proposalStatus]:
+          proposal.proposalStatus === "Rejected"
+            ? "Needs Review"
+            : proposal.proposalStatus,
+        [PROPOSAL_FIELD.approved]: false,
+        [PROPOSAL_FIELD.applied]: false,
+        [PROPOSAL_FIELD.notes]:
+          "Created new Cost Source Item from reviewed receipt line. Future receipts can now match against this item.",
+      },
+      typecast: true,
+    },
+  });
+
+  return sendJson(res, 200, {
+    ok: true,
+    action: "create_cost_source_item",
+    message:
+      "New Cost Source Item created and linked. Review the matched cost signal before tracking movement.",
+    costSourceItemId: createdCostSourceRecord.id,
+    costSourceItem: createdCostSourceRecord,
+    proposal: normalizeProposalRecord(updatedProposal),
+  });
+}
 async function applyProposal(req, res) {
   const recordId = String(req.body?.recordId || req.body?.proposalId || "").trim();
 
@@ -1974,8 +2151,12 @@ export default async function handler(req, res) {
       return await updateProposalReview(req, res, action);
     }
 
-    if (action === "set_match") {
+        if (action === "set_match") {
       return await setProposalMatch(req, res);
+    }
+
+    if (action === "create_cost_source_item") {
+      return await createCostSourceItemFromProposal(req, res);
     }
 
     if (action === "apply") {
@@ -1985,7 +2166,7 @@ export default async function handler(req, res) {
     return sendJson(res, 400, {
       ok: false,
       error:
-        "Unsupported action. Use generate, approve, reject, return_to_review, set_match, or apply.",
+        "Unsupported action. Use generate, approve, reject, return_to_review, set_match, create_cost_source_item, or apply.",
     });
   } catch (error) {
     console.error("receipt-cost-proposals route failed:", error);
