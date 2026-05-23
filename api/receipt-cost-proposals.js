@@ -346,6 +346,75 @@ function scoreVendorMatch(sourceVendor, targetSupplier) {
   const overlap = sourceTokens.filter((token) => targetSet.has(token)).length;
   return overlap > 0 ? 8 : 0;
 }
+function getRecordCreatedTimeMs(record) {
+  const created = new Date(record?.createdTime || 0).getTime();
+  return Number.isNaN(created) ? 0 : created;
+}
+
+function getSuggestionDedupeKey(suggestion) {
+  const targetType = suggestion.targetType || "";
+  const supplier = normalizeText(suggestion.supplier || "");
+  const name = normalizeText(suggestion.name || "");
+  const unit = normalizeText(suggestion.unit || "");
+
+  // Keep inventory and cost-source suggestions separate.
+  // For Cost Source Items, include unit so "case" and "lb" variants can remain distinct.
+  return [targetType, supplier, name, unit].join("|");
+}
+
+function suggestionHasCurrentCost(suggestion) {
+  return asNumberOrNull(suggestion.currentCost) !== null;
+}
+
+function compareMatchSuggestions(a, b) {
+  if (b.score !== a.score) return b.score - a.score;
+
+  if ((b.vendorScore || 0) !== (a.vendorScore || 0)) {
+    return (b.vendorScore || 0) - (a.vendorScore || 0);
+  }
+
+  if ((b.nameScore || 0) !== (a.nameScore || 0)) {
+    return (b.nameScore || 0) - (a.nameScore || 0);
+  }
+
+  const aHasCost = suggestionHasCurrentCost(a);
+  const bHasCost = suggestionHasCurrentCost(b);
+
+  if (aHasCost !== bHasCost) return bHasCost ? 1 : -1;
+
+  // When duplicate records are otherwise identical, prefer the newest record.
+  // This helps demo/test cleanup because newly created canonical records win.
+  if ((b.createdTimeMs || 0) !== (a.createdTimeMs || 0)) {
+    return (b.createdTimeMs || 0) - (a.createdTimeMs || 0);
+  }
+
+  return String(a.name || "").localeCompare(String(b.name || ""));
+}
+
+function dedupeMatchSuggestions(suggestions) {
+  const groups = new Map();
+
+  for (const suggestion of suggestions) {
+    const key = getSuggestionDedupeKey(suggestion);
+
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+
+    groups.get(key).push(suggestion);
+  }
+
+  return [...groups.values()].map((group) => {
+    const sortedGroup = [...group].sort(compareMatchSuggestions);
+    const winner = sortedGroup[0];
+
+    return {
+      ...winner,
+      hiddenDuplicateCount: Math.max(0, group.length - 1),
+      hiddenDuplicateRecordIds: sortedGroup.slice(1).map((item) => item.recordId),
+    };
+  });
+}
 function getCostSourceCurrentCost(record) {
   if (!record) return null;
   const fields = record.fields || {};
@@ -627,19 +696,26 @@ function buildMatchSuggestionsForProposal({
     if (score < 25) continue;
 
     suggestions.push({
-      targetType: "inventory",
-      recordId: record.id,
-      name,
-      supplier,
-      currentCost,
-      score,
-      reason:
-        score >= 85
-          ? "Strong name/vendor match"
-          : score >= 60
-          ? "Likely item match"
-          : "Possible item match",
-    });
+  targetType: "cost_source",
+  recordId: record.id,
+  name,
+  supplier,
+  sku,
+  category,
+  unit,
+  currentCost,
+  score,
+  nameScore,
+  vendorScore,
+  createdTime: record.createdTime || "",
+  createdTimeMs: getRecordCreatedTimeMs(record),
+  reason:
+    score >= 85
+      ? "Strong cost source match"
+      : score >= 60
+      ? "Likely cost source match"
+      : "Possible cost source match",
+});
   }
 
   for (const record of costSourceRecords) {
@@ -676,18 +752,7 @@ function buildMatchSuggestionsForProposal({
     });
   }
 
-  const sorted = suggestions.sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-
-    const aHasCost =
-      a.currentCost !== null && typeof a.currentCost !== "undefined";
-    const bHasCost =
-      b.currentCost !== null && typeof b.currentCost !== "undefined";
-
-    if (aHasCost !== bHasCost) return bHasCost ? 1 : -1;
-
-    return String(a.name).localeCompare(String(b.name));
-  });
+  const sorted = dedupeMatchSuggestions(suggestions).sort(compareMatchSuggestions);
 
   const hasStrongMatch = sorted.some((suggestion) => suggestion.score >= 80);
   const hasLikelyMatch = sorted.some((suggestion) => suggestion.score >= 55);
