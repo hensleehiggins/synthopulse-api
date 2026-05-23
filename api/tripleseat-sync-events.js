@@ -27,6 +27,28 @@ function toIso(value) {
   return date.toISOString();
 }
 
+function toAirtableDate(value) {
+  if (!value) return null;
+
+  const raw = String(value).trim();
+
+  const slashMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch) {
+    const [, month, day, year] = slashMatch;
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
 function easternDateKey(value) {
   if (!value) return "";
 
@@ -329,7 +351,7 @@ function mapTripleseatEventToAirtable(event) {
     "Contact / Account": getContactOrAccount(event),
     "Tripleseat Record Type": "Event",
     "Estimated Revenue": estimatedRevenue,
-    "Event Date": event.event_date || event.start_date || null,
+    "Event Date": toAirtableDate(event.event_date || event.start_date || startDateTime),
     "Booked At": toIso(event.created_at),
     "Updated At": toIso(event.updated_at),
     "Owner / Event Manager": event.owner?.first_name || event.owner?.email || "",
