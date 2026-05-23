@@ -262,32 +262,41 @@ function mapTripleseatEventToAirtable(event) {
     const isDefinite = status === "Definite";
   const isTentativeOrProspect = status === "Tentative" || status === "Prospect";
 
+    const isMeaningfulPrivateDemand =
+    isDefinite &&
+    guestCount >= 30 &&
+    suggestedWeight >= 7;
+
+  const isRoomPressure =
+    roomText.includes("bar") ||
+    roomText.includes("patio") ||
+    roomText.includes("private") ||
+    roomText.includes("ascend") ||
+    roomText.includes("dining");
+
   const isDecisionDriver =
     isDefinite &&
     (
-      suggestedWeight >= 8 ||
-      guestCount >= 50 ||
-      roomText.includes("bar") ||
-      roomText.includes("patio")
+      isMeaningfulPrivateDemand ||
+      suggestedWeight >= 7 ||
+      guestCount >= 30 ||
+      isRoomPressure
     );
 
   const isBookedDemand = isDefinite && suggestedWeight >= 4;
 
-  // Important:
-  // Definite does NOT always mean deposit/confirmation workflow is complete.
-  // Until we wire payments/deposits, keep normal definite events visible for review
-  // unless they are high-impact enough to clearly drive service decisions.
-  const needsReview =
-    isTentativeOrProspect ||
-    (isDefinite && !isDecisionDriver);
+  // Confirmed/definite private events are operational demand signals.
+  // Keep tentative/prospect events in review, but promote definite booked demand
+  // so Shift Watch, Home, and Service Pressure do not miss known room pressure.
+  const needsReview = isTentativeOrProspect;
 
   const kitchenPulseStatus =
     isBookedDemand || isDecisionDriver ? "Processed" : "Needs Review";
 
-  const classificationNote = isDecisionDriver
-    ? "Tripleseat confirmed booked demand. Promoted as a decision driver based on guest count, room impact, or service pressure."
+    const classificationNote = isDecisionDriver
+    ? "Tripleseat confirmed booked demand. Promoted as a decision driver for Shift Watch, service pressure, pacing, room coverage, and pre-shift planning."
     : isBookedDemand
-      ? "Tripleseat confirmed booked demand. Visible as upcoming booked demand, but still flagged for coordinator review until payment/deposit status is confirmed."
+      ? "Tripleseat confirmed booked demand. Visible as upcoming booked demand."
       : "Tripleseat event is not yet definite. Keep in review until Tripleseat status changes.";
 
   return {
