@@ -346,6 +346,7 @@ function scoreVendorMatch(sourceVendor, targetSupplier) {
   const overlap = sourceTokens.filter((token) => targetSet.has(token)).length;
   return overlap > 0 ? 8 : 0;
 }
+
 function getRecordCreatedTimeMs(record) {
   const created = new Date(record?.createdTime || 0).getTime();
   return Number.isNaN(created) ? 0 : created;
@@ -415,6 +416,10 @@ function dedupeMatchSuggestions(suggestions) {
     };
   });
 }
+
+
+
+  
 function getCostSourceCurrentCost(record) {
   if (!record) return null;
   const fields = record.fields || {};
@@ -696,26 +701,24 @@ function buildMatchSuggestionsForProposal({
     if (score < 25) continue;
 
     suggestions.push({
-  targetType: "cost_source",
-  recordId: record.id,
-  name,
-  supplier,
-  sku,
-  category,
-  unit,
-  currentCost,
-  score,
-  nameScore,
-  vendorScore,
-  createdTime: record.createdTime || "",
-  createdTimeMs: getRecordCreatedTimeMs(record),
-  reason:
-    score >= 85
-      ? "Strong cost source match"
-      : score >= 60
-      ? "Likely cost source match"
-      : "Possible cost source match",
-});
+      targetType: "inventory",
+      recordId: record.id,
+      name,
+      supplier,
+      unit: "",
+      currentCost,
+      score,
+      nameScore,
+      vendorScore,
+      createdTime: record.createdTime || "",
+      createdTimeMs: getRecordCreatedTimeMs(record),
+      reason:
+        score >= 85
+          ? "Strong name/vendor match"
+          : score >= 60
+          ? "Likely item match"
+          : "Possible item match",
+    });
   }
 
   for (const record of costSourceRecords) {
@@ -743,6 +746,10 @@ function buildMatchSuggestionsForProposal({
       unit,
       currentCost,
       score,
+      nameScore,
+      vendorScore,
+      createdTime: record.createdTime || "",
+      createdTimeMs: getRecordCreatedTimeMs(record),
       reason:
         score >= 85
           ? "Strong cost source match"
