@@ -354,13 +354,12 @@ function getRecordCreatedTimeMs(record) {
 
 function getSuggestionDedupeKey(suggestion) {
   const targetType = suggestion.targetType || "";
-  const supplier = normalizeText(suggestion.supplier || "");
   const name = normalizeText(suggestion.name || "");
-  const unit = normalizeText(suggestion.unit || "");
 
-  // Keep inventory and cost-source suggestions separate.
-  // For Cost Source Items, include unit so "case" and "lb" variants can remain distinct.
-  return [targetType, supplier, name, unit].join("|");
+  // Collapse duplicate-looking matches aggressively for the operator UI.
+  // If two Cost Source Items have the same normalized name, only show one.
+  // This prevents dropdowns from filling with old/test/current variants of the same vendor item.
+  return [targetType, name].join("|");
 }
 
 function suggestionHasCurrentCost(suggestion) {
@@ -378,16 +377,22 @@ function compareMatchSuggestions(a, b) {
     return (b.nameScore || 0) - (a.nameScore || 0);
   }
 
-  const aHasCost = suggestionHasCurrentCost(a);
-  const bHasCost = suggestionHasCurrentCost(b);
+  const aHasMeaningfulDelta = Boolean(a.hasMeaningfulDelta);
+const bHasMeaningfulDelta = Boolean(b.hasMeaningfulDelta);
 
-  if (aHasCost !== bHasCost) return bHasCost ? 1 : -1;
+if (aHasMeaningfulDelta !== bHasMeaningfulDelta) {
+  return bHasMeaningfulDelta ? 1 : -1;
+}
 
-  // When duplicate records are otherwise identical, prefer the newest record.
-  // This helps demo/test cleanup because newly created canonical records win.
-  if ((b.createdTimeMs || 0) !== (a.createdTimeMs || 0)) {
-    return (b.createdTimeMs || 0) - (a.createdTimeMs || 0);
-  }
+const aHasCost = suggestionHasCurrentCost(a);
+const bHasCost = suggestionHasCurrentCost(b);
+
+if (aHasCost !== bHasCost) return bHasCost ? 1 : -1;
+
+// When duplicate records are otherwise identical, prefer the newest record.
+if ((b.createdTimeMs || 0) !== (a.createdTimeMs || 0)) {
+  return (b.createdTimeMs || 0) - (a.createdTimeMs || 0);
+}
 
   return String(a.name || "").localeCompare(String(b.name || ""));
 }
@@ -686,6 +691,7 @@ function buildMatchSuggestionsForProposal({
 }) {
   const parsedItemName = proposal.parsedItemName || proposal.proposalName || "";
   const vendor = proposal.vendor || "";
+  const proposedCost = asNumberOrNull(proposal.proposedCost);
   const suggestions = [];
 
   for (const record of inventoryRecords) {
@@ -701,15 +707,23 @@ function buildMatchSuggestionsForProposal({
     if (score < 25) continue;
 
     suggestions.push({
-      targetType: "inventory",
-      recordId: record.id,
-      name,
-      supplier,
-      unit: "",
-      currentCost,
-      score,
-      nameScore,
-      vendorScore,
+  targetType: "inventory",
+  recordId: record.id,
+  name,
+  supplier,
+  unit: "",
+  currentCost,
+  costDeltaAbs:
+    currentCost !== null && proposedCost !== null
+      ? Math.abs(currentCost - proposedCost)
+      : null,
+  hasMeaningfulDelta:
+    currentCost !== null && proposedCost !== null
+      ? Math.abs(currentCost - proposedCost) >= 0.01
+      : true,
+  score,
+  nameScore,
+  vendorScore,
       createdTime: record.createdTime || "",
       createdTimeMs: getRecordCreatedTimeMs(record),
       reason:
@@ -737,17 +751,25 @@ function buildMatchSuggestionsForProposal({
     if (score < 25) continue;
 
     suggestions.push({
-      targetType: "cost_source",
-      recordId: record.id,
-      name,
-      supplier,
-      sku,
-      category,
-      unit,
-      currentCost,
-      score,
-      nameScore,
-      vendorScore,
+  targetType: "cost_source",
+  recordId: record.id,
+  name,
+  supplier,
+  sku,
+  category,
+  unit,
+  currentCost,
+  costDeltaAbs:
+    currentCost !== null && proposedCost !== null
+      ? Math.abs(currentCost - proposedCost)
+      : null,
+  hasMeaningfulDelta:
+    currentCost !== null && proposedCost !== null
+      ? Math.abs(currentCost - proposedCost) >= 0.01
+      : true,
+  score,
+  nameScore,
+  vendorScore,
       createdTime: record.createdTime || "",
       createdTimeMs: getRecordCreatedTimeMs(record),
       reason:
