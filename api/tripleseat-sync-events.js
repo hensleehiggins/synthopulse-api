@@ -348,6 +348,186 @@ function removeEmptyFields(fields) {
   return cleaned;
 }
 
+function linkedIds(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function getDrawLabel(guestCount, suggestedWeight) {
+  if (guestCount >= 75 || suggestedWeight >= 9) return "Very High";
+  if (guestCount >= 50 || suggestedWeight >= 8) return "High";
+  if (guestCount >= 30 || suggestedWeight >= 6) return "Medium";
+  return "Low";
+}
+
+function getTrafficEffect(guestCount, suggestedWeight) {
+  if (guestCount >= 75 || suggestedWeight >= 9) return "Very High";
+  if (guestCount >= 50 || suggestedWeight >= 8) return "High";
+  if (guestCount >= 30 || suggestedWeight >= 6) return "Moderate";
+  return "Low";
+}
+
+function buildEventSummary({ eventName, guestCount, venue }) {
+  return `${eventName} is a confirmed ${
+    guestCount || "booked"
+  }-guest Tripleseat event${venue ? ` in ${venue}` : ""}. Confirm room coverage, pacing, and kitchen/bar awareness before service.`;
+}
+
+function buildDecisionNote({ eventName, guestCount, venue }) {
+  return `Confirmed Tripleseat private event: ${eventName}${
+    guestCount ? `, ${guestCount} guests` : ""
+  }${venue ? `, ${venue}` : ""}. Treat as booked demand pressure for pre-shift planning, room coverage, pacing, and handoff notes.`;
+}
+
+async function findExternalFactorByExternalEventId(externalEventId) {
+  if (!externalEventId) return null;
+
+  const safeId = String(externalEventId).replace(/"/g, '\\"');
+
+  const matches = await base("External Factors")
+    .select({
+      maxRecords: 1,
+      filterByFormula: `{External Event ID} = "${safeId}"`,
+    })
+    .firstPage();
+
+  return matches[0] || null;
+}
+
+function buildExternalFieldsFromIntakeFields(fields) {
+  const eventName =
+    text(fields["Event Name"]) ||
+    `Tripleseat Event ${text(fields["Tripleseat Event ID"]) || text(fields["Source Event ID"])}`;
+
+  const startDateTime = toIso(fields["Start DateTime"]);
+  const endDateTime = toIso(fields["End DateTime"]);
+  const serviceDate = easternDateKey(fields["Start DateTime"]);
+
+  const guestCount = number(fields["Guest Count"]);
+  const suggestedWeight = number(fields["Suggested Event Weight"]) || 7;
+  const priorityScore = Math.max(7, suggestedWeight || 7);
+
+  const venue = text(fields["Room / Space"]) || text(fields["Venue / Area"]);
+  const externalEventId =
+    text(fields["External Event ID"]) ||
+    `tripleseat-${text(fields["Tripleseat Event ID"]) || text(fields["Source Event ID"])}`;
+
+  const eventSummary = buildEventSummary({
+    eventName,
+    guestCount,
+    venue,
+  });
+
+  const decisionNote = buildDecisionNote({
+    eventName,
+    guestCount,
+    venue,
+  });
+
+  return removeEmptyFields({
+    "Display Date": serviceDate,
+    Date: serviceDate,
+    "Forecast Date": serviceDate,
+
+    Type: "Event",
+    "Event Name": eventName,
+    Description: `${eventName}${guestCount ? ` — ${guestCount} guests` : ""}${
+      venue ? ` in ${venue}` : ""
+    }.`,
+    "Source Type": "Tripleseat",
+    Source: "Tripleseat",
+    "Event Type": "Private Event",
+    "Venue / Area": venue,
+
+    "Start Time": startDateTime,
+    "End Time": endDateTime,
+    "Start DateTime": startDateTime,
+    "End DateTime": endDateTime,
+
+    Restaurant: linkedIds(fields.Restaurant),
+
+    "Estimated Draw": getDrawLabel(guestCount, suggestedWeight),
+    "Traffic Effect": getTrafficEffect(guestCount, suggestedWeight),
+    Confidence: "High",
+    "Impact Direction": "Positive",
+    "Impact Strength": priorityScore,
+    "Event Weight": priorityScore,
+    "Priority Score": priorityScore,
+
+    Active: true,
+    "Active (Event)": true,
+    "Decision Driving Event": true,
+    "Show on Service Pressure": true,
+    "Show on Home Alert": true,
+    "Auto Imported": true,
+    "Needs Review": false,
+
+    "External Event ID": externalEventId,
+    "Event Summary": eventSummary,
+    "Decision Note": decisionNote,
+  });
+}
+
+async function promoteTripleseatIntakeRecordsToExternalFactors(records) {
+  const promoted = [];
+  const skipped = [];
+
+  for (const record of records) {
+    const fields = record.fields || {};
+
+    if (fields.Source !== "Tripleseat") {
+      skipped.push({ recordId: record.id, reason: "not_tripleseat" });
+      continue;
+    }
+
+    if (fields["Tripleseat Record Type"] !== "Event") {
+      skipped.push({ recordId: record.id, reason: "not_event_record_type" });
+      continue;
+    }
+
+    if (!fields["Promote to Decision"] || fields["Needs Review"]) {
+      skipped.push({ recordId: record.id, reason: "not_ready_for_promotion" });
+      continue;
+    }
+
+    const externalFields = buildExternalFieldsFromIntakeFields(fields);
+    const externalEventId = externalFields["External Event ID"];
+
+    if (!externalEventId) {
+      skipped.push({ recordId: record.id, reason: "missing_external_event_id" });
+      continue;
+    }
+
+    if (!externalFields["Start DateTime"] || !externalFields["Display Date"]) {
+      skipped.push({ recordId: record.id, reason: "missing_start_or_service_date" });
+      continue;
+    }
+
+    const existingExternal = await findExternalFactorByExternalEventId(externalEventId);
+
+    let externalRecord;
+
+    if (existingExternal) {
+      externalRecord = await base("External Factors").update(
+        existingExternal.id,
+        externalFields
+      );
+    } else {
+      externalRecord = await base("External Factors").create(externalFields);
+    }
+
+    promoted.push({
+      intakeRecordId: record.id,
+      externalFactorRecordId: externalRecord.id,
+      externalEventId,
+      mode: existingExternal ? "updated" : "created",
+      eventName: externalFields["Event Name"],
+      serviceDate: externalFields["Display Date"],
+    });
+  }
+
+  return { promoted, skipped };
+}
+
 function summarizeEvent(event, reason = null) {
   return {
     id: event.id,
@@ -422,7 +602,7 @@ async function getExistingTripleseatRecords() {
 
   await base("Event Intake Queue")
     .select({
-      fields: ["Source", "Source Event ID"],
+            fields: ["Source", "Source Event ID", "External Event ID", "Restaurant"],
     })
     .eachPage((records, fetchNextPage) => {
       for (const record of records) {
@@ -442,7 +622,9 @@ async function batchCreate(records) {
 
   for (let i = 0; i < records.length; i += 10) {
     const chunk = records.slice(i, i + 10);
-    const result = await base("Event Intake Queue").create(chunk);
+    const result = await base("Event Intake Queue").create(chunk, {
+      typecast: true,
+    });
     created.push(...result);
   }
 
@@ -454,7 +636,9 @@ async function batchUpdate(records) {
 
   for (let i = 0; i < records.length; i += 10) {
     const chunk = records.slice(i, i + 10);
-    const result = await base("Event Intake Queue").update(chunk);
+    const result = await base("Event Intake Queue").update(chunk, {
+      typecast: true,
+    });
     updated.push(...result);
   }
 
@@ -491,8 +675,11 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    let createdCount = 0;
+        let createdCount = 0;
     let updatedCount = 0;
+    let promotedExternalCount = 0;
+    let promotedExternal = [];
+    let skippedPromotion = [];
 
     if (write) {
       const created = await batchCreate(creates);
@@ -500,6 +687,15 @@ module.exports = async function handler(req, res) {
 
       createdCount = created.length;
       updatedCount = updated.length;
+
+      const promotionResult = await promoteTripleseatIntakeRecordsToExternalFactors([
+        ...created,
+        ...updated,
+      ]);
+
+      promotedExternal = promotionResult.promoted;
+      skippedPromotion = promotionResult.skipped;
+      promotedExternalCount = promotedExternal.length;
     }
 
     return res.status(200).json({
@@ -514,6 +710,9 @@ module.exports = async function handler(req, res) {
       wouldUpdate: updates.length,
       createdCount,
       updatedCount,
+      promotedExternalCount,
+      promotedExternalSample: promotedExternal.slice(0, 5),
+      skippedPromotionSample: skippedPromotion.slice(0, 5),
       sampleCreate: creates.slice(0, 3).map((record) => ({
         eventName: record.fields["Event Name"],
         startDateTime: record.fields["Start DateTime"],
