@@ -1355,18 +1355,22 @@ function friendlyVendorItemName(value, category = "") {
     .filter(
       (token) =>
         ![
-          "SYS",
-          "CLS",
-          "CVP",
-          "RND",
-          "IMP",
-          "BRL",
-          "AVG",
-          "PK",
-          "CS",
-          "EA",
-          "RAW",
-        ].includes(token)
+        "SYS",
+        "CLS",
+        "CVP",
+        "RND",
+        "IMP",
+        "BRL",
+        "AVG",
+        "PK",
+        "PKG",
+        "PACKAGE",
+        "CS",
+        "EA",
+        "RAW",
+        "BRAND",
+        "FRESH",
+].includes(token)
     )
     .filter((token) => !/^\d+[A-Z]*$/.test(token))
     .map((token) => {
