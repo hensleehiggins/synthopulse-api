@@ -108,6 +108,164 @@ function linkedIds(value) {
   return [];
 }
 
+function titleCaseItemName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => {
+      if (word.length <= 2 && ["oz", "lb", "qt", "cs", "ct"].includes(word)) {
+        return word;
+      }
+
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+}
+
+function isNonItemChargeLine(value) {
+  const upper = String(value || "").toUpperCase();
+
+  return (
+    /\bFUEL\b/.test(upper) && /\bSURCHARGE\b/.test(upper)
+  ) || (
+    /\bDELIVERY\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
+  ) || (
+    /\bSERVICE\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
+  ) || (
+    /\bMISC\b/.test(upper) && /\bCHARGES?\b/.test(upper)
+  );
+}
+
+function friendlyVendorItemName(value, category = "") {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  const upper = raw.toUpperCase();
+
+  if (isNonItemChargeLine(upper)) return "";
+
+  if (/\bSEASONING\b/.test(upper)) {
+    if (/\bCAJUN\b/.test(upper)) return "Cajun Seasoning";
+    return "Seasoning";
+  }
+
+  if (/\bSALT\b/.test(upper)) {
+    if (/\bKOSHER\b/.test(upper)) return "Kosher Salt";
+    return "Salt";
+  }
+
+  if (/\bCHEESE\b/.test(upper)) {
+    if (/\bSWISS\b/.test(upper) && /\b(AMER|AMERICAN)\b/.test(upper)) {
+      return "Swiss/American Cheese Slices";
+    }
+
+    if (/\bCHEDDAR\b|\bCHED\b|\bCHDR\b/.test(upper)) {
+      if (/\bSHARP\b/.test(upper)) return "Sharp Cheddar Cheese";
+
+      if (/\bSHR\b|\bSHRD\b|\bSHRED\b|\bSHREDDED\b/.test(upper)) {
+        return "Cheddar Cheese Shredded";
+      }
+
+      return "Cheddar Cheese";
+    }
+
+    if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
+    if (/\b(AMER|AMERICAN)\b/.test(upper)) return "American Cheese";
+
+    return "Cheese";
+  }
+
+  if (
+    /\b(CHKN|CHICKEN)\b/.test(upper) &&
+    /\b(WNG|WING|WINGS)\b/.test(upper)
+  ) {
+    if (/\b(JMB|JUMBO)\b/.test(upper)) return "Chicken Wings Jumbo";
+    return "Chicken Wings";
+  }
+
+  if (/\bCARROT\b/.test(upper)) {
+    if (/\bBABY\b/.test(upper) && /\b(TRI|COLOR|COLOUR)\b/.test(upper)) {
+      return "Tri-Color Baby Carrots";
+    }
+
+    if (/\bBABY\b/.test(upper)) return "Baby Carrots";
+    return "Carrots";
+  }
+
+  if (/\bCUCUMBER\b|\bCUC\b/.test(upper)) {
+    if (/\bPICKL\b|\bPICKLING\b/.test(upper)) return "Pickling Cucumbers";
+    return "Cucumbers";
+  }
+
+  if (/\bDILL\b/.test(upper)) return "Dill";
+
+  const cleaned = upper
+    .replace(/&/g, " AND ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter(
+      (token) =>
+        ![
+          "SYS",
+          "CLS",
+          "CVP",
+          "RND",
+          "IMP",
+          "BRL",
+          "BRBL",
+          "BRRL",
+          "BRRBL",
+          "BRRLIMP",
+          "BBRLIMP",
+          "BRRLCLS",
+          "BBRLCLS",
+          "IMPFRSH",
+          "MCC",
+          "PACKER",
+          "PLD",
+          "PRIN",
+          "ONLY",
+          "AVG",
+          "WT",
+          "TWT",
+          "PK",
+          "PKG",
+          "PACKAGE",
+          "CS",
+          "EA",
+          "RAW",
+          "BRAND",
+          "FRESH",
+          "SLICED",
+          "SLI",
+        ].includes(token)
+    )
+    .filter((token) => !/^\d+[A-Z]*$/.test(token))
+    .filter((token) => !/^[A-Z]*\d+[A-Z]*$/.test(token))
+    .map((token) => {
+      const map = {
+        CHKN: "CHICKEN",
+        CHK: "CHICKEN",
+        WNG: "WINGS",
+        JMB: "JUMBO",
+        SHRMP: "SHRIMP",
+        CHDR: "CHEDDAR",
+        CHED: "CHEDDAR",
+        HRTS: "HEARTS",
+      };
+
+      return map[token] || token;
+    })
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleaned || cleaned.length <= 2) return raw;
+
+  return titleCaseItemName(cleaned);
+}
+
 function asNumberOrNull(value) {
   if (value === "" || value === null || typeof value === "undefined") {
     return null;
@@ -125,7 +283,13 @@ function asNumberOrNull(value) {
 function normalizeLineRecord(record) {
   const fields = record.fields || {};
 
-  return {
+const rawLineName = fields[FIELD.lineItemName] || "";
+const rawLineText = fields[FIELD.rawLineText] || "";
+const cleanedLineName =
+  friendlyVendorItemName(rawLineName || rawLineText, fields[FIELD.category]) ||
+  rawLineName;
+
+return {
     id: record.id,
     createdTime: record.createdTime,
 
