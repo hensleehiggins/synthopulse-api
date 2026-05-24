@@ -1313,7 +1313,7 @@ function friendlyVendorItemName(value, category = "") {
   if (!raw) return "";
 
   const upper = raw.toUpperCase();
-  const categoryUpper = String(category || "").toUpperCase();
+  
 
   // Strong restaurant/vendor receipt patterns first.
   if (
@@ -1326,9 +1326,24 @@ function friendlyVendorItemName(value, category = "") {
 
   if (/\bRIBEYE\b/.test(upper)) return "Ribeye";
   if (/\bSHRMP\b|\bSHRIMP\b/.test(upper)) return "Shrimp";
-  if (/\bROMAINE\b/.test(upper) && /\b(HRTS|HEARTS)\b/.test(upper)) {
-    return "Romaine Hearts";
-  }
+    if (/\bROMAINE\b/.test(upper) && /\b(HRTS|HEARTS)\b/.test(upper)) {
+  return "Romaine Hearts";
+}
+
+if (/\bCHICKEN\b/.test(upper) && /\bBREAST\b/.test(upper)) {
+  if (/\bBONELESS\b/.test(upper)) return "Chicken Breast Boneless";
+  return "Chicken Breast";
+}
+
+if (/\bLEMONS?\b/.test(upper)) return "Lemons";
+
+if (/\bSODA\b/.test(upper)) return "Bottled Soda";
+
+if (/\bPAPER\b/.test(upper) && /\bTOWELS?\b/.test(upper)) {
+  return "Paper Towels";
+}
+
+if (/\bFRIES?\b/.test(upper)) return "Fries";
 
   if (/\bFRIES?\b/.test(upper)) return "Fries";
   if (/\bCHED\b|\bCHDR\b|\bCHEDDAR\b/.test(upper)) {
