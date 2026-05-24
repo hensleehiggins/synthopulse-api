@@ -690,6 +690,9 @@ function buildMatchSuggestionsForProposal({
   costSourceRecords,
 }) {
   const parsedItemName = proposal.parsedItemName || proposal.proposalName || "";
+  const friendlyParsedItemName =
+    friendlyVendorItemName(parsedItemName, proposal.category) || parsedItemName;
+
   const vendor = proposal.vendor || "";
   const proposedCost = asNumberOrNull(proposal.proposedCost);
   const suggestions = [];
@@ -700,7 +703,9 @@ function buildMatchSuggestionsForProposal({
     const supplier = fields[INVENTORY_FIELD.supplier] || "";
     const currentCost = getInventoryCurrentCost(record);
 
-    const nameScore = scoreNameMatch(parsedItemName, name);
+    const rawNameScore = scoreNameMatch(parsedItemName, name);
+    const friendlyNameScore = scoreNameMatch(friendlyParsedItemName, name);
+    const nameScore = Math.max(rawNameScore, friendlyNameScore);
     const vendorScore = scoreVendorMatch(vendor, supplier);
     const score = Math.min(100, nameScore + vendorScore);
 
