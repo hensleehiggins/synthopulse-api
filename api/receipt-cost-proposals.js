@@ -1292,11 +1292,123 @@ async function listProposals(req, res) {
   });
 }
 
+function titleCaseItemName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => {
+      if (word.length <= 2 && ["oz", "lb", "qt", "cs", "ct"].includes(word)) {
+        return word;
+      }
+
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+}
+
+function friendlyVendorItemName(value, category = "") {
+  const raw = String(value || "").trim();
+
+  if (!raw) return "";
+
+  const upper = raw.toUpperCase();
+  const categoryUpper = String(category || "").toUpperCase();
+
+  // Strong restaurant/vendor receipt patterns first.
+  if (
+    /\b(CHKN|CHICKEN)\b/.test(upper) &&
+    /\b(WNG|WING|WINGS)\b/.test(upper)
+  ) {
+    if (/\b(JMB|JUMBO)\b/.test(upper)) return "Chicken Wings Jumbo";
+    return "Chicken Wings";
+  }
+
+  if (/\bRIBEYE\b/.test(upper)) return "Ribeye";
+  if (/\bSHRMP\b|\bSHRIMP\b/.test(upper)) return "Shrimp";
+  if (/\bROMAINE\b/.test(upper) && /\b(HRTS|HEARTS)\b/.test(upper)) {
+    return "Romaine Hearts";
+  }
+
+  if (/\bFRIES?\b/.test(upper)) return "Fries";
+  if (/\bCHED\b|\bCHDR\b|\bCHEDDAR\b/.test(upper)) {
+    if (/\bSHR\b|\bSHRD\b|\bSHRED\b|\bSHREDDED\b/.test(upper)) {
+      return "Cheddar Cheese Shredded";
+    }
+
+    return "Cheddar Cheese";
+  }
+
+  if (/\bCLM\b|\bCLAM\b/.test(upper)) {
+    if (/\bSHELL\b|\bSHLL\b/.test(upper)) return "To-Go Clamshell Containers";
+  }
+
+  if (/\bPOTATO\b|\bPOT\b/.test(upper)) {
+    return "Potatoes";
+  }
+
+  // Generic abbreviation cleanup fallback.
+  const cleaned = upper
+    .replace(/&/g, " AND ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter(
+      (token) =>
+        ![
+          "SYS",
+          "CLS",
+          "CVP",
+          "RND",
+          "IMP",
+          "BRL",
+          "AVG",
+          "PK",
+          "CS",
+          "EA",
+          "RAW",
+        ].includes(token)
+    )
+    .filter((token) => !/^\d+[A-Z]*$/.test(token))
+    .map((token) => {
+      const map = {
+        CHKN: "CHICKEN",
+        CHK: "CHICKEN",
+        WNG: "WINGS",
+        JMB: "JUMBO",
+        SHRMP: "SHRIMP",
+        CHDR: "CHEDDAR",
+        CHED: "CHEDDAR",
+        HRTS: "HEARTS",
+        PRTN: "PORTIONS",
+        PRTNS: "PORTIONS",
+      };
+
+      return map[token] || token;
+    })
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleaned) return raw;
+
+  const titled = titleCaseItemName(cleaned);
+
+  // If the fallback is still ugly, prefer the raw line rather than inventing too much.
+  if (titled.length <= 2) return raw;
+
+  return titled;
+}
+
 function buildCostSourceFieldsFromLine({ line, proposedCost }) {
-  const itemName =
-    line.lineItemName ||
-    line.lineName ||
-    "New receipt cost item";
+  const rawItemName =
+  line.lineItemName ||
+  line.lineName ||
+  "New receipt cost item";
+
+const itemName =
+  friendlyVendorItemName(rawItemName, line.category) ||
+  rawItemName ||
+  "New receipt cost item";
 
   const fields = {
     [COST_SOURCE_FIELD.sourceItemName]: itemName,
