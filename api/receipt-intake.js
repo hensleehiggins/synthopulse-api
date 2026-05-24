@@ -4,9 +4,10 @@ export const config = {
   },
 };
 
-const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.AIRTABLE_PAT;
 const CHLOES_RESTAURANT_ID = process.env.AIRTABLE_CHLOES_RESTAURANT_ID;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const BLOB_TOKEN =
+
 const BLOB_TOKEN =
   process.env.BLOB_READ_WRITE_TOKEN ||
   process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN;
@@ -85,6 +86,191 @@ async function parseMultipartForm(req, formidable) {
   });
 }
 
+function parseJsonFromModelText(text) {
+  const raw = String(text || "").trim();
+
+  if (!raw) {
+    throw new Error("OpenAI returned an empty document preflight response.");
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch (directError) {
+    const match = raw.match(/\{[\s\S]*\}/);
+
+    if (!match) {
+      throw new Error("OpenAI document preflight response did not contain JSON.");
+    }
+
+    return JSON.parse(match[0]);
+  }
+}
+
+function extractOpenAIText(openAiData) {
+  if (typeof openAiData?.output_text === "string") {
+    return openAiData.output_text;
+  }
+
+  const output = Array.isArray(openAiData?.output) ? openAiData.output : [];
+  const textParts = [];
+
+  for (const item of output) {
+    const content = Array.isArray(item?.content) ? item.content : [];
+
+    for (const contentItem of content) {
+      if (typeof contentItem?.text === "string") {
+        textParts.push(contentItem.text);
+      }
+    }
+  }
+
+  return textParts.join("\n").trim();
+}
+
+function buildDocumentPreflightPrompt({ fileName, contentType }) {
+  return `
+You are checking an upload for KitchenPulse Receipt Intake.
+
+Return ONLY valid JSON. No markdown. No commentary.
+
+Decide whether this file is a restaurant vendor receipt, invoice, or purchase document showing items actually bought.
+
+Accept:
+- vendor receipt
+- vendor invoice
+- purchase receipt
+- delivery invoice
+- restaurant supply receipt with quantities/prices/totals
+
+Reject:
+- catalog
+- product list
+- price sheet
+- order guide
+- menu
+- marketing flyer
+- sales sheet
+- vendor product brochure
+- giant product table that does not show a specific purchase
+
+Important:
+- Large real invoices are allowed.
+- Do not reject just because there are many line items.
+- Reject only when the document is not a receipt/invoice/purchase record.
+- Catalog-like documents often have columns such as Supplier Name, Item #, Brand, Product, Pack, Size, Tokens, or long product lists without purchase totals.
+- If uncertain but it looks like a real purchase document, allow it.
+
+JSON shape:
+{
+  "documentType": "receipt_invoice" | "catalog_or_price_sheet" | "menu" | "order_guide" | "unknown",
+  "isReceiptOrInvoice": true,
+  "confidence": "High" | "Medium" | "Low",
+  "reason": "short reason",
+  "userMessage": "short message suitable for the upload UI"
+}
+
+File metadata:
+- Uploaded filename: ${fileName || ""}
+- Content type: ${contentType || ""}
+`.trim();
+}
+
+function isUnsupportedPreflightResult(result) {
+  const documentType = String(result?.documentType || "").toLowerCase();
+  const isReceiptOrInvoice = result?.isReceiptOrInvoice;
+
+  if (isReceiptOrInvoice === false) return true;
+
+  return [
+    "catalog_or_price_sheet",
+    "catalog",
+    "price_sheet",
+    "product_list",
+    "order_guide",
+    "menu",
+    "marketing_flyer",
+    "sales_sheet",
+  ].includes(documentType);
+}
+
+function unsupportedPreflightMessage(result) {
+  return (
+    String(result?.userMessage || "").trim() ||
+    String(result?.reason || "").trim() ||
+    "This looks like a vendor catalog, product list, menu, order guide, or price sheet rather than a receipt or invoice. Upload a vendor receipt or invoice showing items actually purchased."
+  );
+}
+
+async function callOpenAIForDocumentPreflight({
+  fileUrl,
+  fileName,
+  contentType,
+}) {
+  if (!OPENAI_API_KEY) {
+    throw new Error("Missing OPENAI_API_KEY for receipt upload preflight.");
+  }
+
+  const prompt = buildDocumentPreflightPrompt({ fileName, contentType });
+
+  const content = [
+    {
+      type: "input_text",
+      text: prompt,
+    },
+  ];
+
+  if (String(contentType || "").toLowerCase().includes("pdf")) {
+    content.push({
+      type: "input_file",
+      file_url: fileUrl,
+    });
+  } else {
+    content.push({
+      type: "input_image",
+      image_url: fileUrl,
+      detail: "high",
+    });
+  }
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_RECEIPT_MODEL || "gpt-4.1-mini",
+      input: [
+        {
+          role: "user",
+          content,
+        },
+      ],
+      max_output_tokens: 800,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      data,
+    };
+  }
+
+  const text = extractOpenAIText(data);
+  const parsed = parseJsonFromModelText(text);
+
+  return {
+    ok: true,
+    status: 200,
+    data,
+    parsed,
+  };
+}
+
 export default async function handler(req, res) {
   setCorsHeaders(res);
 
@@ -96,13 +282,13 @@ export default async function handler(req, res) {
   const mode = req.query?.mode;
 
   if (mode === "recent") {
-    if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN || !CHLOES_RESTAURANT_ID) {
-      return sendJson(res, 500, {
-        ok: false,
-        error:
-          "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_PAT or AIRTABLE_TOKEN, and AIRTABLE_CHLOES_RESTAURANT_ID.",
-      });
-    }
+    if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN || !CHLOES_RESTAURANT_ID || !OPENAI_API_KEY) {
+  return sendJson(res, 500, {
+    ok: false,
+    error:
+      "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_PAT or AIRTABLE_TOKEN, AIRTABLE_CHLOES_RESTAURANT_ID, and OPENAI_API_KEY.",
+  });
+}
 
     const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
       VENDOR_RECEIPTS_TABLE
@@ -198,6 +384,7 @@ export default async function handler(req, res) {
 }
 
     let put;
+    let del;
     let formidable;
     let fs;
 
@@ -207,6 +394,7 @@ export default async function handler(req, res) {
       const fsModule = await import("fs");
 
       put = blobModule.put;
+      del = blobModule.del;
       formidable =
         formidableModule.default ||
         formidableModule.formidable ||
@@ -280,6 +468,48 @@ export default async function handler(req, res) {
   return sendJson(res, 500, {
     ok: false,
     error: "Receipt file upload failed before Airtable record creation.",
+  });
+}
+
+    const preflightResult = await callOpenAIForDocumentPreflight({
+  fileUrl: blob.url,
+  fileName: originalFileName,
+  contentType,
+});
+
+if (!preflightResult.ok) {
+  try {
+    if (del && blob?.url) {
+      await del(blob.url, { token: BLOB_TOKEN });
+    }
+  } catch (deleteError) {
+    console.error("Could not delete blob after failed preflight:", deleteError);
+  }
+
+  return sendJson(res, preflightResult.status || 500, {
+    ok: false,
+    error: "KitchenPulse could not verify this upload as a receipt or invoice. Try a clearer receipt photo or invoice file.",
+    details: preflightResult.data,
+  });
+}
+
+if (isUnsupportedPreflightResult(preflightResult.parsed)) {
+  const message = unsupportedPreflightMessage(preflightResult.parsed);
+
+  try {
+    if (del && blob?.url) {
+      await del(blob.url, { token: BLOB_TOKEN });
+    }
+  } catch (deleteError) {
+    console.error("Could not delete unsupported upload blob:", deleteError);
+  }
+
+  return sendJson(res, 422, {
+    ok: false,
+    errorType: "unsupported_document_type",
+    error: message,
+    documentType: preflightResult.parsed?.documentType || "unsupported",
+    confidence: preflightResult.parsed?.confidence || "",
   });
 }
 
