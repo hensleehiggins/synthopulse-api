@@ -697,49 +697,8 @@ function buildMatchSuggestionsForProposal({
   const proposedCost = asNumberOrNull(proposal.proposedCost);
   const suggestions = [];
 
-  for (const record of inventoryRecords) {
-    const fields = record.fields || {};
-    const name = fields[INVENTORY_FIELD.ingredientName] || "";
-    const supplier = fields[INVENTORY_FIELD.supplier] || "";
-    const currentCost = getInventoryCurrentCost(record);
-
-    const rawNameScore = scoreNameMatch(parsedItemName, name);
-    const friendlyNameScore = scoreNameMatch(friendlyParsedItemName, name);
-    const nameScore = Math.max(rawNameScore, friendlyNameScore);
-    const vendorScore = scoreVendorMatch(vendor, supplier);
-    const score = Math.min(100, nameScore + vendorScore);
-
-    if (score < 25) continue;
-
-    suggestions.push({
-  targetType: "inventory",
-  recordId: record.id,
-  name,
-  supplier,
-  unit: "",
-  currentCost,
-  costDeltaAbs:
-    currentCost !== null && proposedCost !== null
-      ? Math.abs(currentCost - proposedCost)
-      : null,
-  hasMeaningfulDelta:
-    currentCost !== null && proposedCost !== null
-      ? Math.abs(currentCost - proposedCost) >= 0.01
-      : true,
-  score,
-  nameScore,
-  vendorScore,
-      createdTime: record.createdTime || "",
-      createdTimeMs: getRecordCreatedTimeMs(record),
-      reason:
-        score >= 85
-          ? "Strong name/vendor match"
-          : score >= 60
-          ? "Likely item match"
-          : "Possible item match",
-    });
-  }
-
+  // Receipt cost review should match against Cost Source Items only.
+  // Inventory/menu mapping is a later layer and should not clutter operator receipt review.
   for (const record of costSourceRecords) {
     const fields = record.fields || {};
     const name = fields[COST_SOURCE_FIELD.sourceItemName] || "";
@@ -749,40 +708,44 @@ function buildMatchSuggestionsForProposal({
     const unit = fields[COST_SOURCE_FIELD.unit] || "";
     const currentCost = getCostSourceCurrentCost(record);
 
-    const nameScore = scoreNameMatch(parsedItemName, name);
+    const rawNameScore = scoreNameMatch(parsedItemName, name);
+    const friendlyNameScore = scoreNameMatch(friendlyParsedItemName, name);
+    const nameScore = Math.max(rawNameScore, friendlyNameScore);
+
     const vendorScore = scoreVendorMatch(vendor, supplier);
     const score = Math.min(100, nameScore + vendorScore);
 
     if (score < 25) continue;
 
     suggestions.push({
-  targetType: "cost_source",
-  recordId: record.id,
-  name,
-  supplier,
-  sku,
-  category,
-  unit,
-  currentCost,
-  costDeltaAbs:
-    currentCost !== null && proposedCost !== null
-      ? Math.abs(currentCost - proposedCost)
-      : null,
-  hasMeaningfulDelta:
-    currentCost !== null && proposedCost !== null
-      ? Math.abs(currentCost - proposedCost) >= 0.01
-      : true,
-  score,
-  nameScore,
-  vendorScore,
+      targetType: "cost_source",
+      recordId: record.id,
+      name,
+      supplier,
+      sku,
+      category,
+      unit,
+      currentCost,
+      costDeltaAbs:
+        currentCost !== null && proposedCost !== null
+          ? Math.abs(currentCost - proposedCost)
+          : null,
+      hasMeaningfulDelta:
+        currentCost !== null && proposedCost !== null
+          ? Math.abs(currentCost - proposedCost) >= 0.01
+          : true,
+      score,
+      nameScore,
+      vendorScore,
+      friendlyParsedItemName,
       createdTime: record.createdTime || "",
       createdTimeMs: getRecordCreatedTimeMs(record),
       reason:
         score >= 85
-          ? "Strong cost source match"
+          ? "Strong tracked vendor item match"
           : score >= 60
-          ? "Likely cost source match"
-          : "Possible cost source match",
+          ? "Likely tracked vendor item match"
+          : "Possible tracked vendor item match",
     });
   }
 
