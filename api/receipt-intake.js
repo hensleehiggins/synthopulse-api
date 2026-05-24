@@ -4,10 +4,10 @@ export const config = {
   },
 };
 
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.AIRTABLE_PAT;
 const CHLOES_RESTAURANT_ID = process.env.AIRTABLE_CHLOES_RESTAURANT_ID;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const BLOB_TOKEN =
-
 const BLOB_TOKEN =
   process.env.BLOB_READ_WRITE_TOKEN ||
   process.env.BLOB_READ_WRITE_TOKEN_READ_WRITE_TOKEN;
@@ -279,85 +279,85 @@ export default async function handler(req, res) {
   }
 
   if (req.method === "GET") {
-  const mode = req.query?.mode;
+    const mode = req.query?.mode;
 
-  if (mode === "recent") {
-    if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN || !CHLOES_RESTAURANT_ID || !OPENAI_API_KEY) {
-  return sendJson(res, 500, {
-    ok: false,
-    error:
-      "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_PAT or AIRTABLE_TOKEN, AIRTABLE_CHLOES_RESTAURANT_ID, and OPENAI_API_KEY.",
-  });
-}
+    if (mode === "recent") {
+      if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN || !CHLOES_RESTAURANT_ID) {
+        return sendJson(res, 500, {
+          ok: false,
+          error:
+            "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_PAT or AIRTABLE_TOKEN, and AIRTABLE_CHLOES_RESTAURANT_ID.",
+        });
+      }
 
-    const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
-      VENDOR_RECEIPTS_TABLE
-    )}?pageSize=25`;
+      const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+        VENDOR_RECEIPTS_TABLE
+      )}?pageSize=25`;
 
-    const airtableResponse = await fetch(airtableUrl, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-        "Content-Type": "application/json",
-      },
-    });
+      const airtableResponse = await fetch(airtableUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-    const airtableData = await airtableResponse.json();
+      const airtableData = await airtableResponse.json();
 
-    if (!airtableResponse.ok) {
-      return sendJson(res, airtableResponse.status, {
-        ok: false,
-        error: "Airtable rejected the recent receipts request.",
-        details: airtableData,
+      if (!airtableResponse.ok) {
+        return sendJson(res, airtableResponse.status, {
+          ok: false,
+          error: "Airtable rejected the recent receipts request.",
+          details: airtableData,
+        });
+      }
+
+      const records = Array.isArray(airtableData?.records)
+        ? airtableData.records
+        : [];
+
+      const recentReceipts = records
+        .filter((record) => {
+          const fields = record.fields || {};
+          const status = fields["Processing Status"];
+          const restaurantLinks = fields.Restaurant || [];
+          const hasRestaurant = restaurantLinks.includes(CHLOES_RESTAURANT_ID);
+
+          return hasRestaurant && status !== "Error";
+        })
+        .sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime))
+        .slice(0, 5)
+        .map((record) => {
+          const fields = record.fields || {};
+          const uploadedFiles = fields["Uploaded File"] || [];
+          const firstFile = uploadedFiles[0];
+
+          return {
+            id: record.id,
+            createdTime: record.createdTime,
+            receiptName: fields["Receipt Name"] || "Receipt upload",
+            vendor: fields.Vendor || "",
+            receiptDate: fields["Receipt Date"] || "",
+            processingStatus: fields["Processing Status"] || "Staged",
+            reviewNeeded: Boolean(fields["Review Needed"]),
+            approved: Boolean(fields.Approved),
+            fileName: firstFile?.filename || "",
+            fileUrl: firstFile?.url || "",
+          };
+        });
+
+      return sendJson(res, 200, {
+        ok: true,
+        receipts: recentReceipts,
       });
     }
 
-    const records = Array.isArray(airtableData?.records)
-      ? airtableData.records
-      : [];
-
-    const recentReceipts = records
-      .filter((record) => {
-        const fields = record.fields || {};
-        const status = fields["Processing Status"];
-        const restaurantLinks = fields.Restaurant || [];
-        const hasRestaurant = restaurantLinks.includes(CHLOES_RESTAURANT_ID);
-
-        return hasRestaurant && status !== "Error";
-      })
-      .sort((a, b) => new Date(b.createdTime) - new Date(a.createdTime))
-      .slice(0, 5)
-      .map((record) => {
-        const fields = record.fields || {};
-        const uploadedFiles = fields["Uploaded File"] || [];
-        const firstFile = uploadedFiles[0];
-
-        return {
-          id: record.id,
-          createdTime: record.createdTime,
-          receiptName: fields["Receipt Name"] || "Receipt upload",
-          vendor: fields.Vendor || "",
-          receiptDate: fields["Receipt Date"] || "",
-          processingStatus: fields["Processing Status"] || "Staged",
-          reviewNeeded: Boolean(fields["Review Needed"]),
-          approved: Boolean(fields.Approved),
-          fileName: firstFile?.filename || "",
-          fileUrl: firstFile?.url || "",
-        };
-      });
-
     return sendJson(res, 200, {
       ok: true,
-      receipts: recentReceipts,
+      route: "receipt-intake",
+      message: "Receipt intake API is reachable. Use POST to submit a receipt.",
     });
   }
-
-  return sendJson(res, 200, {
-    ok: true,
-    route: "receipt-intake",
-    message: "Receipt intake API is reachable. Use POST to submit a receipt.",
-  });
-}
 
   if (req.method !== "POST") {
     return sendJson(res, 405, {
@@ -367,21 +367,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN || !CHLOES_RESTAURANT_ID) {
+    if (
+      !AIRTABLE_BASE_ID ||
+      !AIRTABLE_TOKEN ||
+      !CHLOES_RESTAURANT_ID ||
+      !OPENAI_API_KEY
+    ) {
       return sendJson(res, 500, {
         ok: false,
         error:
-          "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_PAT or AIRTABLE_TOKEN, and AIRTABLE_CHLOES_RESTAURANT_ID.",
+          "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_PAT or AIRTABLE_TOKEN, AIRTABLE_CHLOES_RESTAURANT_ID, and OPENAI_API_KEY.",
       });
     }
 
     if (!BLOB_TOKEN) {
-  return sendJson(res, 500, {
-    ok: false,
-    error:
-      "Missing Vercel Blob read/write token. Check that the public Blob store is connected to this project for Production and Preview.",
-  });
-}
+      return sendJson(res, 500, {
+        ok: false,
+        error:
+          "Missing Vercel Blob read/write token. Check that the public Blob store is connected to this project for Production and Preview.",
+      });
+    }
 
     let put;
     let del;
@@ -425,17 +430,17 @@ export default async function handler(req, res) {
     const uploadedFile = getUploadedFile(files);
 
     if (
-  !uploadedFile ||
-  !uploadedFile.filepath ||
-  !(uploadedFile.originalFilename || uploadedFile.newFilename) ||
-  !uploadedFile.size ||
-  Number(uploadedFile.size) <= 0
-) {
-  return sendJson(res, 400, {
-    ok: false,
-    error: "A receipt photo, PDF, or file is required before submitting.",
-  });
-}
+      !uploadedFile ||
+      !uploadedFile.filepath ||
+      !(uploadedFile.originalFilename || uploadedFile.newFilename) ||
+      !uploadedFile.size ||
+      Number(uploadedFile.size) <= 0
+    ) {
+      return sendJson(res, 400, {
+        ok: false,
+        error: "A receipt photo, PDF, or file is required before submitting.",
+      });
+    }
 
     const receiptName = getFieldValue(formFields, "receiptName");
     const vendor = getFieldValue(formFields, "vendor");
@@ -459,59 +464,61 @@ export default async function handler(req, res) {
     )}`;
 
     const blob = await put(blobPath, fileBuffer, {
-  access: "public",
-  contentType,
-  addRandomSuffix: true,
-  token: BLOB_TOKEN,
-});
+      access: "public",
+      contentType,
+      addRandomSuffix: true,
+      token: BLOB_TOKEN,
+    });
+
     if (!blob?.url) {
-  return sendJson(res, 500, {
-    ok: false,
-    error: "Receipt file upload failed before Airtable record creation.",
-  });
-}
+      return sendJson(res, 500, {
+        ok: false,
+        error: "Receipt file upload failed before Airtable record creation.",
+      });
+    }
 
     const preflightResult = await callOpenAIForDocumentPreflight({
-  fileUrl: blob.url,
-  fileName: originalFileName,
-  contentType,
-});
+      fileUrl: blob.url,
+      fileName: originalFileName,
+      contentType,
+    });
 
-if (!preflightResult.ok) {
-  try {
-    if (del && blob?.url) {
-      await del(blob.url, { token: BLOB_TOKEN });
+    if (!preflightResult.ok) {
+      try {
+        if (del && blob?.url) {
+          await del(blob.url, { token: BLOB_TOKEN });
+        }
+      } catch (deleteError) {
+        console.error("Could not delete blob after failed preflight:", deleteError);
+      }
+
+      return sendJson(res, preflightResult.status || 500, {
+        ok: false,
+        error:
+          "KitchenPulse could not verify this upload as a receipt or invoice. Try a clearer receipt photo or invoice file.",
+        details: preflightResult.data,
+      });
     }
-  } catch (deleteError) {
-    console.error("Could not delete blob after failed preflight:", deleteError);
-  }
 
-  return sendJson(res, preflightResult.status || 500, {
-    ok: false,
-    error: "KitchenPulse could not verify this upload as a receipt or invoice. Try a clearer receipt photo or invoice file.",
-    details: preflightResult.data,
-  });
-}
+    if (isUnsupportedPreflightResult(preflightResult.parsed)) {
+      const message = unsupportedPreflightMessage(preflightResult.parsed);
 
-if (isUnsupportedPreflightResult(preflightResult.parsed)) {
-  const message = unsupportedPreflightMessage(preflightResult.parsed);
+      try {
+        if (del && blob?.url) {
+          await del(blob.url, { token: BLOB_TOKEN });
+        }
+      } catch (deleteError) {
+        console.error("Could not delete unsupported upload blob:", deleteError);
+      }
 
-  try {
-    if (del && blob?.url) {
-      await del(blob.url, { token: BLOB_TOKEN });
+      return sendJson(res, 422, {
+        ok: false,
+        errorType: "unsupported_document_type",
+        error: message,
+        documentType: preflightResult.parsed?.documentType || "unsupported",
+        confidence: preflightResult.parsed?.confidence || "",
+      });
     }
-  } catch (deleteError) {
-    console.error("Could not delete unsupported upload blob:", deleteError);
-  }
-
-  return sendJson(res, 422, {
-    ok: false,
-    errorType: "unsupported_document_type",
-    error: message,
-    documentType: preflightResult.parsed?.documentType || "unsupported",
-    confidence: preflightResult.parsed?.confidence || "",
-  });
-}
 
     const fileSizeText = uploadedFile.size
       ? `${Math.round(Number(uploadedFile.size) / 1024).toLocaleString()} KB`
@@ -524,6 +531,9 @@ if (isUnsupportedPreflightResult(preflightResult.parsed)) {
       contentType ? `File type: ${contentType}` : "",
       `File size: ${fileSizeText}`,
       `Blob URL: ${blob.url}`,
+      preflightResult.parsed?.reason
+        ? `Upload preflight: ${preflightResult.parsed.reason}`
+        : "",
     ]
       .filter(Boolean)
       .join("\n");
@@ -571,6 +581,14 @@ if (isUnsupportedPreflightResult(preflightResult.parsed)) {
     const airtableData = await airtableResponse.json();
 
     if (!airtableResponse.ok) {
+      try {
+        if (del && blob?.url) {
+          await del(blob.url, { token: BLOB_TOKEN });
+        }
+      } catch (deleteError) {
+        console.error("Could not delete blob after Airtable failure:", deleteError);
+      }
+
       return sendJson(res, airtableResponse.status, {
         ok: false,
         error: "Airtable rejected the receipt upload request.",
@@ -587,6 +605,7 @@ if (isUnsupportedPreflightResult(preflightResult.parsed)) {
       receiptName: finalReceiptName,
       fileName: originalFileName,
       fileUrl: blob.url,
+      preflight: preflightResult.parsed || null,
     });
   } catch (error) {
     console.error("Receipt intake error:", error);
