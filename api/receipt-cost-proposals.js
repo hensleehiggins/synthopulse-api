@@ -301,6 +301,7 @@ function tokenize(value) {
           "sys",
           "imp",
           "brl",
+          "brbl",
           "cls",
           "cs",
           "lb",
@@ -1275,6 +1276,20 @@ function titleCaseItemName(value) {
     .join(" ");
 }
 
+function isNonItemChargeLine(value) {
+  const upper = String(value || "").toUpperCase();
+
+  return (
+    /\bFUEL\b/.test(upper) && /\bSURCHARGE\b/.test(upper)
+  ) || (
+    /\bDELIVERY\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
+  ) || (
+    /\bSERVICE\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
+  ) || (
+    /\bMISC\b/.test(upper) && /\bCHARGES?\b/.test(upper)
+  );
+}
+
 function friendlyVendorItemName(value, category = "") {
   const raw = String(value || "").trim();
 
@@ -1774,7 +1789,23 @@ async function generateProposals(req, res) {
   for (const record of lineRecords) {
     const line = normalizeLineRecord(record);
 
-    if (!line.approved) {
+const lineTextForChargeCheck = [
+  line.lineItemName,
+  line.lineName,
+  line.rawLineText,
+  line.category,
+  line.packageSize,
+].filter(Boolean).join(" ");
+
+if (isNonItemChargeLine(lineTextForChargeCheck)) {
+  skipped.push({
+    lineId: line.id,
+    reason: "Non-item vendor charge skipped.",
+  });
+  continue;
+}
+
+if (!line.approved) {
       skipped.push({
         lineId: line.id,
         reason: "Line is not approved.",
