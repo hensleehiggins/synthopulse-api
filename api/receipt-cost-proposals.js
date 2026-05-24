@@ -1292,13 +1292,7 @@ async function listProposals(req, res) {
   });
 }
 
-function buildProposalFieldsFromLine({
-  line,
-  proposedCost,
-  inventoryRecord,
-  costSourceRecord,
-}) {
-  function buildCostSourceFieldsFromLine({ line, proposedCost }) {
+function buildCostSourceFieldsFromLine({ line, proposedCost }) {
   const itemName =
     line.lineItemName ||
     line.lineName ||
@@ -1308,6 +1302,8 @@ function buildProposalFieldsFromLine({
     [COST_SOURCE_FIELD.sourceItemName]: itemName,
     [COST_SOURCE_FIELD.supplier]: line.vendor || "",
     [COST_SOURCE_FIELD.unitPrice]: proposedCost,
+    [COST_SOURCE_FIELD.price]: proposedCost,
+    [COST_SOURCE_FIELD.finalPrice]: proposedCost,
   };
 
   if (line.category) {
@@ -1320,6 +1316,14 @@ function buildProposalFieldsFromLine({
 
   return fields;
 }
+
+function buildProposalFieldsFromLine({
+  line,
+  proposedCost,
+  inventoryRecord,
+  costSourceRecord,
+}) {
+  
   const inventoryCurrentCost = getInventoryCurrentCost(inventoryRecord);
   const costSourceCurrentCost = getCostSourceCurrentCost(costSourceRecord);
 
