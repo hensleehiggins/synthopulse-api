@@ -1860,24 +1860,31 @@ if (!line.approved) {
     });
 
     if (existingProposal && force) {
-      const existingFields = existingProposal.fields || {};
-      const existingStatus =
-        existingFields[PROPOSAL_FIELD.proposalStatus] || "Needs Review";
+  const existingFields = existingProposal.fields || {};
+  const existingStatus =
+    existingFields[PROPOSAL_FIELD.proposalStatus] || "Needs Review";
 
-      recordsToUpdate.push({
-        id: existingProposal.id,
-        fields: {
-          ...fields,
-          [PROPOSAL_FIELD.proposalStatus]: existingStatus,
-          [PROPOSAL_FIELD.approved]: Boolean(
-            existingFields[PROPOSAL_FIELD.approved]
-          ),
-          [PROPOSAL_FIELD.applied]: Boolean(
-            existingFields[PROPOSAL_FIELD.applied]
-          ),
-        },
-      });
-    } else {
+  const wasRejected = existingStatus === "Rejected";
+
+  recordsToUpdate.push({
+    id: existingProposal.id,
+    fields: {
+      ...fields,
+      [PROPOSAL_FIELD.proposalStatus]: wasRejected
+        ? "Needs Review"
+        : existingStatus,
+      [PROPOSAL_FIELD.approved]: wasRejected
+        ? false
+        : Boolean(existingFields[PROPOSAL_FIELD.approved]),
+      [PROPOSAL_FIELD.applied]: wasRejected
+        ? false
+        : Boolean(existingFields[PROPOSAL_FIELD.applied]),
+      [PROPOSAL_FIELD.notes]: wasRejected
+        ? "Returned to cost review after the parsed receipt line was re-approved."
+        : fields[PROPOSAL_FIELD.notes] || "",
+    },
+  });
+} else {
       recordsToCreate.push({
         fields: {
           ...fields,
