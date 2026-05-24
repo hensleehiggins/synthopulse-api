@@ -1645,6 +1645,8 @@ if (/\bPIZZA\b/.test(upper) && /\bCRUST\b/.test(upper)) {
       ].includes(token)
     )
     .filter((token) => !/^\d+[A-Z]*$/.test(token))
+    .filter((token) => !/^[A-Z]*\d+[A-Z]*$/.test(token))
+    .filter((token) => !/^\d+[A-Z]*$/.test(token))
     .map((token) => {
       const map = {
         CHKN: "CHICKEN",
