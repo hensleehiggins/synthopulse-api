@@ -266,6 +266,8 @@ function friendlyVendorItemName(value, category = "") {
   return titleCaseItemName(cleaned);
 }
 
+
+
 function asNumberOrNull(value) {
   if (value === "" || value === null || typeof value === "undefined") {
     return null;
@@ -299,7 +301,8 @@ return {
     restaurantIds: linkedIds(fields[FIELD.restaurant]),
 
     vendor: fields[FIELD.vendor] || "",
-    lineItemName: fields[FIELD.lineItemName] || "",
+    lineItemName: cleanedLineName,
+    originalLineItemName: rawLineName,
     matchedInventoryItemIds: linkedIds(fields[FIELD.matchedInventoryItem]),
     matchedCostSourceItemIds: linkedIds(fields[FIELD.matchedCostSourceItem]),
 
@@ -450,6 +453,20 @@ async function listReceiptLines(req, res) {
     lines = lines.filter((line) => line.receiptIds.includes(receiptId));
   }
 
+  lines = lines.filter((line) => {
+  const text = [
+    line.originalLineItemName,
+    line.lineItemName,
+    line.rawLineText,
+    line.category,
+    line.packageSize,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return !isNonItemChargeLine(text);
+});
+
   lines.sort((a, b) => {
     if (a.approved !== b.approved) return a.approved ? 1 : -1;
     if (a.needsReview !== b.needsReview) return a.needsReview ? -1 : 1;
@@ -481,6 +498,38 @@ async function updateReceiptLine(req, res) {
   const fields = {};
 
   if (action === "approve_line") {
+    const existingRecord = await airtableRequest({
+  method: "GET",
+  tableId: RECEIPT_LINES_TABLE_ID,
+  recordId,
+});
+
+const existingLine = normalizeLineRecord(existingRecord);
+
+const chargeCheckText = [
+  existingLine.originalLineItemName,
+  existingLine.lineItemName,
+  existingLine.rawLineText,
+  existingLine.category,
+  existingLine.packageSize,
+]
+  .filter(Boolean)
+  .join(" ");
+
+if (isNonItemChargeLine(chargeCheckText)) {
+  return sendJson(res, 400, {
+    ok: false,
+    error: "This looks like a vendor charge, not a product line. It should not be approved as a cost item.",
+  });
+}
+
+if (
+  existingLine.lineItemName &&
+  existingLine.originalLineItemName &&
+  existingLine.lineItemName !== existingLine.originalLineItemName
+) {
+  fields[FIELD.lineItemName] = existingLine.lineItemName;
+}
     fields[FIELD.approved] = true;
     fields[FIELD.needsReview] = false;
 
