@@ -1316,6 +1316,45 @@ function friendlyVendorItemName(value, category = "") {
   
 
   // Strong restaurant/vendor receipt patterns first.
+  if (/\bFUEL\b/.test(upper) && /\bSURCHARGE\b/.test(upper)) {
+  return "Fuel Surcharge";
+}
+
+if (/\bSEASONING\b/.test(upper)) {
+  if (/\bCAJUN\b/.test(upper)) return "Cajun Seasoning";
+  return "Seasoning";
+}
+
+if (/\bSALT\b/.test(upper)) {
+  if (/\bKOSHER\b/.test(upper)) return "Kosher Salt";
+  return "Salt";
+}
+
+if (/\bCHEESE\b/.test(upper)) {
+  if (/\bSWISS\b/.test(upper) && /\b(AMER|AMERICAN)\b/.test(upper)) {
+    return "Swiss/American Cheese Slices";
+  }
+
+  if (/\bCHEDDAR\b|\bCHED\b|\bCHDR\b/.test(upper)) {
+    if (/\bSHARP\b/.test(upper)) return "Sharp Cheddar Cheese";
+    if (/\bSHR\b|\bSHRD\b|\bSHRED\b|\bSHREDDED\b/.test(upper)) {
+      return "Cheddar Cheese Shredded";
+    }
+    return "Cheddar Cheese";
+  }
+
+  if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
+  if (/\b(AMER|AMERICAN)\b/.test(upper)) return "American Cheese";
+  return "Cheese";
+}
+
+if (
+  /\b(CHKN|CHICKEN)\b/.test(upper) &&
+  /\b(WNG|WING|WINGS)\b/.test(upper)
+) {
+  if (/\b(JMB|JUMBO)\b/.test(upper)) return "Chicken Wings Jumbo";
+  return "Chicken Wings";
+}
   if (/\bMAYONNAISE\b|\bMAYO\b/.test(upper)) {
   return "Mayonnaise";
 }
@@ -1585,6 +1624,24 @@ if (/\bPIZZA\b/.test(upper) && /\bCRUST\b/.test(upper)) {
 "WHL",
 "BLECHED",
 "BLCHD",
+          "BRRLIMP",
+"BBRLIMP",
+"BRRLCLS",
+"BBRLCLS",
+"IMPFRSH",
+"IMP",
+"MCC",
+"PACKER",
+"PLD",
+"PRIN",
+"SYS",
+"CLS",
+"CVP",
+"RND",
+"ONLY",
+"AVG",
+"WT",
+"TWT",
       ].includes(token)
     )
     .filter((token) => !/^\d+[A-Z]*$/.test(token))
