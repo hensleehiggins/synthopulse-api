@@ -264,6 +264,12 @@ You are parsing a restaurant vendor receipt or invoice for KitchenPulse.
 Return ONLY valid JSON. No markdown. No commentary.
 
 Important rules:
+- First classify the document.
+- Only parse vendor receipts, invoices, or purchase documents showing items actually bought.
+- Do NOT parse catalogs, product lists, price sheets, order guides, menus, marketing sheets, or sales flyers as receipts.
+- If the document is not a receipt or invoice, return documentType, isReceiptOrInvoice false, unsupportedReason, rawText if visible, and an empty lines array.
+- Catalog-like documents often have columns such as Supplier Name, Item #, Brand, Product, Pack, Size, Tokens, or long product lists without purchase totals.
+- Large real invoices are allowed, but product catalogs and price sheets are not.
 - Do not invent values.
 - If a field is not visible, use empty string or null.
 - Every line item must remain review-first.
@@ -271,6 +277,9 @@ Important rules:
 
 JSON shape:
 {
+  "documentType": "receipt_invoice" | "catalog_or_price_sheet" | "menu" | "unknown",
+  "isReceiptOrInvoice": true,
+  "unsupportedReason": "",
   "rawText": "plain text transcription of visible receipt/invoice content",
   "vendor": "vendor or supplier name",
   "receiptDate": "YYYY-MM-DD or empty string",
@@ -426,6 +435,45 @@ function normalizeConfidence(value) {
   }
 
   return "Low";
+}
+
+function isUnsupportedDocument(parsed) {
+  const documentType = normalizeText(parsed?.documentType).toLowerCase();
+  const unsupportedReason = normalizeText(parsed?.unsupportedReason).toLowerCase();
+
+  if (parsed?.isReceiptOrInvoice === false) return true;
+
+  if (
+    [
+      "catalog_or_price_sheet",
+      "catalog",
+      "price_sheet",
+      "product_list",
+      "order_guide",
+      "menu",
+    ].includes(documentType)
+  ) {
+    return true;
+  }
+
+  if (
+    unsupportedReason.includes("catalog") ||
+    unsupportedReason.includes("price sheet") ||
+    unsupportedReason.includes("product list") ||
+    unsupportedReason.includes("order guide") ||
+    unsupportedReason.includes("menu")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function unsupportedDocumentMessage(parsed) {
+  return (
+    normalizeText(parsed?.unsupportedReason) ||
+    "This looks like a vendor catalog, product list, menu, order guide, or price sheet rather than a receipt or invoice. Upload a vendor receipt or invoice showing items actually purchased."
+  );
 }
 
 function buildReceiptUpdateFields(receipt, parsed, parsedText) {
@@ -614,9 +662,35 @@ export default async function handler(req, res) {
     }
 
     const parsedText = extractOpenAIText(openAiResult.data);
-    const parsed = parseJsonFromModelText(parsedText);
+const parsed = parseJsonFromModelText(parsedText);
 
-    const parsedLines = Array.isArray(parsed.lines) ? parsed.lines : [];
+if (isUnsupportedDocument(parsed)) {
+  const message = unsupportedDocumentMessage(parsed);
+
+  await updateReceipt(receipt.id, {
+    "Processing Status": "Needs Review",
+    "Review Needed": true,
+    Approved: false,
+    "Raw OCR / AI Text": normalizeText(parsed.rawText) || parsedText,
+    "Parsed JSON": JSON.stringify(parsed, null, 2),
+    "Error Message": message,
+    "Processed At": new Date().toISOString(),
+    Notes: [receipt.notes || "", `PARSING REJECTED ${new Date().toISOString()}: ${message}`]
+      .filter(Boolean)
+      .join("\n\n"),
+  });
+
+  return sendJson(res, 422, {
+    ok: false,
+    errorType: "unsupported_document_type",
+    error: message,
+    recordId: receipt.id,
+  });
+}
+
+const parsedLines = Array.isArray(parsed.lines) ? parsed.lines : [];
+    const parsedLineLimit = 50;
+const wasLineLimited = parsedLines.length > parsedLineLimit;
 
     const lineFields = parsedLines
       .filter((line) => {
@@ -626,7 +700,7 @@ export default async function handler(req, res) {
           safeNumber(line.lineTotal) !== null
         );
       })
-      .slice(0, 50)
+      .slice(0, parsedLineLimit)
       .map((line, index) => buildLineFields({ receipt, parsed, line, index }));
 
     const receiptUpdateFields = buildReceiptUpdateFields(
@@ -634,6 +708,14 @@ export default async function handler(req, res) {
       parsed,
       parsedText
     );
+    if (wasLineLimited) {
+  receiptUpdateFields.Notes = [
+    receiptUpdateFields.Notes || "",
+    `KitchenPulse parsed the first ${parsedLineLimit} visible line items from a larger receipt/invoice. Upload remaining pages separately if more lines are needed.`,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
 
     const receiptUpdateResult = await updateReceipt(
       receipt.id,
