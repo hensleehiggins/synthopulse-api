@@ -286,6 +286,16 @@ Invoice/table parsing rules:
 - Package Size should combine PACK and SIZE when visible, such as "1 CS / 10 LB", "4 LB", "2/5 LB", or "1 LB".
 - If QTY is 4, UNIT PRICE is 26.2475, and EXTENDED PRICE is 104.99, return quantity 4, unitCost 26.2475, and lineTotal 104.99.
 
+Item naming rules:
+- lineItemName must be the specific purchased product, not a generic category.
+- Do not return generic names like "Cheese", "Lettuce", "Chicken", "Beef", "Sauce", or "Produce" when the raw line contains a more specific item description.
+- Preserve meaningful descriptors from the invoice item description such as "Parm Shaved", "Cheddar Shredded", "Romaine Hearts", "Chicken Wings Jumbo", "Ribeye", "Heavy Cream", etc.
+- Remove only obvious pack, size, quantity, and item code values from lineItemName.
+- If raw line text says "AREZIME CHEESE PARM SHAVED", return a lineItemName like "Arezime Cheese Parm Shaved" or "Shaved Parmesan Cheese", not "Cheese".
+- If uncertain, prefer a longer specific lineItemName over a short generic one.
+- If raw line text says "DRESSING BLUE CHEESE CHUNKY", return "Blue Cheese Chunky Dressing", not "Cheese".
+- If raw line text says "AREZIME CHEESE PARM SHAVED", return "Arezime Cheese Parm Shaved" or "Shaved Parmesan Cheese", not "Cheese".
+
 JSON shape:
 {
   "documentType": "receipt_invoice" | "catalog_or_price_sheet" | "menu" | "unknown",
