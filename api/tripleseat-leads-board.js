@@ -550,6 +550,24 @@ module.exports = async function handler(req, res) {
       followUpWatch,
       potentialDemand,
       sample: activeOpenLeads.slice(0, 5),
+debugVero: fetched.rawLeads
+  .filter((lead) =>
+    JSON.stringify(lead).toLowerCase().includes("vero")
+  )
+  .map((lead) => ({
+    id: lead.id,
+    first_name: lead.first_name,
+    last_name: lead.last_name,
+    company: lead.company,
+    event_description: lead.event_description,
+    additional_information: lead.additional_information,
+    notes: lead.notes,
+    note: lead.note,
+    description: lead.description,
+    internal_notes: lead.internal_notes,
+    rawKeys: Object.keys(lead || {}),
+    rawPreview: lead,
+  })),
     });
   } catch (error) {
     console.error("tripleseat-leads-board error", error);
