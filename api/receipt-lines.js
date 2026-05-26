@@ -170,10 +170,11 @@ function friendlyVendorItemName(value, category = "") {
       return "Cheddar Cheese";
     }
 
-    if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
+        if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
     if (/\b(AMER|AMERICAN)\b/.test(upper)) return "American Cheese";
 
-    return "Cheese";
+    // Do not collapse unknown cheese products into generic "Cheese".
+    // Preserve the cleaned/raw vendor description so cost matching remains specific.
   }
 
   if (
