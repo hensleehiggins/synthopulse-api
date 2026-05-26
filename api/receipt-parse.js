@@ -298,6 +298,19 @@ Price and item-code rules:
 - Example: if a row contains item code 650009 and price 38.95, return unitCost 38.95 and lineTotal 38.95. Do not return 650009, 6500.09, 5388.42, or any merged value.
 - Example: if a row contains "SYS REL MAYONNAISE HEAVY DUTY" with item code 650009 and visible price 38.95, return lineItemName "Rel Mayonnaise Heavy Duty", unitCost 38.95, lineTotal 38.95.
 
+Sysco subtotal / group total rules:
+- Sysco invoices may show category/group totals near item rows, such as totals for a section or page.
+- Do not use category totals, subtotal values, invoice totals, page totals, tax, delivery, or summary values as unitCost or lineTotal for an individual item.
+- Only create line items from actual item rows that contain an item description and item code.
+- A valid item row should have an item description plus item code plus UNIT PRICE and/or EXTENDED PRICE in the same row.
+- If a large price appears near a category group but not directly on the item row, leave unitCost and lineTotal null rather than using that value.
+- For Sysco rows, do not use numbers from the far bottom/summary/group total area as item prices.
+- If the raw line text contains a product name followed by only one suspiciously high number, verify it is not a group total before assigning it as lineTotal.
+Examples:
+- If raw text says "LOBSTER BISQUE W/S NE 1 CS 770.08" but 770.08 appears to be a category/group total rather than the row's UNIT PRICE or EXTENDED PRICE, return unitCost null and lineTotal null with low confidence.
+- If raw text says "2 CS 65LB SYS REL POTATO FRY STEAK 9944149 39.95", return quantity 2, packageSize "65 LB", item code ignored, lineTotal 39.95, and unitCost 19.98 only if 39.95 is the extended price for quantity 2.
+- If UNIT PRICE is visible separately from EXTENDED PRICE, use UNIT PRICE for unitCost and EXTENDED PRICE for lineTotal.
+
 Item naming rules:
 - lineItemName must be the specific purchased product, not a generic category.
 - Do not return generic names like "Cheese", "Lettuce", "Chicken", "Beef", "Sauce", or "Produce" when the raw line contains a more specific item description.
@@ -558,7 +571,77 @@ function normalizeParsedLine(line) {
     unit: normalizeText(line.unit),
     packageSize: normalizeText(line.packageSize),
     rawLineText: normalizeText(line.rawLineText),
+    confidence: normalizeConfidence(line.confidence),
+    notes: normalizeText(line.notes),
   };
+
+  const raw = normalized.rawLineText.toLowerCase();
+
+  // Vendor invoices like Sysco often have explicit table columns:
+  // QTY | PACK | SIZE | ITEM DESCRIPTION | ITEM CODE | UNIT PRICE | EXTENDED PRICE.
+  // If the model captured line total but missed unit cost, derive it only when
+  // quantity is present and the math is safe.
+  if (
+    normalized.unitCost === null &&
+    normalized.lineTotal !== null &&
+    normalized.quantity !== null &&
+    normalized.quantity > 0
+  ) {
+    normalized.unitCost = Number(
+      (normalized.lineTotal / normalized.quantity).toFixed(2)
+    );
+  }
+
+  // If the model captured unit cost but missed line total, derive line total.
+  if (
+    normalized.lineTotal === null &&
+    normalized.unitCost !== null &&
+    normalized.quantity !== null &&
+    normalized.quantity > 0
+  ) {
+    normalized.lineTotal = Number(
+      (normalized.unitCost * normalized.quantity).toFixed(2)
+    );
+  }
+
+  // If unit is blank but package text clearly includes LB/CS/OZ/etc, keep the unit readable.
+  if (
+    !normalized.unit &&
+    /\b(lb|lbs|cs|case|oz|gal|qt|pt|pk|pack|ea|each)\b/i.test(raw)
+  ) {
+    const unitMatch = raw.match(
+      /\b(lb|lbs|cs|case|oz|gal|qt|pt|pk|pack|ea|each)\b/i
+    );
+    normalized.unit = unitMatch?.[1] || "";
+  }
+
+  // Guard against obvious Sysco invoice subtotal/category total mistakes.
+  // Safer behavior: leave questionable huge prices blank for human review
+  // instead of allowing a subtotal/group total to become an approved item cost.
+  const suspiciousHugeSingleLine =
+    (
+      (normalized.unitCost !== null && normalized.unitCost >= 500) ||
+      (normalized.lineTotal !== null && normalized.lineTotal >= 500)
+    ) &&
+    normalized.rawLineText &&
+    !/\b(unit price|extended price|line total|amount|subtotal|total)\b/i.test(
+      normalized.rawLineText
+    );
+
+  if (suspiciousHugeSingleLine) {
+    normalized.unitCost = null;
+    normalized.lineTotal = null;
+    normalized.confidence = "Low";
+    normalized.notes = [
+      normalizeText(normalized.notes),
+      "Possible subtotal/group total or item-code/price merge captured as item price. Price left blank for review.",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  return normalized;
+}
 
   const raw = normalized.rawLineText.toLowerCase();
 
@@ -627,7 +710,12 @@ function buildLineFields({ receipt, parsed, line, index }) {
     "Needs Review": true,
     Approved: false,
     "Raw Line Text": normalizedLine.rawLineText,
-    Notes: "AI-parsed staging line.",
+    Notes: [
+  "AI-parsed staging line.",
+  normalizeText(normalizedLine.notes),
+]
+  .filter(Boolean)
+  .join(" "),
   };
 }
 
