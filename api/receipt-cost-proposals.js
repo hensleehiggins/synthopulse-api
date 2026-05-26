@@ -274,6 +274,84 @@ function getProposedCostFromLineRecord(record) {
   return null;
 }
 
+function normalizePackageIdentity(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[’']/g, "")
+    .replace(/\bcase\b/g, "cs")
+    .replace(/\bcases\b/g, "cs")
+    .replace(/\beach\b/g, "ea")
+    .replace(/\blbs\b/g, "lb")
+    .replace(/\bpounds?\b/g, "lb")
+    .replace(/\bounces?\b/g, "oz")
+    .replace(/\bgallons?\b/g, "gal")
+    .replace(/\bquarts?\b/g, "qt")
+    .replace(/\s+/g, " ")
+    .replace(/[^a-z0-9/.\- ]+/g, "")
+    .trim();
+}
+
+function titlePackageIdentity(value) {
+  const normalized = normalizePackageIdentity(value);
+  if (!normalized) return "";
+
+  return normalized
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => {
+      const upper = part.toUpperCase();
+
+      if (
+        [
+          "CS",
+          "EA",
+          "LB",
+          "OZ",
+          "GAL",
+          "QT",
+          "PT",
+          "CT",
+          "DZ",
+        ].includes(upper)
+      ) {
+        return upper;
+      }
+
+      return part;
+    })
+    .join(" ");
+}
+
+function appendPackageIdentityToItemName(itemName, packageSize) {
+  const cleanItemName = String(itemName || "").trim();
+  const cleanPackage = titlePackageIdentity(packageSize);
+
+  if (!cleanItemName || !cleanPackage) return cleanItemName;
+
+  const normalizedName = normalizeText(cleanItemName);
+  const normalizedPackage = normalizeText(cleanPackage);
+
+  if (normalizedPackage && normalizedName.includes(normalizedPackage)) {
+    return cleanItemName;
+  }
+
+  return `${cleanItemName} — ${cleanPackage}`;
+}
+
+function buildLineCostIdentityName(line) {
+  const rawItemName =
+    line?.lineItemName ||
+    line?.lineName ||
+    "New receipt cost item";
+
+  const friendlyName =
+    friendlyVendorItemName(rawItemName, line?.category) ||
+    rawItemName ||
+    "New receipt cost item";
+
+  return appendPackageIdentityToItemName(friendlyName, line?.packageSize);
+}
+
 function normalizeText(value) {
   return String(value || "")
     .toLowerCase()
@@ -356,11 +434,12 @@ function getRecordCreatedTimeMs(record) {
 function getSuggestionDedupeKey(suggestion) {
   const targetType = suggestion.targetType || "";
   const name = normalizeText(suggestion.name || "");
+  const supplier = normalizeText(suggestion.supplier || "");
+  const unit = normalizePackageIdentity(suggestion.unit || "");
 
-  // Collapse duplicate-looking matches aggressively for the operator UI.
-  // If two Cost Source Items have the same normalized name, only show one.
-  // This prevents dropdowns from filling with old/test/current variants of the same vendor item.
-  return [targetType, name].join("|");
+  // Do not collapse different pack/unit identities into one suggestion.
+  // Same item family in different package sizes must remain separate for cost tracking.
+  return [targetType, supplier, name, unit].join("|");
 }
 
 function suggestionHasCurrentCost(suggestion) {
@@ -1328,7 +1407,7 @@ if (/\bCHEESE\b/.test(upper)) {
 
   if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
   if (/\b(AMER|AMERICAN)\b/.test(upper)) return "American Cheese";
-  return "Cheese";
+  // Fall through to generic cleanup instead of collapsing unknown cheese to "Cheese".
 }
 
 if (
@@ -1423,7 +1502,7 @@ if (/\bCHEESE\b/.test(upper)) {
   }
 
   if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
-  return "Cheese";
+  // Fall through to generic cleanup instead of collapsing unknown cheese to "Cheese".
 }
   if (/\bCARROT\b/.test(upper)) {
   if (/\bBABY\b/.test(upper) && /\b(TRI|COLOR|COLOUR)\b/.test(upper)) {
@@ -1448,7 +1527,7 @@ if (/\bCHEESE\b/.test(upper)) {
 
   if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
   if (/\b(AMER|AMERICAN)\b/.test(upper)) return "American Cheese";
-  return "Cheese";
+ // Fall through to generic cleanup instead of collapsing unknown cheese to "Cheese".
 }
   if (
     /\b(CHKN|CHICKEN)\b/.test(upper) &&
@@ -1661,15 +1740,7 @@ if (/\bPIZZA\b/.test(upper) && /\bCRUST\b/.test(upper)) {
 }
 
 function buildCostSourceFieldsFromLine({ line, proposedCost }) {
-  const rawItemName =
-  line.lineItemName ||
-  line.lineName ||
-  "New receipt cost item";
-
-const itemName =
-  friendlyVendorItemName(rawItemName, line.category) ||
-  rawItemName ||
-  "New receipt cost item";
+  const itemName = buildLineCostIdentityName(line);
 
   const fields = {
     [COST_SOURCE_FIELD.sourceItemName]: itemName,
@@ -1679,16 +1750,11 @@ const itemName =
     [COST_SOURCE_FIELD.finalPrice]: proposedCost,
   };
 
-  if (line.category) {
-    fields[COST_SOURCE_FIELD.category] = line.category;
-  }
+  
 
-  if (line.unit) {
-    fields[COST_SOURCE_FIELD.unit] = line.unit;
-  }
+ 
 
-  return fields;
-}
+ 
 
 function buildProposalFieldsFromLine({
   line,
@@ -1709,8 +1775,10 @@ function buildProposalFieldsFromLine({
   const matchedCostSourceItemId = costSourceRecord?.id || "";
   const targetName = getTargetName({ inventoryRecord, costSourceRecord });
 
+    const parsedIdentityName = buildLineCostIdentityName(line);
+
   const proposalName = `${line.vendor || "Vendor"} — ${
-    line.lineItemName || line.lineName || "Parsed item"
+    parsedIdentityName || line.lineItemName || line.lineName || "Parsed item"
   } — ${money(proposedCost)}`;
 
   const proposalReason = buildProposalReason({
@@ -1725,8 +1793,8 @@ function buildProposalFieldsFromLine({
     [PROPOSAL_FIELD.proposalName]: proposalName,
     [PROPOSAL_FIELD.receiptLine]: [line.id],
     [PROPOSAL_FIELD.vendor]: line.vendor || "",
-    [PROPOSAL_FIELD.parsedItemName]:
-      line.lineItemName || line.lineName || "Parsed item",
+        [PROPOSAL_FIELD.parsedItemName]:
+      parsedIdentityName || line.lineItemName || line.lineName || "Parsed item",
     [PROPOSAL_FIELD.proposedCost]: proposedCost,
     [PROPOSAL_FIELD.proposalReason]: proposalReason,
     [PROPOSAL_FIELD.notes]: targetName
