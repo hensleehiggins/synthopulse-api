@@ -278,8 +278,8 @@ function normalizePackageIdentity(value) {
   return String(value || "")
     .toLowerCase()
     .replace(/[’']/g, "")
-    .replace(/\bcase\b/g, "cs")
     .replace(/\bcases\b/g, "cs")
+    .replace(/\bcase\b/g, "cs")
     .replace(/\beach\b/g, "ea")
     .replace(/\blbs\b/g, "lb")
     .replace(/\bpounds?\b/g, "lb")
@@ -289,6 +289,28 @@ function normalizePackageIdentity(value) {
     .replace(/\s+/g, " ")
     .replace(/[^a-z0-9/.\- ]+/g, "")
     .trim();
+}
+
+function isReliablePackageIdentity(value) {
+  const normalized = normalizePackageIdentity(value);
+
+  if (!normalized) return false;
+
+  // Reject obvious OCR/model garbage.
+  if (/\bonly\b/i.test(normalized)) return false;
+  if (normalized.includes(",")) return false;
+  if (normalized.length > 24) return false;
+
+  // Must contain a real package/unit marker.
+  if (!/\b(cs|case|ea|lb|oz|gal|qt|pt|ct|dz)\b/i.test(normalized)) {
+    return false;
+  }
+
+  // Reject long mixed phrases that look like multiple products/packages.
+  const tokenCount = normalized.split(/\s+/).filter(Boolean).length;
+  if (tokenCount > 5) return false;
+
+  return true;
 }
 
 function titlePackageIdentity(value) {
@@ -324,10 +346,14 @@ function titlePackageIdentity(value) {
 
 function appendPackageIdentityToItemName(itemName, packageSize) {
   const cleanItemName = String(itemName || "").trim();
+
+  if (!cleanItemName) return cleanItemName;
+
+  if (!isReliablePackageIdentity(packageSize)) {
+    return cleanItemName;
+  }
+
   const cleanPackage = titlePackageIdentity(packageSize);
-
-  if (!cleanItemName || !cleanPackage) return cleanItemName;
-
   const normalizedName = normalizeText(cleanItemName);
   const normalizedPackage = normalizeText(cleanPackage);
 
@@ -1418,6 +1444,10 @@ if (
   return "Chicken Wings";
 }
   if (/\bMAYONNAISE\b|\bMAYO\b/.test(upper)) {
+  if (/\bHEAVY\b/.test(upper) && /\bDUTY\b/.test(upper)) {
+    return "Mayonnaise Heavy Duty";
+  }
+
   return "Mayonnaise";
 }
 
@@ -1749,6 +1779,17 @@ function buildCostSourceFieldsFromLine({ line, proposedCost }) {
     [COST_SOURCE_FIELD.price]: proposedCost,
     [COST_SOURCE_FIELD.finalPrice]: proposedCost,
   };
+
+  if (line.category) {
+    fields[COST_SOURCE_FIELD.category] = line.category;
+  }
+
+  if (line.unit) {
+    fields[COST_SOURCE_FIELD.unit] = line.unit;
+  }
+
+  return fields;
+}
 
   
 
