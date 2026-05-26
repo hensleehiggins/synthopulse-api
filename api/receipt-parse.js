@@ -275,6 +275,17 @@ Important rules:
 - Every line item must remain review-first.
 - This parsing output is staging data only.
 
+Invoice/table parsing rules:
+- Many restaurant vendor invoices use table columns such as QTY, PACK, SIZE, ITEM DESCRIPTION, ITEM CODE, UNIT PRICE, and EXTENDED PRICE.
+- If UNIT PRICE is visible, map it to unitCost.
+- If EXTENDED PRICE, AMOUNT, LINE TOTAL, or TOTAL PRICE is visible, map it to lineTotal.
+- Do not put the extended price into unitCost.
+- Do not leave unitCost blank when a clearly labeled UNIT PRICE column is visible.
+- For Sysco-style invoices, the right-side UNIT PRICE column is the unitCost and the EXTENDED PRICE column is the lineTotal.
+- Quantity must come from the QTY column only. Do not treat numbers inside the item name, pack, or size as quantity.
+- Package Size should combine PACK and SIZE when visible, such as "1 CS / 10 LB", "4 LB", "2/5 LB", or "1 LB".
+- If QTY is 4, UNIT PRICE is 26.2475, and EXTENDED PRICE is 104.99, return quantity 4, unitCost 26.2475, and lineTotal 104.99.
+
 JSON shape:
 {
   "documentType": "receipt_invoice" | "catalog_or_price_sheet" | "menu" | "unknown",
