@@ -286,6 +286,18 @@ Invoice/table parsing rules:
 - Package Size should combine PACK and SIZE when visible, such as "1 CS / 10 LB", "4 LB", "2/5 LB", or "1 LB".
 - If QTY is 4, UNIT PRICE is 26.2475, and EXTENDED PRICE is 104.99, return quantity 4, unitCost 26.2475, and lineTotal 104.99.
 
+Price and item-code rules:
+- Restaurant invoices often place ITEM CODE immediately before UNIT PRICE and EXTENDED PRICE.
+- Item codes are not prices.
+- Do not combine item code digits with price digits.
+- Do not infer prices from long numeric strings.
+- A valid unitCost or lineTotal should come from a clearly labeled UNIT PRICE, EXTENDED PRICE, AMOUNT, LINE TOTAL, or TOTAL PRICE column.
+- If a number appears in the ITEM CODE column, ignore it for pricing.
+- If a parsed price is unusually large for a single food-service line item, re-check whether the number is actually an item code plus a price.
+- For Sysco-style invoices, the columns after ITEM DESCRIPTION are usually ITEM CODE, then UNIT PRICE, then EXTENDED PRICE.
+- Example: if a row contains item code 650009 and price 38.95, return unitCost 38.95 and lineTotal 38.95. Do not return 650009, 6500.09, 5388.42, or any merged value.
+- Example: if a row contains "SYS REL MAYONNAISE HEAVY DUTY" with item code 650009 and visible price 38.95, return lineItemName "Rel Mayonnaise Heavy Duty", unitCost 38.95, lineTotal 38.95.
+
 Item naming rules:
 - lineItemName must be the specific purchased product, not a generic category.
 - Do not return generic names like "Cheese", "Lettuce", "Chicken", "Beef", "Sauce", or "Produce" when the raw line contains a more specific item description.
@@ -295,6 +307,8 @@ Item naming rules:
 - If uncertain, prefer a longer specific lineItemName over a short generic one.
 - If raw line text says "DRESSING BLUE CHEESE CHUNKY", return "Blue Cheese Chunky Dressing", not "Cheese".
 - If raw line text says "AREZIME CHEESE PARM SHAVED", return "Arezime Cheese Parm Shaved" or "Shaved Parmesan Cheese", not "Cheese".
+- Prefixes like SYS REL, SYS CLS, and vendor shorthand may be preserved if useful, but do not let them replace the actual product name.
+- When the rawLineText conflicts with the visible table columns, trust the visible table columns for quantity, unit price, and extended price.
 
 JSON shape:
 {
