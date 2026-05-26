@@ -643,43 +643,6 @@ function normalizeParsedLine(line) {
   return normalized;
 }
 
-  const raw = normalized.rawLineText.toLowerCase();
-
-  // Vendor invoices like Sysco often have explicit table columns:
-  // QTY | PACK | SIZE | ITEM DESCRIPTION | UNIT PRICE | EXTENDED PRICE.
-  // If the model captured line total but missed unit cost, derive it only when
-  // quantity is present and the math is safe.
-  if (
-    normalized.unitCost === null &&
-    normalized.lineTotal !== null &&
-    normalized.quantity !== null &&
-    normalized.quantity > 0
-  ) {
-    normalized.unitCost = Number(
-      (normalized.lineTotal / normalized.quantity).toFixed(2)
-    );
-  }
-
-  // If the model captured unit cost but missed line total, derive line total.
-  if (
-    normalized.lineTotal === null &&
-    normalized.unitCost !== null &&
-    normalized.quantity !== null &&
-    normalized.quantity > 0
-  ) {
-    normalized.lineTotal = Number(
-      (normalized.unitCost * normalized.quantity).toFixed(2)
-    );
-  }
-
-  // If unit is blank but package text clearly includes LB/CS/OZ/etc, keep the unit readable.
-  if (!normalized.unit && /\b(lb|lbs|cs|case|oz|gal|qt|pt|pk|pack|ea|each)\b/i.test(raw)) {
-    const unitMatch = raw.match(/\b(lb|lbs|cs|case|oz|gal|qt|pt|pk|pack|ea|each)\b/i);
-    normalized.unit = unitMatch?.[1] || "";
-  }
-
-  return normalized;
-}
 
 function buildLineFields({ receipt, parsed, line, index }) {
   const vendor =
