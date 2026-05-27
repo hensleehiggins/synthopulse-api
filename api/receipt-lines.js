@@ -126,9 +126,6 @@ function titleCaseItemName(value) {
 function isNonItemChargeLine(value) {
   const upper = String(value || "").toUpperCase();
 
-   function isNonItemChargeLine(value) {
-  const upper = String(value || "").toUpperCase();
-
   return (
     // Sysco category / group totals
     /\bTOTAL\b/.test(upper) &&
@@ -164,18 +161,46 @@ function friendlyVendorItemName(value, category = "") {
 
   const upper = raw.toUpperCase();
 
-  const isSyscoReliance =
-  /\bSYS\s+REL\b/.test(upper) ||
-  /\bSYSCO\s+REL\b/.test(upper) ||
-  /\bSYSCO\s+RELIABILITY\b/.test(upper) ||
-  /\bRELIABILITY\b/.test(upper);
-
   if (isNonItemChargeLine(upper)) return "";
-  if (/\bDRESSING\b/.test(upper)) {
-  const isBlueCheese =
-    /\bBLUE\b/.test(upper) && /\b(CHS|CHSE|CHEESE)\b/.test(upper);
+
+  const isSyscoReliance =
+    /\bSYS\s+REL\b/.test(upper) ||
+    /\bSYSCO\s+REL\b/.test(upper) ||
+    /\bSYSCO\s+RELIABILITY\b/.test(upper) ||
+    /\bRELIABILITY\b/.test(upper);
 
   if (isSyscoReliance) {
+    if (/\bDRESSING\b/.test(upper)) {
+      const isBlueCheese =
+        /\bBLUE\b/.test(upper) && /\b(CHS|CHSE|CHEESE)\b/.test(upper);
+
+      if (isBlueCheese) {
+        const isChunky =
+          /\bCHUNKY\b|\bCHNKY\b|\bCHNK\b/.test(upper);
+
+        return isChunky
+          ? "Sysco Reliance Blue Cheese Dressing Chunky"
+          : "Sysco Reliance Blue Cheese Dressing";
+      }
+    }
+
+    if (/\bPOTATO\b|\bPOT\b/.test(upper)) {
+      if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
+        return "Sysco Reliance Steak Fries";
+      }
+
+      return "Sysco Reliance Potatoes";
+    }
+
+    if (/\bMAYONNAISE\b|\bMAYO\b/.test(upper)) {
+      if (/\bHEAVY\b/.test(upper) && /\bDUTY\b/.test(upper)) {
+        return "Sysco Reliance Mayonnaise Heavy Duty";
+      }
+
+      return "Sysco Reliance Mayonnaise";
+    }
+  }
+
   if (/\bDRESSING\b/.test(upper)) {
     const isBlueCheese =
       /\bBLUE\b/.test(upper) && /\b(CHS|CHSE|CHEESE)\b/.test(upper);
@@ -185,66 +210,35 @@ function friendlyVendorItemName(value, category = "") {
         /\bCHUNKY\b|\bCHNKY\b|\bCHNK\b/.test(upper);
 
       return isChunky
-        ? "Sysco Reliance Blue Cheese Dressing Chunky"
-        : "Sysco Reliance Blue Cheese Dressing";
-    }
-  }
-
-  if (/\bPOTATO\b|\bPOT\b/.test(upper)) {
-    if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
-      return "Sysco Reliance Steak Fries";
+        ? "Blue Cheese Dressing Chunky"
+        : "Blue Cheese Dressing";
     }
 
-    return "Sysco Reliance Potatoes";
+    if (/\bRANCH\b/.test(upper)) return "Ranch Dressing";
+    if (/\bCAESAR\b/.test(upper)) return "Caesar Dressing";
+    if (/\bITALIAN\b/.test(upper)) return "Italian Dressing";
+
+    return "Dressing";
   }
 
-  if (/\bMAYONNAISE\b|\bMAYO\b/.test(upper)) {
-    if (/\bHEAVY\b/.test(upper) && /\bDUTY\b/.test(upper)) {
-      return "Sysco Reliance Mayonnaise Heavy Duty";
+  if (
+    /\bOCEAN\s*SPRAY\b|\bOCEANSPRAY\b|\bOCN\s*SPRAY\b|\bOCNSPRAY\b|\bOCNSPRY\b|\bOCN\s*SPRY\b/.test(upper)
+  ) {
+    if (/\bCRANBERRY\b|\bCRNBRY\b|\bCRAN\b/.test(upper)) {
+      if (/\bJUICE\b|\bDRINK\b|\bRTS\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
+        return "Ocean Spray Cranberry Juice";
+      }
+
+      return "Ocean Spray Cranberry";
     }
 
-    return "Sysco Reliance Mayonnaise";
-  }
-}  
-    
-  if (isBlueCheese) {
-    const isChunky =
-      /\bCHUNKY\b|\bCHNKY\b|\bCHNK\b/.test(upper);
-
-    if (/\bREL\b|\bRELIANCE\b/.test(upper)) {
-      return isChunky
-        ? "Sysco Reliance Blue Cheese Dressing Chunky"
-        : "Sysco Reliance Blue Cheese Dressing";
-    }
-
-    return isChunky
-      ? "Blue Cheese Dressing Chunky"
-      : "Blue Cheese Dressing";
+    return "Ocean Spray";
   }
 
-  if (/\bRANCH\b/.test(upper)) return "Ranch Dressing";
-  if (/\bCAESAR\b/.test(upper)) return "Caesar Dressing";
-  if (/\bITALIAN\b/.test(upper)) return "Italian Dressing";
-
-  return "Dressing";
-}
   if (/\bSEASONING\b/.test(upper)) {
     if (/\bCAJUN\b/.test(upper)) return "Cajun Seasoning";
     return "Seasoning";
   }
-  if (
-  /\bOCEAN\s*SPRAY\b|\bOCEANSPRAY\b|\bOCN\s*SPRAY\b|\bOCNSPRAY\b|\bOCNSPRY\b|\bOCN\s*SPRY\b/.test(upper)
-) {
-  if (/\bCRANBERRY\b|\bCRNBRY\b|\bCRAN\b/.test(upper)) {
-    if (/\bJUICE\b|\bDRINK\b|\bRTS\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
-      return "Ocean Spray Cranberry Juice";
-    }
-
-    return "Ocean Spray Cranberry";
-  }
-
-  return "Ocean Spray";
-}
 
   if (/\bSALT\b/.test(upper)) {
     if (/\bKOSHER\b/.test(upper)) return "Kosher Salt";
@@ -266,11 +260,8 @@ function friendlyVendorItemName(value, category = "") {
       return "Cheddar Cheese";
     }
 
-        if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
+    if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
     if (/\b(AMER|AMERICAN)\b/.test(upper)) return "American Cheese";
-
-    // Do not collapse unknown cheese products into generic "Cheese".
-    // Preserve the cleaned/raw vendor description so cost matching remains specific.
   }
 
   if (
@@ -279,6 +270,22 @@ function friendlyVendorItemName(value, category = "") {
   ) {
     if (/\b(JMB|JUMBO)\b/.test(upper)) return "Chicken Wings Jumbo";
     return "Chicken Wings";
+  }
+
+  if (/\bMAYONNAISE\b|\bMAYO\b/.test(upper)) {
+    if (/\bHEAVY\b/.test(upper) && /\bDUTY\b/.test(upper)) {
+      return "Mayonnaise Heavy Duty";
+    }
+
+    return "Mayonnaise";
+  }
+
+  if (/\bCRANBERRY\b|\bCRNBRY\b/.test(upper)) {
+    if (/\bJUICE\b|\bDRINK\b|\bRTS\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
+      return "Cranberry Juice";
+    }
+
+    return "Cranberry";
   }
 
   if (/\bCARROT\b/.test(upper)) {
@@ -365,9 +372,6 @@ function friendlyVendorItemName(value, category = "") {
 
   return titleCaseItemName(cleaned);
 }
-
-
-
 function asNumberOrNull(value) {
   if (value === "" || value === null || typeof value === "undefined") {
     return null;
