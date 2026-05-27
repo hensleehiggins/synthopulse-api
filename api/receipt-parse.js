@@ -286,6 +286,14 @@ Invoice/table parsing rules:
 - Package Size should combine PACK and SIZE when visible, such as "1 CS / 10 LB", "4 LB", "2/5 LB", or "1 LB".
 - If QTY is 4, UNIT PRICE is 26.2475, and EXTENDED PRICE is 104.99, return quantity 4, unitCost 26.2475, and lineTotal 104.99.
 
+Royal Food Service invoice rules:
+- For Royal Food Service invoices, each item row has Description, Pack/Size, Unit Price, and Extended Amount on the same horizontal row. Do not borrow prices from rows below.
+- If a line says "Juice Guava Lemonade Bottles 6/12oz" and the same row shows Unit Price $10.65 and Extended Amount $10.65, return unitCost 10.65 and lineTotal 10.65.
+- Rows below such as "Juice Lemon Quart" or "Juice Lime Quart" may have Unit Price $3.95. Do not assign those prices to the Guava Lemonade row.
+- When multiple juice rows appear together, preserve each row's own price. Do not reuse the last visible juice price for all juice items.
+
+Price and item-code rules:
+
 Price and item-code rules:
 - Restaurant invoices often place ITEM CODE immediately before UNIT PRICE and EXTENDED PRICE.
 - Item codes are not prices.
