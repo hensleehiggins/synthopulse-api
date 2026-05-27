@@ -284,7 +284,8 @@ Invoice/table parsing rules:
 - For Sysco-style invoices, the right-side UNIT PRICE column is the unitCost and the EXTENDED PRICE column is the lineTotal.
 - Quantity must come from the QTY column only. Do not treat numbers inside the item name, pack, or size as quantity.
 - Package Size should combine PACK and SIZE when visible, such as "1 CS / 10 LB", "4 LB", "2/5 LB", or "1 LB".
-- If QTY is 4, UNIT PRICE is 26.2475, and EXTENDED PRICE is 104.99, return quantity 4, unitCost 26.2475, and lineTotal 104.99.
+- If QTY is 2, UNIT PRICE is 62.59, and the EXTENDED PRICE is not clearly aligned to the same row, return quantity 2, unitCost 62.59, and lineTotal 125.18 only if multiplication is appropriate. Do not copy nearby group totals or unrelated example prices.
+- Do not reuse numeric values from these instructions as parsed receipt values. Example numbers in this prompt are only demonstrations, not receipt data.
 
 Royal Food Service invoice rules:
 - For Royal Food Service invoices, each item row has Description, Pack/Size, Unit Price, and Extended Amount on the same horizontal row. Do not borrow prices from rows below.
@@ -317,6 +318,8 @@ Sysco subtotal / group total rules:
 - Do not create receipt line items for non-product category totals, group totals, invoice totals, paper/disposable totals, fuel surcharge, delivery/service charges, or misc charges.
 - Do not create Cost Center staging lines for disposable supplies such as plastic containers, plastic cups, gloves, cutlery kits, liners, scrub pads, broiler brushes, paper towels, napkins, straws, lids, trays, plates, or bowls unless the document is specifically being reviewed for supplies.
 - If a Sysco row says GROUP TOTAL, PAPER & DISPOSABLES TOTAL, CHGS FOR FUEL SURCHARGE, or similar, do not include it in lines.
+- If a Sysco item row is followed by GROUP TOTAL or a nearby total value, do not assign the group total to that item. Use the UNIT PRICE from the row, and derive lineTotal from quantity × unitCost only when the row's extended price is unclear.
+- Example: if a row says "2 CS ... LOBSTER BISQUE W/S ... UNIT PRICE 62.59" and a nearby GROUP TOTAL says 770.08, return unitCost 62.59 and lineTotal 125.18, not 770.08 or any unrelated prompt example value.
 Examples:
 - If raw text says "LOBSTER BISQUE W/S NE 1 CS 770.08" but 770.08 appears to be a category/group total rather than the row's UNIT PRICE or EXTENDED PRICE, return unitCost null and lineTotal null with low confidence.
 - If raw text says "2 CS 65LB SYS REL POTATO FRY STEAK 9944149 39.95", return quantity 2, packageSize "65 LB", item code ignored, lineTotal 39.95, and unitCost 19.98 only if 39.95 is the extended price for quantity 2.
