@@ -1,12 +1,14 @@
-const AIRTABLE_TOKEN =
-  process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN ||
-  process.env.AIRTABLE_API_KEY ||
-  process.env.AIRTABLE_TOKEN ||
-  process.env.AIRTABLE_PAT ||
-  process.env.AIRTABLE_ACCESS_TOKEN;
+const AIRTABLE_TOKEN = process.env.AIRTABLE_PAT;
 
-const AIRTABLE_BASE_ID =
-  process.env.AIRTABLE_BASE_ID || "appD303evZM2SlvMR";
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+
+if (!AIRTABLE_TOKEN) {
+  console.error("Missing AIRTABLE_PAT env var.");
+}
+
+if (!AIRTABLE_BASE_ID) {
+  console.error("Missing AIRTABLE_BASE_ID env var.");
+}
 
 const COST_SOURCE_TABLE = "Cost Source Items";
 
@@ -59,8 +61,12 @@ function airtableUrl(tableName, params = {}) {
 
 async function fetchAirtablePage(tableName, params = {}) {
   if (!AIRTABLE_TOKEN) {
-    throw new Error("Missing Airtable API token.");
-  }
+  throw new Error("Missing AIRTABLE_PAT environment variable.");
+}
+
+if (!AIRTABLE_BASE_ID) {
+  throw new Error("Missing AIRTABLE_BASE_ID environment variable.");
+}
 
   const response = await fetch(airtableUrl(tableName, params), {
     headers: {
