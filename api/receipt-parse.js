@@ -322,6 +322,7 @@ Item naming rules:
 - If raw line text says "AREZIME CHEESE PARM SHAVED", return "Arezime Cheese Parm Shaved" or "Shaved Parmesan Cheese", not "Cheese".
 - Prefixes like SYS REL, SYS CLS, and vendor shorthand may be preserved if useful, but do not let them replace the actual product name.
 - When the rawLineText conflicts with the visible table columns, trust the visible table columns for quantity, unit price, and extended price.
+- Sysco shorthand SYS REL means Sysco Reliance, not Sysco Reliability. If a raw line says SYS REL POTATO FRY STEAK, return "Sysco Reliance Steak Fries". If it says SYS REL DRESSING BLUE CHEESE CHUNKY, return "Sysco Reliance Blue Cheese Dressing Chunky".
 
 JSON shape:
 {
