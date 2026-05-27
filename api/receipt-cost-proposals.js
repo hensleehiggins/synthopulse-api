@@ -1385,6 +1385,15 @@ function isNonItemChargeLine(value) {
   const upper = String(value || "").toUpperCase();
 
   return (
+    // Sysco category / group totals
+    /\bTOTAL\b/.test(upper) &&
+    /\b(PAPER|DISPOSABLE|DISPOSABLES|GROUP|SUPPLIES|EQUIPMENT)\b/.test(upper)
+  ) || (
+    /\bCATEGORY\b/.test(upper) && /\bTOTAL\b/.test(upper)
+  ) || (
+    /\bGROUP\s+TOTAL\b/.test(upper)
+  ) || (
+    // Delivery / service / misc charges
     /\bFUEL\b/.test(upper) && /\bSURCHARGE\b/.test(upper)
   ) || (
     /\bDELIVERY\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
@@ -1392,6 +1401,15 @@ function isNonItemChargeLine(value) {
     /\bSERVICE\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
   ) || (
     /\bMISC\b/.test(upper) && /\bCHARGES?\b/.test(upper)
+  ) || (
+    /\bCHGS?\b/.test(upper) && /\bFUEL\b/.test(upper)
+  ) || (
+    // Disposable / supply lines we do not want in food cost tracking right now
+    /\b(CONTAINER|CNTNR|CUP|CUPS|LID|LIDS|CUTLERY|FORK|FORKS|KNIFE|KNIVES|SPOON|SPOONS|NAPKIN|NAPKINS|STRAW|STRAWS|PLATE|PLATES|BOWL|BOWLS|TRAY|TRAYS|LINER|LINERS|GLOVE|GLOVES|NITRILE|PAD\s+SCOUR|SCOUR\s+PAD|BRUSH|TOWEL|TOWELS)\b/.test(upper)
+  ) || (
+    /\bPLAS\b/.test(upper) && /\b(CONTAINER|CUP|CLR|CLEAR|MICRO|BLACK|BLK)\b/.test(upper)
+  ) || (
+    /\bEARTHCHO\b/.test(upper) && /\bKIT\b/.test(upper) && /\bCUTLERY\b/.test(upper)
   );
 }
 
