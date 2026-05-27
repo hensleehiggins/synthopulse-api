@@ -993,7 +993,65 @@ export default async function handler(req, res) {
     });
 
     const imagePreflight = await runImagePreflight(receipt);
-    const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
+
+const rotatedOrUnsafeImage =
+  imagePreflight.orientation &&
+  imagePreflight.orientation !== "upright";
+
+const poorReadability = imagePreflight.readability === "poor";
+
+if (rotatedOrUnsafeImage || poorReadability) {
+  const imageIssueMessage = rotatedOrUnsafeImage
+    ? `Receipt image appears rotated (${imagePreflight.orientation}). Re-upload the receipt upright before parsing so KitchenPulse does not misread row prices or merge category headers into item names.`
+    : "Receipt image readability is poor. Re-upload a clearer image before parsing so KitchenPulse does not misread row prices.";
+
+  await updateReceipt(receipt.id, {
+    "Processing Status": "Needs Review",
+    "Review Needed": true,
+    Approved: false,
+    "Raw OCR / AI Text": "",
+    "Parsed JSON": JSON.stringify(
+      {
+        documentType: "unknown",
+        isReceiptOrInvoice: true,
+        unsupportedReason: imageIssueMessage,
+        rawText: "",
+        vendor: imagePreflight.visibleVendor || receipt.vendor || "",
+        receiptDate: imagePreflight.visibleDate || receipt.receiptDate || "",
+        invoiceNumber: "",
+        totalAmount: null,
+        subtotal: null,
+        tax: null,
+        confidence: "Low",
+        needsReview: true,
+        reviewReason: imageIssueMessage,
+        lines: [],
+        imagePreflight,
+      },
+      null,
+      2
+    ),
+    "Error Message": imageIssueMessage,
+    "Processed At": new Date().toISOString(),
+    Notes: [
+      receipt.notes || "",
+      `IMAGE PREFLIGHT BLOCKED PARSE ${new Date().toISOString()}: ${imageIssueMessage}`,
+      `Image preflight: orientation=${imagePreflight.orientation}, readability=${imagePreflight.readability}, confidence=${imagePreflight.confidence}.`,
+    ]
+      .filter(Boolean)
+      .join("\n\n"),
+  });
+
+  return sendJson(res, 422, {
+    ok: false,
+    errorType: "rotated_or_unreadable_receipt_image",
+    error: imageIssueMessage,
+    recordId: receipt.id,
+    imagePreflight,
+  });
+}
+
+const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
 
     if (!openAiResult.ok) {
       await updateReceipt(receipt.id, {
