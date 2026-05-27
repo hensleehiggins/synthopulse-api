@@ -184,35 +184,10 @@ function friendlyVendorItemName(value, category = "") {
       }
     }
 
-    if (/\bPOTATO\b|\bPOTATOES\b|\bPOT\b/.test(upper)) {
-  if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
-    return isSyscoReliance
-      ? "Sysco Reliance Steak Fries"
-      : "Steak Fries";
-  }
-
-  if (/\bYUKON\b/.test(upper) && /\bGOLD\b/.test(upper)) {
-    return "Potato Yukon Gold";
-  }
-
-  if (/\bIDAHO\b/.test(upper)) {
-    return "Potato Idaho";
-  }
-
-  if (/\bRUSSET\b/.test(upper)) {
-    return "Potato Russet";
-  }
-
-  if (/\bRED\b/.test(upper)) {
-    return "Red Potatoes";
-  }
-
-  if (/\bSWEET\b/.test(upper)) {
-    return "Sweet Potatoes";
-  }
-
-  return isSyscoReliance ? "Sysco Reliance Potatoes" : "Potatoes";
-}
+        if (/\bPOTATO\b|\bPOTATOES\b|\bPOT\b/.test(upper)) {
+      if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
+        return "Sysco Reliance Steak Fries";
+      }
 
       return "Sysco Reliance Potatoes";
     }
@@ -327,7 +302,35 @@ function friendlyVendorItemName(value, category = "") {
     return "Cucumbers";
   }
 
-  if (/\bDILL\b/.test(upper)) return "Dill";
+    if (/\bDILL\b/.test(upper)) return "Dill";
+
+  if (/\bPOTATO\b|\bPOTATOES\b|\bPOT\b/.test(upper)) {
+    if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
+      return "Steak Fries";
+    }
+
+    if (/\bYUKON\b/.test(upper) && /\bGOLD\b/.test(upper)) {
+      return "Potato Yukon Gold";
+    }
+
+    if (/\bIDAHO\b/.test(upper)) {
+      return "Potato Idaho";
+    }
+
+    if (/\bRUSSET\b/.test(upper)) {
+      return "Potato Russet";
+    }
+
+    if (/\bRED\b/.test(upper)) {
+      return "Red Potatoes";
+    }
+
+    if (/\bSWEET\b/.test(upper)) {
+      return "Sweet Potatoes";
+    }
+
+    return "Potatoes";
+  }
 
   const cleaned = upper
     .replace(/&/g, " AND ")
