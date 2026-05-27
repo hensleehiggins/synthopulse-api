@@ -484,7 +484,11 @@ Sysco-specific rules:
 - If the row appears to combine a package size from one item and a price from another item, set confidence Low and leave questionable price fields null.
 
 Royal Food Service rules:
-- Royal Food Service invoices use row-aligned Description, Pack/Size, Unit Price, and Extended Amount.
+- Royal Food Service invoices use row-aligned Quantity Ordered, Quantity Shipped, Item, Description, Package/Size, Unit Price, and Extended Amount.
+- Quantity should come from the shipped quantity column when visible. If shipped quantity is not visible, use ordered quantity.
+- On Royal Food Service invoices, quantity usually means one purchased vendor package, case, bag, carton, bottle, or count-pack — not one individual food unit.
+- If the package/size column contains values like 50ct, 50LB, 12/1ct, 1 gal, 1 qt, lb, bag, carton, case, or similar package text, store that text in packageSize.
+- When quantity is 1 and packageSize is present, set unit to "package" unless the invoice clearly says a more specific unit such as lb, qt, gal, case, bag, or carton.
 - Preserve each row's own unit price and extended amount.
 - Do not borrow prices from adjacent juice, produce, dairy, or other nearby rows.
 - When several similar products appear together, each product must keep the price from its own row.
