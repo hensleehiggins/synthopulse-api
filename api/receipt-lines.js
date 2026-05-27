@@ -149,6 +149,19 @@ function friendlyVendorItemName(value, category = "") {
     if (/\bCAJUN\b/.test(upper)) return "Cajun Seasoning";
     return "Seasoning";
   }
+  if (
+  /\bOCEAN\s*SPRAY\b|\bOCEANSPRAY\b|\bOCN\s*SPRAY\b|\bOCNSPRAY\b/.test(upper)
+) {
+  if (/\bCRANBERRY\b|\bCRNBRY\b|\bCRAN\b/.test(upper)) {
+    if (/\bJUICE\b|\bDRINK\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
+      return "Ocean Spray Cranberry Juice Cocktail";
+    }
+
+    return "Ocean Spray Cranberry";
+  }
+
+  return "Ocean Spray";
+}
 
   if (/\bSALT\b/.test(upper)) {
     if (/\bKOSHER\b/.test(upper)) return "Kosher Salt";
@@ -230,6 +243,8 @@ function friendlyVendorItemName(value, category = "") {
           "AVG",
           "WT",
           "TWT",
+          "RES",
+          "PET",
           "PK",
           "PKG",
           "PACKAGE",
