@@ -1976,13 +1976,20 @@ async function generateProposals(req, res) {
     }),
   ]);
 
-  const existingProposalByLineId = new Map();
+    const existingProposalByLineId = new Map();
+  const rejectedProposalLineIds = new Set();
 
   for (const proposal of existingProposalRecords) {
     const fields = proposal.fields || {};
     const receiptLineIds = linkedIds(fields[PROPOSAL_FIELD.receiptLine]);
+    const proposalStatus =
+      fields[PROPOSAL_FIELD.proposalStatus] || "Needs Review";
 
     for (const receiptLineId of receiptLineIds) {
+      if (proposalStatus === "Rejected") {
+        rejectedProposalLineIds.add(receiptLineId);
+      }
+
       if (!existingProposalByLineId.has(receiptLineId)) {
         existingProposalByLineId.set(receiptLineId, proposal);
       }
@@ -2021,7 +2028,15 @@ if (!line.approved) {
       continue;
     }
 
-    const existingProposal = existingProposalByLineId.get(line.id);
+        const existingProposal = existingProposalByLineId.get(line.id);
+
+    if (rejectedProposalLineIds.has(line.id)) {
+      skipped.push({
+        lineId: line.id,
+        reason: "Cost signal was previously rejected for this line.",
+      });
+      continue;
+    }
 
     if (existingProposal && !force) {
       skipped.push({
@@ -2067,32 +2082,26 @@ if (!line.approved) {
       costSourceRecord,
     });
 
-    if (existingProposal && force) {
-  const existingFields = existingProposal.fields || {};
-  const existingStatus =
-    existingFields[PROPOSAL_FIELD.proposalStatus] || "Needs Review";
+        if (existingProposal && force) {
+      const existingFields = existingProposal.fields || {};
+      const existingStatus =
+        existingFields[PROPOSAL_FIELD.proposalStatus] || "Needs Review";
 
-  const wasRejected = existingStatus === "Rejected";
-
-  recordsToUpdate.push({
-    id: existingProposal.id,
-    fields: {
-      ...fields,
-      [PROPOSAL_FIELD.proposalStatus]: wasRejected
-        ? "Needs Review"
-        : existingStatus,
-      [PROPOSAL_FIELD.approved]: wasRejected
-        ? false
-        : Boolean(existingFields[PROPOSAL_FIELD.approved]),
-      [PROPOSAL_FIELD.applied]: wasRejected
-        ? false
-        : Boolean(existingFields[PROPOSAL_FIELD.applied]),
-      [PROPOSAL_FIELD.notes]: wasRejected
-        ? "Returned to cost review after the parsed receipt line was re-approved."
-        : fields[PROPOSAL_FIELD.notes] || "",
-    },
-  });
-} else {
+      recordsToUpdate.push({
+        id: existingProposal.id,
+        fields: {
+          ...fields,
+          [PROPOSAL_FIELD.proposalStatus]: existingStatus,
+          [PROPOSAL_FIELD.approved]: Boolean(
+            existingFields[PROPOSAL_FIELD.approved]
+          ),
+          [PROPOSAL_FIELD.applied]: Boolean(
+            existingFields[PROPOSAL_FIELD.applied]
+          ),
+          [PROPOSAL_FIELD.notes]: fields[PROPOSAL_FIELD.notes] || "",
+        },
+      });
+    } else {
       recordsToCreate.push({
         fields: {
           ...fields,
