@@ -1451,6 +1451,20 @@ if (
   return "Mayonnaise";
 }
 
+if (
+  /\bOCEAN\s*SPRAY\b|\bOCEANSPRAY\b|\bOCN\s*SPRAY\b|\bOCNSPRAY\b/.test(upper)
+) {
+  if (/\bCRANBERRY\b|\bCRNBRY\b|\bCRAN\b/.test(upper)) {
+    if (/\bJUICE\b|\bDRINK\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
+      return "Ocean Spray Cranberry Juice Cocktail";
+    }
+
+    return "Ocean Spray Cranberry";
+  }
+
+  return "Ocean Spray";
+}
+
 if (/\bCRANBERRY\b|\bCRNBRY\b/.test(upper)) {
   if (/\bJUICE\b|\bDRINK\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
     return "Cranberry Juice Cocktail";
@@ -1734,6 +1748,8 @@ if (/\bPIZZA\b/.test(upper) && /\bCRUST\b/.test(upper)) {
 "AVG",
 "WT",
 "TWT",
+"RES",
+"PET",
       ].includes(token)
     )
     .filter((token) => !/^\d+[A-Z]*$/.test(token))
