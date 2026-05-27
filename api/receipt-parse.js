@@ -300,6 +300,8 @@ Sysco-specific rules:
 - Disposable/supply lines such as gloves, plastic containers, cups, cutlery, liners, scrub pads, brushes, paper towels, napkins, straws, lids, trays, plates, and bowls should not be included unless the document is specifically being reviewed for supplies.
 - Sysco shorthand SYS REL means Sysco Reliance, not Sysco Reliability.
 - Sysco shorthand SYS CLS may be preserved only when useful, but do not let vendor shorthand replace the actual product name.
+- If an item description appears misspelled or incomplete, do not combine it with words from nearby rows. For example, do not add "chunky" to shortening unless "chunky" appears on the same visible row.
+- If the row appears to combine a package size from one item and a price from another item, set confidence Low and leave questionable price fields null.
 
 Royal Food Service rules:
 - Royal Food Service invoices use row-aligned Description, Pack/Size, Unit Price, and Extended Amount.
@@ -569,6 +571,24 @@ function normalizeParsedLine(line) {
   };
 
   const raw = normalized.rawLineText.toLowerCase();
+
+  const rawUpper = normalized.rawLineText.toUpperCase();
+const nameUpper = normalizeText(normalized.lineItemName).toUpperCase();
+
+const looksLikeMangledShortening =
+  /\bSHOREING\b|\bSHORING\b/.test(rawUpper) ||
+  /\bSHOREING\b|\bSHORING\b/.test(nameUpper);
+
+if (looksLikeMangledShortening) {
+  normalized.lineItemName = "Sysco Classic Shortening Fry Canola Clear";
+  normalized.confidence = "Low";
+  normalized.notes = [
+    normalizeText(normalized.notes),
+    "Possible OCR row-mix: shortening row may have borrowed price or words from nearby lines. Verify against invoice before approval.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
 
   // Vendor invoices like Sysco often have explicit table columns:
   // QTY | PACK | SIZE | ITEM DESCRIPTION | ITEM CODE | UNIT PRICE | EXTENDED PRICE.
