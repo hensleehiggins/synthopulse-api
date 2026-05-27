@@ -1401,7 +1401,12 @@ function friendlyVendorItemName(value, category = "") {
   if (!raw) return "";
 
   const upper = raw.toUpperCase();
-  
+
+  const isSyscoReliance =
+  /\bSYS\s+REL\b/.test(upper) ||
+  /\bSYSCO\s+REL\b/.test(upper) ||
+  /\bSYSCO\s+RELIABILITY\b/.test(upper) ||
+  /\bRELIABILITY\b/.test(upper);
 
   // Strong restaurant/vendor receipt patterns first.
   if (/\bFUEL\b/.test(upper) && /\bSURCHARGE\b/.test(upper)) {
@@ -1416,6 +1421,37 @@ if (/\bSEASONING\b/.test(upper)) {
 if (/\bSALT\b/.test(upper)) {
   if (/\bKOSHER\b/.test(upper)) return "Kosher Salt";
   return "Salt";
+}
+  if (isSyscoReliance) {
+  if (/\bDRESSING\b/.test(upper)) {
+    const isBlueCheese =
+      /\bBLUE\b/.test(upper) && /\b(CHS|CHSE|CHEESE)\b/.test(upper);
+
+    if (isBlueCheese) {
+      const isChunky =
+        /\bCHUNKY\b|\bCHNKY\b|\bCHNK\b/.test(upper);
+
+      return isChunky
+        ? "Sysco Reliance Blue Cheese Dressing Chunky"
+        : "Sysco Reliance Blue Cheese Dressing";
+    }
+  }
+
+  if (/\bPOTATO\b|\bPOT\b/.test(upper)) {
+    if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
+      return "Sysco Reliance Steak Fries";
+    }
+
+    return "Sysco Reliance Potatoes";
+  }
+
+  if (/\bMAYONNAISE\b|\bMAYO\b/.test(upper)) {
+    if (/\bHEAVY\b/.test(upper) && /\bDUTY\b/.test(upper)) {
+      return "Sysco Reliance Mayonnaise Heavy Duty";
+    }
+
+    return "Sysco Reliance Mayonnaise";
+  }
 }
 
 if (/\bCHEESE\b/.test(upper)) {
