@@ -1,5 +1,9 @@
 const AIRTABLE_TOKEN =
-  process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN || process.env.AIRTABLE_API_KEY;
+  process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN ||
+  process.env.AIRTABLE_API_KEY ||
+  process.env.AIRTABLE_TOKEN ||
+  process.env.AIRTABLE_PAT ||
+  process.env.AIRTABLE_ACCESS_TOKEN;
 
 const AIRTABLE_BASE_ID =
   process.env.AIRTABLE_BASE_ID || "appD303evZM2SlvMR";
@@ -19,6 +23,12 @@ const COST_FIELDS = [
   "Receipt Cost Proposals",
 ];
 
+function setCors(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
+
 function airtableUrl(tableName, params = {}) {
   const url = new URL(
     `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
@@ -27,11 +37,21 @@ function airtableUrl(tableName, params = {}) {
   );
 
   Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+
+    if (key === "fields" && Array.isArray(value)) {
+      value.forEach((fieldName) => {
+        url.searchParams.append("fields[]", fieldName);
+      });
+      return;
+    }
+
     if (Array.isArray(value)) {
       value.forEach((entry) => url.searchParams.append(key, entry));
-    } else if (value !== undefined && value !== null && value !== "") {
-      url.searchParams.set(key, value);
+      return;
     }
+
+    url.searchParams.set(key, value);
   });
 
   return url.toString();
@@ -69,7 +89,7 @@ async function fetchAllRecords(tableName, params = {}) {
     const payload = await fetchAirtablePage(tableName, {
       pageSize: 100,
       ...params,
-      offset,
+      ...(offset ? { offset } : {}),
     });
 
     records.push(...(payload.records || []));
@@ -221,6 +241,12 @@ function sortItems(items) {
 }
 
 export default async function handler(req, res) {
+  setCors(res);
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
   try {
     if (req.method !== "GET") {
       return res.status(405).json({
@@ -253,12 +279,6 @@ export default async function handler(req, res) {
       };
     });
 
-    /*
-      Direct Airtable REST linked-record fields usually return IDs only.
-      The Softr/Airtable connector may show linked names, but the API route
-      should not rely on that. For now, we use the linked line count and
-      fall back safely if detailed receipt-line reads are unavailable.
-    */
     const allLinkedLineIds = [
       ...new Set(items.flatMap((item) => item.linkedReceiptLineIds)),
     ];
@@ -286,11 +306,6 @@ export default async function handler(req, res) {
           receiptLineRecords.map((record) => [record.id, record])
         );
       } catch (lineError) {
-        /*
-          Fail closed. The ledger should still load current costs even if the
-          receipt-line lookup fails because the price book itself is more
-          important than the supporting date metadata.
-        */
         receiptLinesById = new Map();
       }
     }
