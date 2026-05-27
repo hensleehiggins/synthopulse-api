@@ -355,15 +355,6 @@ Receipt metadata:
 `.trim();
 }
 
-Receipt metadata:
-- Airtable record ID: ${receipt.id}
-- Current receipt name: ${receipt.receiptName}
-- Existing vendor field: ${receipt.vendor || ""}
-- Existing receipt date field: ${receipt.receiptDate || ""}
-- Uploaded filename: ${receipt.fileName}
-`.trim();
-}
-
 async function callOpenAIForReceipt(receipt) {
   const prompt = buildParsingPrompt(receipt);
 
