@@ -250,16 +250,29 @@ function calculateChangePercent(currentCost, proposedCost) {
 function isAlreadyCurrentCost(currentCost, proposedCost) {
   const current = asNumberOrNull(currentCost);
   const proposed = asNumberOrNull(proposedCost);
+
   if (current === null || proposed === null) return false;
-  return Math.abs(current - proposed) < 0.01;
+
+  const absoluteDelta = Math.abs(current - proposed);
+  const percentDelta = current === 0 ? 1 : absoluteDelta / current;
+
+  // Treat tiny vendor/rounding differences as current.
+  // This prevents noise like $31.99 -> $31.95 from becoming a cost signal.
+  return absoluteDelta < 0.25 || percentDelta < 0.02;
 }
 
 function isMeaningfulCostChange(currentCost, proposedCost) {
   const current = asNumberOrNull(currentCost);
   const proposed = asNumberOrNull(proposedCost);
+
   if (proposed === null || proposed <= 0) return false;
   if (current === null) return true;
-  return Math.abs(current - proposed) >= 0.01;
+
+  const absoluteDelta = Math.abs(current - proposed);
+  const percentDelta = current === 0 ? 1 : absoluteDelta / current;
+
+  // Ignore tiny penny/rounding movement.
+  return absoluteDelta >= 0.25 && percentDelta >= 0.02;
 }
 
 function getProposedCostFromLineRecord(record) {
