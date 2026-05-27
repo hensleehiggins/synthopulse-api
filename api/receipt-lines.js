@@ -143,11 +143,49 @@ function friendlyVendorItemName(value, category = "") {
 
   const upper = raw.toUpperCase();
 
+  const isSyscoReliance =
+  /\bSYS\s+REL\b/.test(upper) ||
+  /\bSYSCO\s+REL\b/.test(upper) ||
+  /\bSYSCO\s+RELIABILITY\b/.test(upper) ||
+  /\bRELIABILITY\b/.test(upper);
+
   if (isNonItemChargeLine(upper)) return "";
   if (/\bDRESSING\b/.test(upper)) {
   const isBlueCheese =
     /\bBLUE\b/.test(upper) && /\b(CHS|CHSE|CHEESE)\b/.test(upper);
 
+  if (isSyscoReliance) {
+  if (/\bDRESSING\b/.test(upper)) {
+    const isBlueCheese =
+      /\bBLUE\b/.test(upper) && /\b(CHS|CHSE|CHEESE)\b/.test(upper);
+
+    if (isBlueCheese) {
+      const isChunky =
+        /\bCHUNKY\b|\bCHNKY\b|\bCHNK\b/.test(upper);
+
+      return isChunky
+        ? "Sysco Reliance Blue Cheese Dressing Chunky"
+        : "Sysco Reliance Blue Cheese Dressing";
+    }
+  }
+
+  if (/\bPOTATO\b|\bPOT\b/.test(upper)) {
+    if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
+      return "Sysco Reliance Steak Fries";
+    }
+
+    return "Sysco Reliance Potatoes";
+  }
+
+  if (/\bMAYONNAISE\b|\bMAYO\b/.test(upper)) {
+    if (/\bHEAVY\b/.test(upper) && /\bDUTY\b/.test(upper)) {
+      return "Sysco Reliance Mayonnaise Heavy Duty";
+    }
+
+    return "Sysco Reliance Mayonnaise";
+  }
+}  
+    
   if (isBlueCheese) {
     const isChunky =
       /\bCHUNKY\b|\bCHNKY\b|\bCHNK\b/.test(upper);
