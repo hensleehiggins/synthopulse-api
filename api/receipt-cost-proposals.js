@@ -1464,7 +1464,32 @@ if (
 
   return "Ocean Spray";
 }
+if (/\bDRESSING\b/.test(upper)) {
+  const isBlueCheese =
+    /\bBLUE\b/.test(upper) && /\b(CHS|CHSE|CHEESE)\b/.test(upper);
 
+  if (isBlueCheese) {
+    const isChunky =
+      /\bCHUNKY\b|\bCHNKY\b|\bCHNK\b/.test(upper);
+
+    if (/\bREL\b|\bRELIANCE\b/.test(upper)) {
+      return isChunky
+        ? "Sysco Reliance Blue Cheese Dressing Chunky"
+        : "Sysco Reliance Blue Cheese Dressing";
+    }
+
+    return isChunky
+      ? "Blue Cheese Dressing Chunky"
+      : "Blue Cheese Dressing";
+  }
+
+  if (/\bRANCH\b/.test(upper)) return "Ranch Dressing";
+  if (/\bCAESAR\b/.test(upper)) return "Caesar Dressing";
+  if (/\bITALIAN\b/.test(upper)) return "Italian Dressing";
+
+  return "Dressing";
+}
+  
 if (/\bCRANBERRY\b|\bCRNBRY\b/.test(upper)) {
   if (/\bJUICE\b|\bDRINK\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
     return "Cranberry Juice Cocktail";
