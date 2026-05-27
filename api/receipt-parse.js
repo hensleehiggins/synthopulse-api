@@ -263,82 +263,60 @@ You are parsing a restaurant vendor receipt or invoice for KitchenPulse.
 
 Return ONLY valid JSON. No markdown. No commentary.
 
-Important rules:
-- First classify the document.
-- Only parse vendor receipts, invoices, or purchase documents showing items actually bought.
-- Do NOT parse catalogs, product lists, price sheets, order guides, menus, marketing sheets, or sales flyers as receipts.
-- If the document is not a receipt or invoice, return documentType, isReceiptOrInvoice false, unsupportedReason, rawText if visible, and an empty lines array.
-- Catalog-like documents often have columns such as Supplier Name, Item #, Brand, Product, Pack, Size, Tokens, or long product lists without purchase totals.
-- Large real invoices are allowed, but product catalogs and price sheets are not.
+Core rules:
+- Parse only vendor receipts, invoices, or purchase documents showing items actually bought.
+- Do not parse catalogs, product lists, price sheets, order guides, menus, marketing sheets, or sales flyers as receipts.
 - Do not invent values.
-- If a field is not visible, use empty string or null.
-- Every line item must remain review-first.
-- This parsing output is staging data only.
+- Do not copy numeric values from these instructions into the output.
+- Only use numbers visible on the uploaded receipt/invoice image.
+- If a value is not clearly visible, use empty string or null.
+- Every parsed line is staging data for human review.
 
-Invoice/table parsing rules:
-- Many restaurant vendor invoices use table columns such as QTY, PACK, SIZE, ITEM DESCRIPTION, ITEM CODE, UNIT PRICE, and EXTENDED PRICE.
-- If UNIT PRICE is visible, map it to unitCost.
-- If EXTENDED PRICE, AMOUNT, LINE TOTAL, or TOTAL PRICE is visible, map it to lineTotal.
-- Do not put the extended price into unitCost.
-- Do not leave unitCost blank when a clearly labeled UNIT PRICE column is visible.
-- For Sysco-style invoices, the right-side UNIT PRICE column is the unitCost and the EXTENDED PRICE column is the lineTotal.
-- Quantity must come from the QTY column only. Do not treat numbers inside the item name, pack, or size as quantity.
-- Package Size should combine PACK and SIZE when visible, such as "1 CS / 10 LB", "4 LB", "2/5 LB", or "1 LB".
-- If QTY is 2, UNIT PRICE is 62.59, and the EXTENDED PRICE is not clearly aligned to the same row, return quantity 2, unitCost 62.59, and lineTotal 125.18 only if multiplication is appropriate. Do not copy nearby group totals or unrelated example prices.
-- Do not reuse numeric values from these instructions as parsed receipt values. Example numbers in this prompt are only demonstrations, not receipt data.
+Document classification:
+- If this is not a receipt/invoice, return isReceiptOrInvoice false, an unsupportedReason, rawText if visible, and an empty lines array.
+- If this is a receipt/invoice, return isReceiptOrInvoice true and parse purchased item rows only.
 
-Royal Food Service invoice rules:
-- For Royal Food Service invoices, each item row has Description, Pack/Size, Unit Price, and Extended Amount on the same horizontal row. Do not borrow prices from rows below.
-- If a line says "Juice Guava Lemonade Bottles 6/12oz" and the same row shows Unit Price $10.65 and Extended Amount $10.65, return unitCost 10.65 and lineTotal 10.65.
-- Rows below such as "Juice Lemon Quart" or "Juice Lime Quart" may have Unit Price $3.95. Do not assign those prices to the Guava Lemonade row.
-- When multiple juice rows appear together, preserve each row's own price. Do not reuse the last visible juice price for all juice items.
-
-Price and item-code rules:
-
-Price and item-code rules:
-- Restaurant invoices often place ITEM CODE immediately before UNIT PRICE and EXTENDED PRICE.
+Table parsing rules:
+- Restaurant invoices often use rows with columns like quantity, pack, size, item description, item code, unit price, and extended amount.
+- Each parsed line must come from one visible item row.
+- Do not borrow prices, quantities, item codes, or totals from nearby rows.
+- Do not reuse the last visible price for later rows.
+- Do not use subtotal, group total, page total, invoice total, tax, delivery charge, service charge, fuel surcharge, or misc charge values as item prices.
 - Item codes are not prices.
-- Do not combine item code digits with price digits.
-- Do not infer prices from long numeric strings.
-- A valid unitCost or lineTotal should come from a clearly labeled UNIT PRICE, EXTENDED PRICE, AMOUNT, LINE TOTAL, or TOTAL PRICE column.
-- If a number appears in the ITEM CODE column, ignore it for pricing.
-- If a parsed price is unusually large for a single food-service line item, re-check whether the number is actually an item code plus a price.
-- For Sysco-style invoices, the columns after ITEM DESCRIPTION are usually ITEM CODE, then UNIT PRICE, then EXTENDED PRICE.
-- Example: if a row contains item code 650009 and price 38.95, return unitCost 38.95 and lineTotal 38.95. Do not return 650009, 6500.09, 5388.42, or any merged value.
-- Example: if a row contains "SYS REL MAYONNAISE HEAVY DUTY" with item code 650009 and visible price 38.95, return lineItemName "Rel Mayonnaise Heavy Duty", unitCost 38.95, lineTotal 38.95.
+- Item codes should be ignored for pricing.
+- Quantity must come from the row quantity column only.
+- Package Size should capture visible pack/size text, such as case count, weight, bottle count, ounces, gallons, or pounds.
+- Unit Cost must come from the unit price column on the same row.
+- Line Total must come from the extended amount column on the same row.
+- If the extended amount is unclear but quantity and unit price are clearly visible on the same row, lineTotal may be calculated as quantity multiplied by unitCost.
+- If price alignment is uncertain, leave unitCost and/or lineTotal null and set confidence Low.
+- If a row has a visible unit price but the extended price column appears contaminated by a group total or subtotal, use the unit price and leave lineTotal null unless multiplication is clearly appropriate.
 
-Sysco subtotal / group total rules:
-- Sysco invoices may show category/group totals near item rows, such as totals for a section or page.
-- Do not use category totals, subtotal values, invoice totals, page totals, tax, delivery, or summary values as unitCost or lineTotal for an individual item.
-- Only create line items from actual item rows that contain an item description and item code.
-- A valid item row should have an item description plus item code plus UNIT PRICE and/or EXTENDED PRICE in the same row.
-- If a large price appears near a category group but not directly on the item row, leave unitCost and lineTotal null rather than using that value.
-- For Sysco rows, do not use numbers from the far bottom/summary/group total area as item prices.
-- If the raw line text contains a product name followed by only one suspiciously high number, verify it is not a group total before assigning it as lineTotal.
-- Do not create receipt line items for non-product category totals, group totals, invoice totals, paper/disposable totals, fuel surcharge, delivery/service charges, or misc charges.
-- Do not create Cost Center staging lines for disposable supplies such as plastic containers, plastic cups, gloves, cutlery kits, liners, scrub pads, broiler brushes, paper towels, napkins, straws, lids, trays, plates, or bowls unless the document is specifically being reviewed for supplies.
-- If a Sysco row says GROUP TOTAL, PAPER & DISPOSABLES TOTAL, CHGS FOR FUEL SURCHARGE, or similar, do not include it in lines.
-- If a Sysco item row is followed by GROUP TOTAL or a nearby total value, do not assign the group total to that item. Use the UNIT PRICE from the row, and derive lineTotal from quantity × unitCost only when the row's extended price is unclear.
-- Example: if a row says "2 CS ... LOBSTER BISQUE W/S ... UNIT PRICE 62.59" and a nearby GROUP TOTAL says 770.08, return unitCost 62.59 and lineTotal 125.18, not 770.08 or any unrelated prompt example value.
-Examples:
-- If raw text says "LOBSTER BISQUE W/S NE 1 CS 770.08" but 770.08 appears to be a category/group total rather than the row's UNIT PRICE or EXTENDED PRICE, return unitCost null and lineTotal null with low confidence.
-- If raw text says "2 CS 65LB SYS REL POTATO FRY STEAK 9944149 39.95", return quantity 2, packageSize "65 LB", item code ignored, lineTotal 39.95, and unitCost 19.98 only if 39.95 is the extended price for quantity 2.
-- If UNIT PRICE is visible separately from EXTENDED PRICE, use UNIT PRICE for unitCost and EXTENDED PRICE for lineTotal.
+Sysco-specific rules:
+- Sysco invoices commonly place ITEM CODE after ITEM DESCRIPTION, followed by UNIT PRICE and EXTENDED PRICE.
+- Do not merge item code digits with price digits.
+- Sysco category/group totals often appear near item rows. Do not assign those totals to individual products.
+- Rows containing GROUP TOTAL, PAPER & DISPOSABLES TOTAL, CHGS FOR FUEL SURCHARGE, subtotal, tax, or invoice total are not product lines.
+- Disposable/supply lines such as gloves, plastic containers, cups, cutlery, liners, scrub pads, brushes, paper towels, napkins, straws, lids, trays, plates, and bowls should not be included unless the document is specifically being reviewed for supplies.
+- Sysco shorthand SYS REL means Sysco Reliance, not Sysco Reliability.
+- Sysco shorthand SYS CLS may be preserved only when useful, but do not let vendor shorthand replace the actual product name.
+
+Royal Food Service rules:
+- Royal Food Service invoices use row-aligned Description, Pack/Size, Unit Price, and Extended Amount.
+- Preserve each row's own unit price and extended amount.
+- Do not borrow prices from adjacent juice, produce, dairy, or other nearby rows.
+- When several similar products appear together, each product must keep the price from its own row.
 
 Item naming rules:
 - lineItemName must be the specific purchased product, not a generic category.
-- Do not return generic names like "Cheese", "Lettuce", "Chicken", "Beef", "Sauce", or "Produce" when the raw line contains a more specific item description.
-- Preserve meaningful descriptors from the invoice item description such as "Parm Shaved", "Cheddar Shredded", "Romaine Hearts", "Chicken Wings Jumbo", "Ribeye", "Heavy Cream", etc.
-- Remove only obvious pack, size, quantity, and item code values from lineItemName.
-- If raw line text says "AREZIME CHEESE PARM SHAVED", return a lineItemName like "Arezime Cheese Parm Shaved" or "Shaved Parmesan Cheese", not "Cheese".
-- If uncertain, prefer a longer specific lineItemName over a short generic one.
-- If raw line text says "DRESSING BLUE CHEESE CHUNKY", return "Blue Cheese Chunky Dressing", not "Cheese".
-- If raw line text says "AREZIME CHEESE PARM SHAVED", return "Arezime Cheese Parm Shaved" or "Shaved Parmesan Cheese", not "Cheese".
-- Prefixes like SYS REL, SYS CLS, and vendor shorthand may be preserved if useful, but do not let them replace the actual product name.
-- When the rawLineText conflicts with the visible table columns, trust the visible table columns for quantity, unit price, and extended price.
-- Sysco shorthand SYS REL means Sysco Reliance, not Sysco Reliability. If a raw line says SYS REL POTATO FRY STEAK, return "Sysco Reliance Steak Fries". If it says SYS REL DRESSING BLUE CHEESE CHUNKY, return "Sysco Reliance Blue Cheese Dressing Chunky".
+- Preserve meaningful descriptors such as brand, product type, flavor, cut, style, size description, and preparation.
+- Remove only obvious quantity, pack, size, item code, and pricing values from lineItemName.
+- Do not return generic names like Cheese, Lettuce, Chicken, Beef, Sauce, Produce, Juice, or Dressing when the row contains a more specific description.
+- Prefer a longer specific lineItemName over a short generic one.
+- If the item description says blue cheese dressing, the name should remain blue cheese dressing, not cheese.
+- If the item description says guava lemonade bottles, the name should remain guava lemonade bottles, not lemon juice or lime juice.
 
-JSON shape:
+Output JSON shape:
 {
   "documentType": "receipt_invoice" | "catalog_or_price_sheet" | "menu" | "unknown",
   "isReceiptOrInvoice": true,
@@ -366,6 +344,15 @@ JSON shape:
       "rawLineText": "raw visible line text"
     }
   ]
+}
+
+Receipt metadata:
+- Airtable record ID: ${receipt.id}
+- Current receipt name: ${receipt.receiptName}
+- Existing vendor field: ${receipt.vendor || ""}
+- Existing receipt date field: ${receipt.receiptDate || ""}
+- Uploaded filename: ${receipt.fileName}
+`.trim();
 }
 
 Receipt metadata:
