@@ -212,7 +212,7 @@ function friendlyVendorItemName(value, category = "") {
     return "Seasoning";
   }
   if (
-  /\bOCEAN\s*SPRAY\b|\bOCEANSPRAY\b|\bOCN\s*SPRAY\b|\bOCNSPRAY\b/.test(upper)
+  /\bOCEAN\s*SPRAY\b|\bOCEANSPRAY\b|\bOCN\s*SPRAY\b|\bOCNSPRAY\b|\bOCNSPRY\b|\bOCN\s*SPRY\b/.test(upper)
 ) {
   if (/\bCRANBERRY\b|\bCRNBRY\b|\bCRAN\b/.test(upper)) {
     if (/\bJUICE\b|\bDRINK\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
