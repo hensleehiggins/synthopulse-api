@@ -257,11 +257,191 @@ function parseJsonFromModelText(text) {
   }
 }
 
-function buildParsingPrompt(receipt) {
+function normalizeImagePreflight(value) {
+  const allowedOrientations = new Set([
+    "upright",
+    "rotate_90_clockwise",
+    "rotate_90_counterclockwise",
+    "upside_down",
+    "unclear",
+  ]);
+
+  const allowedReadability = new Set(["good", "fair", "poor"]);
+
+  const orientation = allowedOrientations.has(value?.orientation)
+    ? value.orientation
+    : "unclear";
+
+  const readability = allowedReadability.has(value?.readability)
+    ? value.readability
+    : "fair";
+
+  return {
+    orientation,
+    readability,
+    isLikelyReceiptOrInvoice: value?.isLikelyReceiptOrInvoice !== false,
+    warning: normalizeText(value?.warning),
+    visibleVendor: normalizeText(value?.visibleVendor),
+    visibleDate: normalizeText(value?.visibleDate),
+    confidence: ["High", "Medium", "Low"].includes(value?.confidence)
+      ? value.confidence
+      : "Low",
+  };
+}
+
+function buildImagePreflightPrompt(receipt) {
+  return `
+You are doing an image preflight check before a restaurant vendor receipt is parsed.
+
+Return ONLY valid JSON. No markdown. No commentary.
+
+Inspect the uploaded image and identify orientation/readability. Do not parse line items.
+
+Allowed orientation values:
+- upright
+- rotate_90_clockwise
+- rotate_90_counterclockwise
+- upside_down
+- unclear
+
+Allowed readability values:
+- good
+- fair
+- poor
+
+Return this exact JSON shape:
+{
+  "orientation": "upright | rotate_90_clockwise | rotate_90_counterclockwise | upside_down | unclear",
+  "readability": "good | fair | poor",
+  "isLikelyReceiptOrInvoice": true,
+  "visibleVendor": "vendor name if obvious, otherwise empty string",
+  "visibleDate": "YYYY-MM-DD if obvious, otherwise empty string",
+  "confidence": "High | Medium | Low",
+  "warning": "short warning if image is rotated, blurry, cropped, upside down, not a receipt, or hard to read"
+}
+
+Receipt metadata:
+- Airtable record ID: ${receipt.id}
+- Current receipt name: ${receipt.receiptName}
+- Uploaded filename: ${receipt.fileName}
+`.trim();
+}
+
+async function callOpenAIJsonImage({ prompt, imageUrl, maxOutputTokens = 1000 }) {
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_RECEIPT_MODEL || "gpt-4.1-mini",
+      input: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "input_text",
+              text: prompt,
+            },
+            {
+              type: "input_image",
+              image_url: imageUrl,
+              detail: "high",
+            },
+          ],
+        },
+      ],
+      max_output_tokens: maxOutputTokens,
+    }),
+  });
+
+  const data = await response.json();
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    data,
+  };
+}
+
+async function runImagePreflight(receipt) {
+  try {
+    const result = await callOpenAIJsonImage({
+      prompt: buildImagePreflightPrompt(receipt),
+      imageUrl: receipt.fileUrl,
+      maxOutputTokens: 1000,
+    });
+
+    if (!result.ok) {
+      return normalizeImagePreflight({
+        orientation: "unclear",
+        readability: "fair",
+        isLikelyReceiptOrInvoice: true,
+        confidence: "Low",
+        warning:
+          "Image preflight could not complete. Continue parsing, but review output carefully.",
+      });
+    }
+
+    const text = extractOpenAIText(result.data);
+    const parsed = parseJsonFromModelText(text);
+
+    return normalizeImagePreflight(parsed);
+  } catch (error) {
+    return normalizeImagePreflight({
+      orientation: "unclear",
+      readability: "fair",
+      isLikelyReceiptOrInvoice: true,
+      confidence: "Low",
+      warning:
+        "Image preflight failed before parsing. Continue parsing, but review output carefully.",
+    });
+  }
+}
+
+function buildOrientationInstruction(imagePreflight) {
+  if (!imagePreflight) {
+    return "";
+  }
+
+  const orientation = imagePreflight.orientation || "unclear";
+  const readability = imagePreflight.readability || "fair";
+  const warning = normalizeText(imagePreflight.warning);
+
+  const orientationGuidance = {
+    upright:
+      "The receipt appears upright. Parse normally.",
+    rotate_90_clockwise:
+      "The receipt image appears rotated 90 degrees clockwise. Mentally rotate it 90 degrees counterclockwise before reading rows and columns.",
+    rotate_90_counterclockwise:
+      "The receipt image appears rotated 90 degrees counterclockwise. Mentally rotate it 90 degrees clockwise before reading rows and columns.",
+    upside_down:
+      "The receipt image appears upside down. Mentally rotate it 180 degrees before reading rows and columns.",
+    unclear:
+      "The receipt orientation is unclear. Inspect the image carefully and only parse rows that are readable with confidence.",
+  };
+
+  return `
+Image preflight:
+- Detected orientation: ${orientation}
+- Detected readability: ${readability}
+- Preflight warning: ${warning || "none"}
+- Orientation handling: ${orientationGuidance[orientation] || orientationGuidance.unclear}
+
+If the image is rotated or upside down, interpret the receipt after applying the orientation handling above. Do not punish the operator for a rotated upload. If text or row alignment remains uncertain, leave questionable values blank and set confidence Low.
+`.trim();
+}
+
+function buildParsingPrompt(receipt, imagePreflight) {
+  const imageInstruction = buildOrientationInstruction(imagePreflight);
+
   return `
 You are parsing a restaurant vendor receipt or invoice for KitchenPulse.
 
 Return ONLY valid JSON. No markdown. No commentary.
+
+${imageInstruction ? `${imageInstruction}\n` : ""}
 
 Core rules:
 - Parse only vendor receipts, invoices, or purchase documents showing items actually bought.
@@ -357,8 +537,8 @@ Receipt metadata:
 `.trim();
 }
 
-async function callOpenAIForReceipt(receipt) {
-  const prompt = buildParsingPrompt(receipt);
+async function callOpenAIForReceipt(receipt, imagePreflight) {
+  const prompt = buildParsingPrompt(receipt, imagePreflight);
 
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -519,28 +699,43 @@ function unsupportedDocumentMessage(parsed) {
   );
 }
 
-function buildReceiptUpdateFields(receipt, parsed, parsedText) {
+function buildReceiptUpdateFields(receipt, parsed, parsedText, imagePreflight) {
   const parsedVendor = normalizeText(parsed.vendor);
   const parsedDate = safeDate(parsed.receiptDate);
   const parsedTotal = safeNumber(parsed.totalAmount);
 
   const lineCount = Array.isArray(parsed.lines) ? parsed.lines.length : 0;
 
+  const preflightWarning = normalizeText(imagePreflight?.warning);
+  const preflightNeedsAttention =
+    imagePreflight?.orientation &&
+    imagePreflight.orientation !== "upright" ||
+    imagePreflight?.readability === "poor" ||
+    imagePreflight?.confidence === "Low";
+
+  const parsedForStorage = {
+    ...parsed,
+    imagePreflight,
+  };
+
   const notesParts = [
     receipt.notes || "",
     `PARSING ACTION ${new Date().toISOString()}: AI parsed receipt into staging data. ${lineCount} line(s) detected.`,
+    imagePreflight
+      ? `Image preflight: orientation=${imagePreflight.orientation}, readability=${imagePreflight.readability}, confidence=${imagePreflight.confidence}.${preflightWarning ? ` Warning: ${preflightWarning}` : ""}`
+      : "",
     parsed.reviewReason ? `Parser review reason: ${parsed.reviewReason}` : "",
   ];
 
   const fields = {
-  "Processing Status": lineCount > 0 ? "Parsed" : "Needs Review",
-  "Review Needed": lineCount === 0,
-  Approved: true,
-  "Raw OCR / AI Text": normalizeText(parsed.rawText) || parsedText,
-  "Parsed JSON": JSON.stringify(parsed, null, 2),
-  "Processed At": new Date().toISOString(),
-  Notes: notesParts.filter(Boolean).join("\n\n"),
-};
+    "Processing Status": lineCount > 0 ? "Parsed" : "Needs Review",
+    "Review Needed": lineCount === 0 || Boolean(preflightNeedsAttention),
+    Approved: true,
+    "Raw OCR / AI Text": normalizeText(parsed.rawText) || parsedText,
+    "Parsed JSON": JSON.stringify(parsedForStorage, null, 2),
+    "Processed At": new Date().toISOString(),
+    Notes: notesParts.filter(Boolean).join("\n\n"),
+  };
 
   if (parsedVendor && !receipt.vendor) {
     fields.Vendor = parsedVendor;
@@ -573,27 +768,23 @@ function normalizeParsedLine(line) {
   const raw = normalized.rawLineText.toLowerCase();
 
   const rawUpper = normalized.rawLineText.toUpperCase();
-const nameUpper = normalizeText(normalized.lineItemName).toUpperCase();
+  const nameUpper = normalizeText(normalized.lineItemName).toUpperCase();
 
-const looksLikeMangledShortening =
-  /\bSHOREING\b|\bSHORING\b/.test(rawUpper) ||
-  /\bSHOREING\b|\bSHORING\b/.test(nameUpper);
+  const looksLikeMangledShortening =
+    /\bSHOREING\b|\bSHORING\b/.test(rawUpper) ||
+    /\bSHOREING\b|\bSHORING\b/.test(nameUpper);
 
-if (looksLikeMangledShortening) {
-  normalized.lineItemName = "Sysco Classic Shortening Fry Canola Clear";
-  normalized.confidence = "Low";
-  normalized.notes = [
-    normalizeText(normalized.notes),
-    "Possible OCR row-mix: shortening row may have borrowed price or words from nearby lines. Verify against invoice before approval.",
-  ]
-    .filter(Boolean)
-    .join(" ");
-}
+  if (looksLikeMangledShortening) {
+    normalized.lineItemName = "Sysco Classic Shortening Fry Canola Clear";
+    normalized.confidence = "Low";
+    normalized.notes = [
+      normalizeText(normalized.notes),
+      "Possible OCR row-mix: shortening row may have borrowed price or words from nearby lines. Verify against invoice before approval.",
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
 
-  // Vendor invoices like Sysco often have explicit table columns:
-  // QTY | PACK | SIZE | ITEM DESCRIPTION | ITEM CODE | UNIT PRICE | EXTENDED PRICE.
-  // If the model captured line total but missed unit cost, derive it only when
-  // quantity is present and the math is safe.
   if (
     normalized.unitCost === null &&
     normalized.lineTotal !== null &&
@@ -605,7 +796,6 @@ if (looksLikeMangledShortening) {
     );
   }
 
-  // If the model captured unit cost but missed line total, derive line total.
   if (
     normalized.lineTotal === null &&
     normalized.unitCost !== null &&
@@ -617,7 +807,6 @@ if (looksLikeMangledShortening) {
     );
   }
 
-  // If unit is blank but package text clearly includes LB/CS/OZ/etc, keep the unit readable.
   if (
     !normalized.unit &&
     /\b(lb|lbs|cs|case|oz|gal|qt|pt|pk|pack|ea|each)\b/i.test(raw)
@@ -628,9 +817,6 @@ if (looksLikeMangledShortening) {
     normalized.unit = unitMatch?.[1] || "";
   }
 
-  // Guard against obvious Sysco invoice subtotal/category total mistakes.
-  // Safer behavior: leave questionable huge prices blank for human review
-  // instead of allowing a subtotal/group total to become an approved item cost.
   const suspiciousHugeSingleLine =
     (
       (normalized.unitCost !== null && normalized.unitCost >= 500) ||
@@ -656,14 +842,21 @@ if (looksLikeMangledShortening) {
   return normalized;
 }
 
-
-function buildLineFields({ receipt, parsed, line, index }) {
+function buildLineFields({ receipt, parsed, line, index, imagePreflight }) {
   const vendor =
     normalizeText(parsed.vendor) ||
     normalizeText(receipt.vendor) ||
     "";
 
   const normalizedLine = normalizeParsedLine(line);
+
+  const preflightNote =
+    imagePreflight &&
+    (imagePreflight.orientation !== "upright" ||
+      imagePreflight.readability === "poor" ||
+      imagePreflight.confidence === "Low")
+      ? `Image preflight: orientation=${imagePreflight.orientation}, readability=${imagePreflight.readability}. Verify row alignment.`
+      : "";
 
   return {
     "Line Name": makeLineName({
@@ -687,11 +880,12 @@ function buildLineFields({ receipt, parsed, line, index }) {
     Approved: false,
     "Raw Line Text": normalizedLine.rawLineText,
     Notes: [
-  "AI-parsed staging line.",
-  normalizeText(normalizedLine.notes),
-]
-  .filter(Boolean)
-  .join(" "),
+      "AI-parsed staging line.",
+      preflightNote,
+      normalizeText(normalizedLine.notes),
+    ]
+      .filter(Boolean)
+      .join(" "),
   };
 }
 
@@ -798,7 +992,8 @@ export default async function handler(req, res) {
       "Error Message": "",
     });
 
-    const openAiResult = await callOpenAIForReceipt(receipt);
+    const imagePreflight = await runImagePreflight(receipt);
+    const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
 
     if (!openAiResult.ok) {
       await updateReceipt(receipt.id, {
@@ -812,40 +1007,50 @@ export default async function handler(req, res) {
       return sendJson(res, openAiResult.status, {
         ok: false,
         error: "OpenAI receipt parsing failed.",
+        imagePreflight,
         details: openAiResult.data,
       });
     }
 
     const parsedText = extractOpenAIText(openAiResult.data);
-const parsed = parseJsonFromModelText(parsedText);
+    const parsed = parseJsonFromModelText(parsedText);
 
-if (isUnsupportedDocument(parsed)) {
-  const message = unsupportedDocumentMessage(parsed);
+    if (isUnsupportedDocument(parsed)) {
+      const message = unsupportedDocumentMessage(parsed);
+      const parsedForStorage = {
+        ...parsed,
+        imagePreflight,
+      };
 
-  await updateReceipt(receipt.id, {
-    "Processing Status": "Needs Review",
-    "Review Needed": true,
-    Approved: false,
-    "Raw OCR / AI Text": normalizeText(parsed.rawText) || parsedText,
-    "Parsed JSON": JSON.stringify(parsed, null, 2),
-    "Error Message": message,
-    "Processed At": new Date().toISOString(),
-    Notes: [receipt.notes || "", `PARSING REJECTED ${new Date().toISOString()}: ${message}`]
-      .filter(Boolean)
-      .join("\n\n"),
-  });
+      await updateReceipt(receipt.id, {
+        "Processing Status": "Needs Review",
+        "Review Needed": true,
+        Approved: false,
+        "Raw OCR / AI Text": normalizeText(parsed.rawText) || parsedText,
+        "Parsed JSON": JSON.stringify(parsedForStorage, null, 2),
+        "Error Message": message,
+        "Processed At": new Date().toISOString(),
+        Notes: [
+          receipt.notes || "",
+          `PARSING REJECTED ${new Date().toISOString()}: ${message}`,
+          `Image preflight: orientation=${imagePreflight.orientation}, readability=${imagePreflight.readability}, confidence=${imagePreflight.confidence}.`,
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
+      });
 
-  return sendJson(res, 422, {
-    ok: false,
-    errorType: "unsupported_document_type",
-    error: message,
-    recordId: receipt.id,
-  });
-}
+      return sendJson(res, 422, {
+        ok: false,
+        errorType: "unsupported_document_type",
+        error: message,
+        recordId: receipt.id,
+        imagePreflight,
+      });
+    }
 
-const parsedLines = Array.isArray(parsed.lines) ? parsed.lines : [];
+    const parsedLines = Array.isArray(parsed.lines) ? parsed.lines : [];
     const parsedLineLimit = 50;
-const wasLineLimited = parsedLines.length > parsedLineLimit;
+    const wasLineLimited = parsedLines.length > parsedLineLimit;
 
     const lineFields = parsedLines
       .filter((line) => {
@@ -856,21 +1061,25 @@ const wasLineLimited = parsedLines.length > parsedLineLimit;
         );
       })
       .slice(0, parsedLineLimit)
-      .map((line, index) => buildLineFields({ receipt, parsed, line, index }));
+      .map((line, index) =>
+        buildLineFields({ receipt, parsed, line, index, imagePreflight })
+      );
 
     const receiptUpdateFields = buildReceiptUpdateFields(
       receipt,
       parsed,
-      parsedText
+      parsedText,
+      imagePreflight
     );
+
     if (wasLineLimited) {
-  receiptUpdateFields.Notes = [
-    receiptUpdateFields.Notes || "",
-    `KitchenPulse parsed the first ${parsedLineLimit} visible line items from a larger receipt/invoice. Upload remaining pages separately if more lines are needed.`,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-}
+      receiptUpdateFields.Notes = [
+        receiptUpdateFields.Notes || "",
+        `KitchenPulse parsed the first ${parsedLineLimit} visible line items from a larger receipt/invoice. Upload remaining pages separately if more lines are needed.`,
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+    }
 
     const receiptUpdateResult = await updateReceipt(
       receipt.id,
@@ -881,6 +1090,7 @@ const wasLineLimited = parsedLines.length > parsedLineLimit;
       return sendJson(res, receiptUpdateResult.status, {
         ok: false,
         error: "Airtable rejected the parsed receipt update.",
+        imagePreflight,
         details: receiptUpdateResult.data,
       });
     }
@@ -901,6 +1111,7 @@ const wasLineLimited = parsedLines.length > parsedLineLimit;
         ok: false,
         error:
           "Receipt parsed, but Airtable rejected one or more parsed line records.",
+        imagePreflight,
         details: lineCreateResult.data,
       });
     }
@@ -914,6 +1125,7 @@ const wasLineLimited = parsedLines.length > parsedLineLimit;
       parsedReceiptDate: parsed.receiptDate || "",
       parsedTotalAmount: safeNumber(parsed.totalAmount),
       lineCount: lineFields.length,
+      imagePreflight,
       createdLineIds: lineCreateResult.data.records.map((record) => record.id),
     });
   } catch (error) {
