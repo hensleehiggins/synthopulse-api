@@ -306,6 +306,9 @@ Sysco subtotal / group total rules:
 - If a large price appears near a category group but not directly on the item row, leave unitCost and lineTotal null rather than using that value.
 - For Sysco rows, do not use numbers from the far bottom/summary/group total area as item prices.
 - If the raw line text contains a product name followed by only one suspiciously high number, verify it is not a group total before assigning it as lineTotal.
+- Do not create receipt line items for non-product category totals, group totals, invoice totals, paper/disposable totals, fuel surcharge, delivery/service charges, or misc charges.
+- Do not create Cost Center staging lines for disposable supplies such as plastic containers, plastic cups, gloves, cutlery kits, liners, scrub pads, broiler brushes, paper towels, napkins, straws, lids, trays, plates, or bowls unless the document is specifically being reviewed for supplies.
+- If a Sysco row says GROUP TOTAL, PAPER & DISPOSABLES TOTAL, CHGS FOR FUEL SURCHARGE, or similar, do not include it in lines.
 Examples:
 - If raw text says "LOBSTER BISQUE W/S NE 1 CS 770.08" but 770.08 appears to be a category/group total rather than the row's UNIT PRICE or EXTENDED PRICE, return unitCost null and lineTotal null with low confidence.
 - If raw text says "2 CS 65LB SYS REL POTATO FRY STEAK 9944149 39.95", return quantity 2, packageSize "65 LB", item code ignored, lineTotal 39.95, and unitCost 19.98 only if 39.95 is the extended price for quantity 2.
