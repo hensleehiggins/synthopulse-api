@@ -1676,9 +1676,33 @@ function friendlyVendorItemName(value, category = "") {
 
   if (/\bLEMONS?\b/.test(upper)) return "Lemons";
 
-  if (/\bPOTATO\b|\bPOT\b/.test(upper)) {
-    return "Potatoes";
+  if (/\bPOTATO\b|\bPOTATOES\b|\bPOT\b/.test(upper)) {
+  if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
+    return "Steak Fries";
   }
+
+  if (/\bYUKON\b/.test(upper) && /\bGOLD\b/.test(upper)) {
+    return "Potato Yukon Gold";
+  }
+
+  if (/\bIDAHO\b/.test(upper)) {
+    return "Potato Idaho";
+  }
+
+  if (/\bRUSSET\b/.test(upper)) {
+    return "Potato Russet";
+  }
+
+  if (/\bRED\b/.test(upper)) {
+    return "Red Potatoes";
+  }
+
+  if (/\bSWEET\b/.test(upper)) {
+    return "Sweet Potatoes";
+  }
+
+  return "Potatoes";
+}
 
   if (/\bFRIES?\b/.test(upper)) return "Fries";
 
