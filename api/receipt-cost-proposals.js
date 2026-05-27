@@ -815,13 +815,30 @@ function buildMatchSuggestionsForProposal({
     const currentCost = getCostSourceCurrentCost(record);
 
     const rawNameScore = scoreNameMatch(parsedItemName, name);
-    const friendlyNameScore = scoreNameMatch(friendlyParsedItemName, name);
-    const nameScore = Math.max(rawNameScore, friendlyNameScore);
+const friendlyNameScore = scoreNameMatch(friendlyParsedItemName, name);
+const nameScore = Math.max(rawNameScore, friendlyNameScore);
 
-    const vendorScore = scoreVendorMatch(vendor, supplier);
-    const score = Math.min(100, nameScore + vendorScore);
+const parsedNorm = normalizeText(friendlyParsedItemName || parsedItemName);
+const targetNorm = normalizeText(name);
 
-    if (score < 25) continue;
+// Block obvious cross-family matches.
+// Example: Blue Cheese Dressing should not suggest American Cheese.
+if (parsedNorm.includes("dressing") && !targetNorm.includes("dressing")) {
+  continue;
+}
+
+if (parsedNorm.includes("juice") && !targetNorm.includes("juice")) {
+  continue;
+}
+
+if (parsedNorm.includes("sauce") && !targetNorm.includes("sauce")) {
+  continue;
+}
+
+const vendorScore = scoreVendorMatch(vendor, supplier);
+const score = Math.min(100, nameScore + vendorScore);
+
+if (score < 55) continue;
 
     suggestions.push({
       targetType: "cost_source",
@@ -861,14 +878,17 @@ function buildMatchSuggestionsForProposal({
   const hasLikelyMatch = sorted.some((suggestion) => suggestion.score >= 55);
 
   if (hasStrongMatch) {
-    return sorted.filter((suggestion) => suggestion.score >= 80).slice(0, 5);
-  }
+  return sorted.filter((suggestion) => suggestion.score >= 80).slice(0, 5);
+}
 
-  if (hasLikelyMatch) {
-    return sorted.filter((suggestion) => suggestion.score >= 55).slice(0, 5);
-  }
+if (hasLikelyMatch) {
+  return sorted.filter((suggestion) => suggestion.score >= 55).slice(0, 5);
+}
 
-  return sorted.slice(0, 3);
+// Do not show "best bad match" suggestions.
+// A weak overlap like "cheese" should not suggest American Cheese for Blue Cheese Dressing.
+// No suggestion is safer because the operator can create a new tracked vendor item.
+return [];
 }
 
 function getProposalRecordStatus(record) {
