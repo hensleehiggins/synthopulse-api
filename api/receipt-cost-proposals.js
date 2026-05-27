@@ -1413,6 +1413,404 @@ function isNonItemChargeLine(value) {
   );
 }
 
+function friendlyVendorItemName(value, category = "") {
+  const raw = String(value || "").trim();
+
+  if (!raw) return "";
+
+  const upper = raw.toUpperCase();
+
+  if (isNonItemChargeLine(upper)) return "";
+
+  const isSyscoReliance =
+    /\bSYS\s+REL\b/.test(upper) ||
+    /\bSYSCO\s+REL\b/.test(upper) ||
+    /\bSYSCO\s+RELIABILITY\b/.test(upper) ||
+    /\bRELIABILITY\b/.test(upper);
+
+  if (isSyscoReliance) {
+    if (/\bDRESSING\b/.test(upper)) {
+      const isBlueCheese =
+        /\bBLUE\b/.test(upper) && /\b(CHS|CHSE|CHEESE)\b/.test(upper);
+
+      if (isBlueCheese) {
+        const isChunky =
+          /\bCHUNKY\b|\bCHNKY\b|\bCHNK\b/.test(upper);
+
+        return isChunky
+          ? "Sysco Reliance Blue Cheese Dressing Chunky"
+          : "Sysco Reliance Blue Cheese Dressing";
+      }
+    }
+
+    if (/\bPOTATO\b|\bPOT\b/.test(upper)) {
+      if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
+        return "Sysco Reliance Steak Fries";
+      }
+
+      return "Sysco Reliance Potatoes";
+    }
+
+    if (/\bMAYONNAISE\b|\bMAYO\b/.test(upper)) {
+      if (/\bHEAVY\b/.test(upper) && /\bDUTY\b/.test(upper)) {
+        return "Sysco Reliance Mayonnaise Heavy Duty";
+      }
+
+      return "Sysco Reliance Mayonnaise";
+    }
+  }
+
+  if (
+    /\bOCEAN\s*SPRAY\b|\bOCEANSPRAY\b|\bOCN\s*SPRAY\b|\bOCNSPRAY\b|\bOCNSPRY\b|\bOCN\s*SPRY\b/.test(upper)
+  ) {
+    if (/\bCRANBERRY\b|\bCRNBRY\b|\bCRAN\b/.test(upper)) {
+      if (/\bJUICE\b|\bDRINK\b|\bRTS\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
+        return "Ocean Spray Cranberry Juice";
+      }
+
+      return "Ocean Spray Cranberry";
+    }
+
+    return "Ocean Spray";
+  }
+
+  if (/\bDRESSING\b/.test(upper)) {
+    const isBlueCheese =
+      /\bBLUE\b/.test(upper) && /\b(CHS|CHSE|CHEESE)\b/.test(upper);
+
+    if (isBlueCheese) {
+      const isChunky =
+        /\bCHUNKY\b|\bCHNKY\b|\bCHNK\b/.test(upper);
+
+      return isChunky
+        ? "Blue Cheese Dressing Chunky"
+        : "Blue Cheese Dressing";
+    }
+
+    if (/\bRANCH\b/.test(upper)) return "Ranch Dressing";
+    if (/\bCAESAR\b/.test(upper)) return "Caesar Dressing";
+    if (/\bITALIAN\b/.test(upper)) return "Italian Dressing";
+
+    return "Dressing";
+  }
+
+  if (/\bSEASONING\b/.test(upper)) {
+    if (/\bCAJUN\b/.test(upper)) return "Cajun Seasoning";
+    return "Seasoning";
+  }
+
+  if (/\bSALT\b/.test(upper)) {
+    if (/\bKOSHER\b/.test(upper)) return "Kosher Salt";
+    return "Salt";
+  }
+
+  if (/\bCHEESE\b/.test(upper)) {
+    if (/\bSWISS\b/.test(upper) && /\b(AMER|AMERICAN)\b/.test(upper)) {
+      return "Swiss/American Cheese Slices";
+    }
+
+    if (/\bCHEDDAR\b|\bCHED\b|\bCHDR\b/.test(upper)) {
+      if (/\bSHARP\b/.test(upper)) return "Sharp Cheddar Cheese";
+
+      if (/\bSHR\b|\bSHRD\b|\bSHRED\b|\bSHREDDED\b/.test(upper)) {
+        return "Cheddar Cheese Shredded";
+      }
+
+      return "Cheddar Cheese";
+    }
+
+    if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
+    if (/\b(AMER|AMERICAN)\b/.test(upper)) return "American Cheese";
+  }
+
+  if (
+    /\b(CHKN|CHICKEN)\b/.test(upper) &&
+    /\b(WNG|WING|WINGS)\b/.test(upper)
+  ) {
+    if (/\b(JMB|JUMBO)\b/.test(upper)) return "Chicken Wings Jumbo";
+    return "Chicken Wings";
+  }
+
+  if (/\bMAYONNAISE\b|\bMAYO\b/.test(upper)) {
+    if (/\bHEAVY\b/.test(upper) && /\bDUTY\b/.test(upper)) {
+      return "Mayonnaise Heavy Duty";
+    }
+
+    return "Mayonnaise";
+  }
+
+  if (/\bCRANBERRY\b|\bCRNBRY\b/.test(upper)) {
+    if (/\bJUICE\b|\bDRINK\b|\bRTS\b|\bCKTAIL\b|\bCOCKTAIL\b/.test(upper)) {
+      return "Cranberry Juice";
+    }
+
+    return "Cranberry";
+  }
+
+  if (/\bFRUIT\b/.test(upper) && /\bPUNCH\b/.test(upper)) {
+    return "Fruit Punch";
+  }
+
+  if (/\bAPPLE\b/.test(upper) && /\bJUICE\b/.test(upper)) {
+    return "Apple Juice";
+  }
+
+  if (/\bORANGE\b/.test(upper) && /\bJUICE\b/.test(upper)) {
+    return "Orange Juice";
+  }
+
+  if (/\bARTICHOKE\b/.test(upper) && /\bHEART\b/.test(upper)) {
+    return "Artichoke Hearts";
+  }
+
+  if (/\bBACON\b/.test(upper)) {
+    if (/\bTOPPING\b/.test(upper)) return "Bacon Topping";
+    return "Bacon";
+  }
+
+  if (/\bMOZZ\b|\bMOZZARELLA\b/.test(upper)) {
+    if (/\bCHED\b|\bCHDR\b|\bCHEDDAR\b/.test(upper)) {
+      return "Cheddar Mozzarella Blend";
+    }
+
+    if (/\bPARM\b|\bPARMESAN\b/.test(upper)) {
+      return "Mozzarella Parmesan Blend";
+    }
+
+    if (/\bSHRD\b|\bSHREDDED\b|\bSHRED\b/.test(upper)) {
+      return "Mozzarella Shredded";
+    }
+
+    return "Mozzarella";
+  }
+
+  if (/\bPARM\b|\bPARMESAN\b/.test(upper)) {
+    if (/\bSHRD\b|\bSHREDDED\b|\bSHRED\b/.test(upper)) {
+      return "Parmesan Shredded";
+    }
+
+    return "Parmesan";
+  }
+
+  if (/\bMEATBALL\b/.test(upper)) {
+    if (/\bPORK\b/.test(upper)) return "Pork Meatballs";
+    return "Meatballs";
+  }
+
+  if (/\bOLIVE\b/.test(upper)) {
+    if (/\bRIPE\b/.test(upper)) return "Ripe Olives";
+    return "Olives";
+  }
+
+  if (/\bGLAZE\b/.test(upper) && /\bBALSAMIC\b/.test(upper)) {
+    return "Balsamic Glaze";
+  }
+
+  if (/\bBUTTER\b/.test(upper)) {
+    if (/\bUNSLT\b|\bUNSALTED\b/.test(upper)) return "Butter Unsalted";
+    if (/\bSLTD\b|\bSALTED\b/.test(upper)) return "Butter Salted";
+    return "Butter";
+  }
+
+  if (/\bBUTTERMILK\b/.test(upper)) return "Buttermilk";
+
+  if (/\bCARROT\b/.test(upper)) {
+    if (/\bBABY\b/.test(upper) && /\b(TRI|COLOR|COLOUR)\b/.test(upper)) {
+      return "Tri-Color Baby Carrots";
+    }
+
+    if (/\bBABY\b/.test(upper)) return "Baby Carrots";
+    return "Carrots";
+  }
+
+  if (/\bCUCUMBER\b|\bCUC\b/.test(upper)) {
+    if (/\bPICKL\b|\bPICKLING\b/.test(upper)) return "Pickling Cucumbers";
+    return "Cucumbers";
+  }
+
+  if (/\bDILL\b/.test(upper)) return "Dill";
+  if (/\bRIBEYE\b/.test(upper)) return "Ribeye";
+  if (/\bSHRMP\b|\bSHRIMP\b/.test(upper)) return "Shrimp";
+
+  if (/\bROMAINE\b/.test(upper) && /\b(HRTS|HEARTS)\b/.test(upper)) {
+    return "Romaine Hearts";
+  }
+
+  if (/\bCHICKEN\b/.test(upper) && /\bBREAST\b/.test(upper)) {
+    if (/\bBONELESS\b/.test(upper)) return "Chicken Breast Boneless";
+    return "Chicken Breast";
+  }
+
+  if (/\bLEMONS?\b/.test(upper)) return "Lemons";
+
+  if (/\bPOTATO\b|\bPOT\b/.test(upper)) {
+    return "Potatoes";
+  }
+
+  if (/\bFRIES?\b/.test(upper)) return "Fries";
+
+  if (/\bPASTA\b/.test(upper)) {
+    if (/\bANGEL\b/.test(upper) && /\bHAIR\b/.test(upper)) {
+      return "Angel Hair Pasta";
+    }
+
+    if (/\bBOWTIE\b|\bFARFALLE\b/.test(upper)) return "Bowtie Pasta";
+    if (/\bELBOW\b|\bMACARONI\b/.test(upper)) return "Elbow Macaroni";
+    if (/\bFETTUCCINE\b|\bFETTUCINE\b/.test(upper)) return "Fettuccine";
+
+    if (/\bFUSILLI\b/.test(upper)) {
+      if (/\bTRI\b|\bCOLOR\b|\bCOLOUR\b/.test(upper)) return "Tri-Color Fusilli";
+      return "Fusilli";
+    }
+
+    if (/\bLASAGNA\b/.test(upper)) {
+      if (/\bSHEET\b/.test(upper)) return "Lasagna Sheets";
+      return "Lasagna";
+    }
+
+    if (/\bLINGUINE\b/.test(upper)) return "Linguine";
+    if (/\bNOODLE\b/.test(upper) && /\bEGG\b/.test(upper)) return "Egg Noodles";
+
+    if (/\bPENNE\b/.test(upper)) {
+      if (/\bRIGATE\b/.test(upper)) return "Penne Rigate";
+      return "Penne";
+    }
+
+    if (/\bRIGATONI\b/.test(upper)) return "Rigatoni";
+
+    if (/\bROTINI\b/.test(upper)) {
+      if (/\bTRI\b|\bCOLOR\b|\bCOLOUR\b/.test(upper)) return "Tri-Color Rotini";
+      return "Rotini";
+    }
+
+    if (/\bSPAGHETTINI\b/.test(upper)) return "Spaghettini";
+
+    if (/\bSPAGHETTI\b/.test(upper)) {
+      if (/\bWHL\b|\bWHOLE\b/.test(upper) && /\bWHEAT\b/.test(upper)) {
+        return "Whole Wheat Spaghetti";
+      }
+
+      return "Spaghetti";
+    }
+
+    if (/\bTORTELLINI\b/.test(upper)) {
+      if (/\bCHSE\b|\bCHEESE\b/.test(upper)) return "Cheese Tortellini";
+      return "Tortellini";
+    }
+
+    return "Pasta";
+  }
+
+  if (/\bPIZZA\b/.test(upper) && /\bCRUST\b/.test(upper)) {
+    if (/\bDEEP\b/.test(upper) && /\bDISH\b/.test(upper)) {
+      return "Deep Dish Pizza Crust";
+    }
+
+    if (/\bNEAPLT\b|\bNEAPOLITAN\b/.test(upper)) {
+      return "Neapolitan Pizza Crust";
+    }
+
+    return "Pizza Crust";
+  }
+
+  const cleaned = upper
+    .replace(/&/g, " AND ")
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter(
+      (token) =>
+        ![
+          "SYS",
+          "CLS",
+          "CVP",
+          "RND",
+          "IMP",
+          "BRL",
+          "AVG",
+          "PK",
+          "PKG",
+          "PACKAGE",
+          "CS",
+          "EA",
+          "RAW",
+          "BRAND",
+          "FRESH",
+          "PACKER",
+          "PLD",
+          "ONLY",
+          "BBRLCLS",
+          "IMPFRSH",
+          "SLICED",
+          "SLI",
+          "CNTRYCM",
+          "MEDGOLD",
+          "YEL",
+          "SLTD",
+          "UNSLT",
+          "NATBEST",
+          "FAIRLEE",
+          "AREZZIO",
+          "CDN",
+          "CAN",
+          "CANADA",
+          "TETRA",
+          "LGE",
+          "UNSWT",
+          "UNSWTD",
+          "PURE",
+          "PART",
+          "SKIM",
+          "LOW",
+          "FAT",
+          "CHS",
+          "CHSE",
+          "WW",
+          "WHL",
+          "BLECHED",
+          "BLCHD",
+          "BRRLIMP",
+          "BBRLIMP",
+          "BRRLCLS",
+          "MCC",
+          "PRIN",
+          "WT",
+          "TWT",
+          "RES",
+          "PET",
+          "RTS",
+        ].includes(token)
+    )
+    .filter((token) => !/^\d+[A-Z]*$/.test(token))
+    .filter((token) => !/^[A-Z]*\d+[A-Z]*$/.test(token))
+    .map((token) => {
+      const map = {
+        CHKN: "CHICKEN",
+        CHK: "CHICKEN",
+        WNG: "WINGS",
+        JMB: "JUMBO",
+        SHRMP: "SHRIMP",
+        CHDR: "CHEDDAR",
+        CHED: "CHEDDAR",
+        HRTS: "HEARTS",
+        PRTN: "PORTIONS",
+        PRTNS: "PORTIONS",
+      };
+
+      return map[token] || token;
+    })
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleaned) return raw;
+
+  const titled = titleCaseItemName(cleaned);
+
+  if (titled.length <= 2) return raw;
+
+  return titled;
+}
+
 function buildCostSourceFieldsFromLine({ line, proposedCost }) {
   const itemName = buildLineCostIdentityName(line);
 
