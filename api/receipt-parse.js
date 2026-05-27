@@ -998,9 +998,11 @@ export default async function handler(req, res) {
 
     const imagePreflight = await runImagePreflight(receipt);
 
-const rotatedOrUnsafeImage =
-  imagePreflight.orientation &&
-  imagePreflight.orientation !== "upright";
+const rotatedOrUnsafeImage = [
+  "rotate_90_clockwise",
+  "rotate_90_counterclockwise",
+  "upside_down",
+].includes(imagePreflight.orientation);
 
 const poorReadability = imagePreflight.readability === "poor";
 
