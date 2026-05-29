@@ -1428,8 +1428,12 @@ function isNonItemChargeLine(value) {
   ) || (
     // Delivery / service / misc charges
     /\bFUEL\b/.test(upper) && /\bSURCHARGE\b/.test(upper)
-  ) || (
+   ) || (
     /\bDELIVERY\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
+  ) || (
+    /\bTRANSPORTATION\b/.test(upper) && /\bFEE\b/.test(upper)
+  ) || (
+    /\bFREIGHT\b/.test(upper)
   ) || (
     /\bSERVICE\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
   ) || (
@@ -1446,8 +1450,45 @@ function isNonItemChargeLine(value) {
   );
 }
 
+function removeVendorNoiseFromItemName(value) {
+  return String(value || "")
+    .replace(/\bCOUNTRY\s+OF\s+ORIGIN\s*:?\s*[A-Z\s]+/gi, " ")
+    .replace(/\bORIGIN\s*:?\s*[A-Z\s]+/gi, " ")
+    .replace(/\bPRODUCT\s+OF\s+[A-Z\s]+/gi, " ")
+    .replace(/\bINDONESIA\b/gi, " ")
+    .replace(/\bCHILE\b/gi, " ")
+    .replace(/\bCANADA\b/gi, " ")
+    .replace(/\bUSA\b/gi, " ")
+    .replace(/\bU\.S\.A\.\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function removePackageSizeFromItemName(value) {
+  return String(value || "")
+    // leading sizes: "4 OZ Lamb..." / "5-6 OZ Canadian..."
+    .replace(
+      /^\s*\d+(?:[./-]\d+)?(?:\s*-\s*\d+(?:[./-]\d+)?)?\s*(OZ|OUNCE|OUNCES|LB|LBS|#)\b\s*/i,
+      ""
+    )
+    // embedded pack/count text: "2 OZ 72CT", "12/1CT", "5/2#", "10#"
+    .replace(/\b\d+(?:[./-]\d+)?(?:\s*-\s*\d+(?:[./-]\d+)?)?\s*(OZ|OUNCE|OUNCES)\b/gi, " ")
+    .replace(/\b\d+\s*CT\b/gi, " ")
+    .replace(/\b\d+\s*\/\s*\d+\s*CT\b/gi, " ")
+    .replace(/\b\d+\s*\/\s*\d+\s*#\b/gi, " ")
+    .replace(/\b\d+\s*#\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function friendlyVendorItemName(value, category = "") {
-  const raw = String(value || "").trim();
+    const rawOriginal = String(value || "").trim();
+
+  if (!rawOriginal) return "";
+
+  const raw = removePackageSizeFromItemName(
+    removeVendorNoiseFromItemName(rawOriginal)
+  );
 
   if (!raw) return "";
 
@@ -1493,6 +1534,45 @@ function friendlyVendorItemName(value, category = "") {
     }
   }
 
+    if (/\bMEATBALL\b|\bMEATBALLS\b/.test(upper)) {
+    if (/\bBEEF\b/.test(upper)) return "Italian Meatball Beef";
+    return "Italian Meatballs";
+  }
+
+  if (
+    /\bLAMB\b/.test(upper) &&
+    /\bLOIN\b/.test(upper) &&
+    /\bCHOP\b/.test(upper)
+  ) {
+    return "Imported Lamb Loin Chop";
+  }
+
+  if (/\bSNAPPER\b/.test(upper) && /\bFILLET\b/.test(upper)) {
+    return "Snapper Fillet";
+  }
+
+  if (
+    /\bLOBSTER\b/.test(upper) &&
+    (/\bTAIL\b/.test(upper) || /\bTAILS\b/.test(upper))
+  ) {
+    return "Canadian Lobster Tails";
+  }
+
+  if (
+    /\bBACON\b/.test(upper) &&
+    /\bWRAPPED\b/.test(upper) &&
+    /\bDATES\b/.test(upper)
+  ) {
+    return "Bacon Wrapped Dates Goat Cheese";
+  }
+
+  if (
+    /\bPORK\b/.test(upper) &&
+    (/\bRIB\b/.test(upper) || /\bRIBS\b/.test(upper))
+  ) {
+    return "Pork St Louis Ribs";
+  }
+  
   if (
     /\bOCEAN\s*SPRAY\b|\bOCEANSPRAY\b|\bOCN\s*SPRAY\b|\bOCNSPRAY\b|\bOCNSPRY\b|\bOCN\s*SPRY\b/.test(upper)
   ) {
@@ -1625,9 +1705,10 @@ function friendlyVendorItemName(value, category = "") {
     return "Parmesan";
   }
 
-  if (/\bMEATBALL\b/.test(upper)) {
+    if (/\bMEATBALL\b|\bMEATBALLS\b/.test(upper)) {
+    if (/\bBEEF\b/.test(upper)) return "Italian Meatball Beef";
     if (/\bPORK\b/.test(upper)) return "Pork Meatballs";
-    return "Meatballs";
+    return "Italian Meatballs";
   }
 
   if (/\bOLIVE\b/.test(upper)) {
