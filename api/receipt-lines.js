@@ -175,6 +175,9 @@ function removeVendorNoiseFromItemName(value) {
     .replace(/\bDRISCOLL['’]?S?\b/gi, " ")
     .replace(/\bDAR\b/gi, " ")
     .replace(/\bSTANDARD\b/gi, " ")
+    .replace(/\(\s*\)/g, " ")
+    .replace(/\s+\)/g, " ")
+    .replace(/\(\s+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -282,7 +285,19 @@ const upper = raw.toUpperCase();
     return "Shallots";
   }
 
-  if (/\bBASE\b/.test(upper) && /\bBEEF\b/.test(upper)) {
+    if (
+    /\bSP\b/.test(upper) &&
+    /\bBASE\b/.test(upper) &&
+    /\bMI\b/.test(upper) &&
+    /\bTUB\b/.test(upper)
+  ) {
+    return "Beef Base";
+  }
+
+  if (
+    /\bBASE\b/.test(upper) &&
+    (/\bBEEF\b/.test(upper) || /\bBF\b/.test(upper))
+  ) {
     return "Beef Base";
   }
 
@@ -295,6 +310,14 @@ const upper = raw.toUpperCase();
     (/\bCHIP\b/.test(upper) || /\bCHIPS\b/.test(upper))
   ) {
     return "Pickle Chips";
+  }
+
+      if (/\bCILANTRO\b/.test(upper)) {
+    return "Cilantro";
+  }
+
+  if (/\bPARSLEY\b/.test(upper) && /\bCURLY\b/.test(upper)) {
+    return "Curly Parsley";
   }
 
         if (/\bPOTATO\b|\bPOTATOES\b|\bPOT\b/.test(upper)) {
