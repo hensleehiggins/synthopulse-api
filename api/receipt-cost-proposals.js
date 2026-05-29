@@ -1842,6 +1842,20 @@ function friendlyVendorItemName(value, category = "") {
 
   if (/\bDILL\b/.test(upper)) return "Dill";
   if (/\bRIBEYE\b/.test(upper)) return "Ribeye";
+  if (
+    /\b8\s*\/\s*12\b/.test(upper) &&
+    (
+      /\bP\s*&\s*D\b/.test(upper) ||
+      /\bP\s+AND\s+D\b/.test(upper) ||
+      /\bP\s+D\b/.test(upper)
+    ) &&
+    (
+      /\bT\s*\/\s*ON\b/.test(upper) ||
+      /\bTAIL\s*ON\b/.test(upper)
+    )
+  ) {
+    return "Shrimp 8/12 P&D Tail-On";
+  }
   if (/\bSHRMP\b|\bSHRIMP\b/.test(upper)) return "Shrimp";
 
   if (/\bROMAINE\b/.test(upper) && /\b(HRTS|HEARTS)\b/.test(upper)) {
