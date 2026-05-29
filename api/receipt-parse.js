@@ -493,6 +493,16 @@ Royal Food Service rules:
 - Do not borrow prices from adjacent juice, produce, dairy, or other nearby rows.
 - When several similar products appear together, each product must keep the price from its own row.
 
+Halperns rules:
+- Halperns / Halpern's Steak & Seafood invoices use row-aligned ORD, SHP, U/M, Item/Size/Description, Wgt/Qty Shipped, Price, and Extension.
+- Do not create a parsed line for Transportation Fee, delivery fee, fuel surcharge, service charge, freight, or other non-product charges.
+- Do not include "Country of Origin" text in item names, packageSize, or raw product descriptions. Treat it as metadata/noise.
+- If a line includes package sizing such as "2 OZ", "4 OZ", "5-6 OZ", "72CT", "10#", "5/2#", or similar, store that sizing in packageSize when possible, not in lineItemName.
+- Remove leading package-size text from product names. Example: "4 OZ IMPORTED LAMB LOIN CHOP" should become lineItemName "Imported Lamb Loin Chop" with packageSize "4 oz".
+- "Italian Meatball, Beef 2 oz 72ct" should become lineItemName "Italian Meatball Beef" with packageSize "2 oz 72ct".
+- Preserve each row's own price and extension. Do not borrow prices from nearby rows.
+- If weight/quantity shipped is visible and differs from ordered/shipped case quantity, keep the purchased unit as the vendor unit/case and preserve weight/pack details in packageSize or rawLineText.
+
 Item naming rules:
 - lineItemName must be the specific purchased product, not a generic category.
 - Preserve meaningful descriptors such as brand, product type, flavor, cut, style, size description, and preparation.
