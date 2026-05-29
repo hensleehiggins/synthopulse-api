@@ -211,6 +211,98 @@ const upper = raw.toUpperCase();
 
   if (isNonItemChargeLine(upper)) return "";
 
+    // Royal / general produce and prep cleanup.
+  // Keep this outside the Sysco-only block so Royal Food Service lines can use it.
+  if (
+    /\bBERRIES\b/.test(upper) &&
+    (/\bBLACKBERRY\b/.test(upper) || /\bBLACKBERRIES\b/.test(upper))
+  ) {
+    return "Blackberries";
+  }
+
+  if (/\bBLACKBERRY\b/.test(upper) || /\bBLACKBERRIES\b/.test(upper)) {
+    return "Blackberries";
+  }
+
+  if (/\bASPARAGUS\b/.test(upper)) {
+    return "Asparagus";
+  }
+
+  if (
+    /\bFLOWERS?\b/.test(upper) &&
+    /\bEDIBLE\b/.test(upper) &&
+    /\bORCHID\b/.test(upper)
+  ) {
+    return "Edible Orchids";
+  }
+
+  if (
+    (/\bBRUSSEL\b/.test(upper) || /\bBRUSSELS\b/.test(upper)) &&
+    (/\bSPROUT\b/.test(upper) || /\bSPROUTS\b/.test(upper))
+  ) {
+    return "Brussels Sprouts";
+  }
+
+  if (/\bMUSHROOM\b/.test(upper) && /\bSHIITAKE\b/.test(upper)) {
+    return "Shiitake Mushrooms";
+  }
+
+  if (
+    /\bGARLIC\b/.test(upper) &&
+    (/\bPEELED\b/.test(upper) ||
+      /\bPELD\b/.test(upper) ||
+      /\bPLD\b/.test(upper))
+  ) {
+    return "Peeled Garlic";
+  }
+
+  if (/\bSHALLOT\b/.test(upper) || /\bSHALLOTS\b/.test(upper)) {
+    if (
+      /\bPEELED\b/.test(upper) ||
+      /\bPELD\b/.test(upper) ||
+      /\bPLD\b/.test(upper)
+    ) {
+      return "Peeled Shallots";
+    }
+
+    return "Shallots";
+  }
+
+  if (
+    /\bSP\b/.test(upper) &&
+    /\bBASE\b/.test(upper) &&
+    /\bMI\b/.test(upper) &&
+    /\bTUB\b/.test(upper)
+  ) {
+    return "Beef Base";
+  }
+
+  if (
+    /\bBASE\b/.test(upper) &&
+    (/\bBEEF\b/.test(upper) || /\bBF\b/.test(upper))
+  ) {
+    return "Beef Base";
+  }
+
+  if (/\bAPPLE\b/.test(upper) && /\bFUJI\b/.test(upper)) {
+    return "Fuji Apples";
+  }
+
+  if (
+    /\bPICKLE\b/.test(upper) &&
+    (/\bCHIP\b/.test(upper) || /\bCHIPS\b/.test(upper))
+  ) {
+    return "Pickle Chips";
+  }
+
+  if (/\bCILANTRO\b/.test(upper)) {
+    return "Cilantro";
+  }
+
+  if (/\bPARSLEY\b/.test(upper) && /\bCURLY\b/.test(upper)) {
+    return "Curly Parsley";
+  }
+  
   const isSyscoReliance =
     /\bSYS\s+REL\b/.test(upper) ||
     /\bSYSCO\s+REL\b/.test(upper) ||
