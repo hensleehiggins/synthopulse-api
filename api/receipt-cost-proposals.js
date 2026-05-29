@@ -1466,6 +1466,9 @@ function removeVendorNoiseFromItemName(value) {
     .replace(/\bDRISCOLL['’]?S?\b/gi, " ")
     .replace(/\bDAR\b/gi, " ")
     .replace(/\bSTANDARD\b/gi, " ")
+    .replace(/\(\s*\)/g, " ")
+    .replace(/\s+\)/g, " ")
+    .replace(/\(\s+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1577,7 +1580,19 @@ function friendlyVendorItemName(value, category = "") {
     return "Shallots";
   }
 
-  if (/\bBASE\b/.test(upper) && /\bBEEF\b/.test(upper)) {
+    if (
+    /\bSP\b/.test(upper) &&
+    /\bBASE\b/.test(upper) &&
+    /\bMI\b/.test(upper) &&
+    /\bTUB\b/.test(upper)
+  ) {
+    return "Beef Base";
+  }
+
+  if (
+    /\bBASE\b/.test(upper) &&
+    (/\bBEEF\b/.test(upper) || /\bBF\b/.test(upper))
+  ) {
     return "Beef Base";
   }
 
@@ -1840,6 +1855,14 @@ function friendlyVendorItemName(value, category = "") {
 
   if (/\bLEMONS?\b/.test(upper)) return "Lemons";
 
+    if (/\bCILANTRO\b/.test(upper)) {
+    return "Cilantro";
+  }
+
+  if (/\bPARSLEY\b/.test(upper) && /\bCURLY\b/.test(upper)) {
+    return "Curly Parsley";
+  }
+  
   if (/\bPOTATO\b|\bPOTATOES\b|\bPOT\b/.test(upper)) {
   if (/\bFRY\b|\bFRIES\b/.test(upper) && /\bSTEAK\b/.test(upper)) {
     return "Steak Fries";
