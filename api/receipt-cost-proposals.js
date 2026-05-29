@@ -1461,16 +1461,16 @@ function removeVendorNoiseFromItemName(value) {
     .replace(/\bUSA\b/gi, " ")
     .replace(/\bU\.S\.A\.\b/gi, " ")
     .replace(/\s+/g, " ")
+    .replace(/\bHALPERNS?\b/gi, " ")
+    .replace(/\bHALPERN['’]?S\b/gi, " ")
+    .replace(/\bABE\b/gi, " ")
     .trim();
 }
 
 function removePackageSizeFromItemName(value) {
   return String(value || "")
     // leading sizes: "4 OZ Lamb..." / "5-6 OZ Canadian..."
-    .replace(
-      /^\s*\d+(?:[./-]\d+)?(?:\s*-\s*\d+(?:[./-]\d+)?)?\s*(OZ|OUNCE|OUNCES|LB|LBS|#)\b\s*/i,
-      ""
-    )
+        .replace(/\b\d+(?:[./-]\d+)?(?:\s*-\s*\d+(?:[./-]\d+)?)?\s*(OZ|0Z|OUNCE|OUNCES)\b/gi, " ")
     // embedded pack/count text: "2 OZ 72CT", "12/1CT", "5/2#", "10#"
     .replace(/\b\d+(?:[./-]\d+)?(?:\s*-\s*\d+(?:[./-]\d+)?)?\s*(OZ|OUNCE|OUNCES)\b/gi, " ")
     .replace(/\b\d+\s*CT\b/gi, " ")
@@ -1478,6 +1478,7 @@ function removePackageSizeFromItemName(value) {
     .replace(/\b\d+\s*\/\s*\d+\s*#\b/gi, " ")
     .replace(/\b\d+\s*#\b/gi, " ")
     .replace(/\s+/g, " ")
+    .replace(/\b\d+\s*PC\b/gi, " ")
     .trim();
 }
 
@@ -1635,7 +1636,15 @@ function friendlyVendorItemName(value, category = "") {
     if (/\bSWISS\b/.test(upper)) return "Swiss Cheese";
     if (/\b(AMER|AMERICAN)\b/.test(upper)) return "American Cheese";
   }
-
+  
+    if (
+    (/\bCHIX\b/.test(upper) || /\bCHICKEN\b/.test(upper)) &&
+    /\bAIRLINE\b/.test(upper) &&
+    (/\bBRST\b/.test(upper) || /\bBREAST\b/.test(upper))
+  ) {
+    return "Airline Chicken Breast";
+  }
+  
   if (
     /\b(CHKN|CHICKEN)\b/.test(upper) &&
     /\b(WNG|WING|WINGS)\b/.test(upper)
