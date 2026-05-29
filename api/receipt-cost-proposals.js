@@ -383,10 +383,42 @@ function buildLineCostIdentityName(line) {
     line?.lineName ||
     "New receipt cost item";
 
-  const friendlyName =
-    friendlyVendorItemName(rawItemName, line?.category) ||
+  const rawLineText = line?.rawLineText || "";
+
+  const friendlyFromItemName =
+    friendlyVendorItemName(rawItemName, line?.category) || "";
+
+  const friendlyFromRawLine =
+    friendlyVendorItemName(rawLineText, line?.category) || "";
+
+  let friendlyName =
+    friendlyFromItemName ||
+    friendlyFromRawLine ||
     rawItemName ||
     "New receipt cost item";
+
+  // If the parsed item name is too broad, let the raw receipt row rescue it.
+  // Example: parsed "Bacon" + raw "BACON WRAPPED DATES W/ GOAT CHEESE"
+  // should become "Bacon Wrapped Dates Goat Cheese".
+  const genericNames = new Set([
+    "Bacon",
+    "Shrimp",
+    "Cheese",
+    "Chicken",
+    "Potatoes",
+    "Mushrooms",
+    "Garlic",
+    "Shallots",
+    "Dressing",
+  ]);
+
+  if (
+    genericNames.has(friendlyFromItemName) &&
+    friendlyFromRawLine &&
+    friendlyFromRawLine !== friendlyFromItemName
+  ) {
+    friendlyName = friendlyFromRawLine;
+  }
 
   return appendPackageIdentityToItemName(friendlyName, line?.packageSize);
 }
