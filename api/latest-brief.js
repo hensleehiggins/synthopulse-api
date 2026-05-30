@@ -1,5 +1,14 @@
 const Airtable = require("airtable");
-
+function cleanFormattedBrief(value) {
+  return String(value || "")
+    .split("\n")
+    .filter((line) => {
+      const text = String(line || "").trim().toLowerCase();
+      return text !== "operator hook" && text !== "• operator hook" && text !== "- operator hook";
+    })
+    .join("\n")
+    .trim();
+}
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -32,7 +41,7 @@ if (req.method === "OPTIONS") {
   cardValue: r["Hero Card Value"] || "",
   priority: r["Hero Card Priority"] || "",
   timeContext: r["Hero Time Context"] || "",
-  formattedBrief: r["Formatted Brief (Display)"] || "",
+  formattedBrief: cleanFormattedBrief(r["Formatted Brief (Display)"]),
   decisionDisplay: r["Decision Display"] || "",
   actionCallout: r["Action Callout"] || "",
   whyFull: r["Why Full"] || "",
