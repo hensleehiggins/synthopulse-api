@@ -256,9 +256,9 @@ function isAlreadyCurrentCost(currentCost, proposedCost) {
   const absoluteDelta = Math.abs(current - proposed);
   const percentDelta = current === 0 ? 1 : absoluteDelta / current;
 
-  // Treat tiny vendor/rounding differences as current.
-  // This prevents noise like $31.99 -> $31.95 from becoming a cost signal.
-  return absoluteDelta < 0.25 || percentDelta < 0.02;
+  // Treat only truly tiny vendor/rounding differences as current.
+  // A low-dollar item can move only $0.20 but still be a real 5%+ food-cost signal.
+  return absoluteDelta < 0.25 && percentDelta < 0.02;
 }
 
 function isMeaningfulCostChange(currentCost, proposedCost) {
@@ -271,8 +271,9 @@ function isMeaningfulCostChange(currentCost, proposedCost) {
   const absoluteDelta = Math.abs(current - proposed);
   const percentDelta = current === 0 ? 1 : absoluteDelta / current;
 
-  // Ignore tiny penny/rounding movement.
-  return absoluteDelta >= 0.25 && percentDelta >= 0.02;
+  // Count the movement if either the dollar move or percent move is meaningful.
+  // This preserves small-ticket produce movements like Cilantro $3.95 -> $3.75.
+  return absoluteDelta >= 0.25 || percentDelta >= 0.02;
 }
 
 function getProposedCostFromLineRecord(record) {
