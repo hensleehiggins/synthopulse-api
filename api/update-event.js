@@ -1,18 +1,275 @@
-export default async function handler(req, res) {
-  // CORS for Softr/Vibe
+/********************************************************************
+ * SynthoPulse / KitchenPulse API
+ * Route: api/update-event.js
+ * Version: v1.1
+ *
+ * Purpose:
+ * - Update an External Factors event from the Softr/Vibe Events page.
+ * - Safely convert datetime-local values from restaurant Eastern time
+ *   into UTC ISO strings for Airtable.
+ * - Keep event records typed as Event and prevent accidental weather/admin
+ *   context edits from turning into live demand pressure incorrectly.
+ *
+ * Method:
+ * - GET  /api/update-event
+ * - POST /api/update-event
+ *
+ * Body:
+ * {
+ *   "recordId": "rec...",
+ *   "eventName": "Company Dinner",
+ *   "startDateTime": "2026-06-01T17:00",
+ *   "endDateTime": "2026-06-01T20:00",
+ *   "venueArea": "Private Dining",
+ *   "estimatedDraw": "Medium",
+ *   "trafficEffect": "High"
+ * }
+ *
+ * Reads:
+ * - External Factors
+ *
+ * Writes:
+ * - External Factors
+ *
+ * Does NOT:
+ * - Delete records
+ * - Touch POS Runs
+ * - Touch Decision Layer output
+ * - Touch Forecasts & Insights
+ ********************************************************************/
+
+function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+function getEnv(name, aliases = []) {
+  const keys = [name, ...aliases];
+
+  for (const key of keys) {
+    const value = process.env[key];
+    if (value) return value;
+  }
+
+  return "";
+}
+
+function text(value) {
+  if (value === null || value === undefined) return "";
+  return String(value).trim();
+}
+
+function escapeFormulaString(value) {
+  return String(value || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function isValidRecordId(value) {
+  return /^rec[A-Za-z0-9]{14}$/.test(text(value));
+}
+
+function parseDateTimeLocal(value) {
+  const raw = text(value);
+  if (!raw) return null;
+
+  const match = raw.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/
+  );
+
+  if (!match) return null;
+
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+    hour: Number(match[4]),
+    minute: Number(match[5]),
+    second: Number(match[6] || 0),
+  };
+}
+
+function getEasternOffsetMinutesForUtcDate(utcDate) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    timeZoneName: "shortOffset",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(utcDate);
+
+  const tzName = parts.find((part) => part.type === "timeZoneName")?.value || "";
+  const match = tzName.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/);
+
+  if (!match) {
+    // Safe fallback for Eastern. This should rarely happen.
+    return -300;
+  }
+
+  const sign = match[1] === "-" ? -1 : 1;
+  const hours = Number(match[2]);
+  const minutes = Number(match[3] || 0);
+
+  return sign * (hours * 60 + minutes);
+}
+
+function localEasternDateTimeToUtcIso(value) {
+  const parsed = parseDateTimeLocal(value);
+
+  if (!parsed) {
+    // If Softr ever sends a full ISO string, preserve valid values.
+    const asDate = new Date(value);
+    if (!Number.isNaN(asDate.getTime())) return asDate.toISOString();
+    return "";
+  }
+
+  const naiveUtcMs = Date.UTC(
+    parsed.year,
+    parsed.month - 1,
+    parsed.day,
+    parsed.hour,
+    parsed.minute,
+    parsed.second
+  );
+
+  // First pass guesses offset at the naive UTC instant.
+  const firstOffsetMinutes = getEasternOffsetMinutesForUtcDate(new Date(naiveUtcMs));
+  let actualUtcMs = naiveUtcMs - firstOffsetMinutes * 60 * 1000;
+
+  // Second pass catches DST boundary days.
+  const secondOffsetMinutes = getEasternOffsetMinutesForUtcDate(new Date(actualUtcMs));
+  actualUtcMs = naiveUtcMs - secondOffsetMinutes * 60 * 1000;
+
+  return new Date(actualUtcMs).toISOString();
+}
+
+function easternDateKeyFromLocalInput(value) {
+  const parsed = parseDateTimeLocal(value);
+
+  if (parsed) {
+    return `${String(parsed.year).padStart(4, "0")}-${String(parsed.month).padStart(2, "0")}-${String(parsed.day).padStart(2, "0")}`;
+  }
+
+  const asDate = new Date(value);
+  if (Number.isNaN(asDate.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(asDate);
+}
+
+function easternTodayKey() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+function applyActiveStateFromStart(fields, startDateTimeInput) {
+  const eventDay = easternDateKeyFromLocalInput(startDateTimeInput);
+  const today = easternTodayKey();
+
+  if (!eventDay || !today) return;
+
+  fields["Needs Review"] = false;
+
+  if (eventDay === today) {
+    fields["Active"] = true;
+    fields["Active (Event)"] = true;
+  } else {
+    fields["Active"] = false;
+    fields["Active (Event)"] = false;
+  }
+}
+
+function buildAirtableUrl({ baseId, tableName, recordId }) {
+  return `https://api.airtable.com/v0/${baseId}/${encodeURIComponent(tableName)}/${recordId}`;
+}
+
+async function fetchAirtableRecord({ token, baseId, tableName, recordId }) {
+  const response = await fetch(buildAirtableUrl({ baseId, tableName, recordId }), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const raw = await response.text();
+  const data = raw ? JSON.parse(raw) : null;
+
+  if (!response.ok) {
+    throw new Error(
+      data?.error?.message ||
+        data?.error?.type ||
+        raw ||
+        `Airtable fetch failed with status ${response.status}`
+    );
+  }
+
+  return data;
+}
+
+function looksAdminOrNonDemand(fields, incoming = {}) {
+  const blob = [
+    fields?.["Event Name"],
+    fields?.Description,
+    fields?.Notes,
+    fields?.["Event Type"],
+    fields?.["Venue / Area"],
+    incoming.eventName,
+    incoming.venueArea,
+  ]
+    .map(text)
+    .join(" ")
+    .toLowerCase();
+
+  const phrases = [
+    "menu finalization",
+    "deposit follow",
+    "payment follow",
+    "balance due",
+    "contract pending",
+    "beo review",
+    "final count",
+    "planning call",
+    "internal hold",
+    "staff meeting",
+    "manager meeting",
+    "task",
+    "todo",
+    "to-do",
+    "reminder",
+    "note",
+    "follow up",
+    "follow-up",
+    "demo",
+    "test event",
+    "webhook test",
+    "api test",
+  ];
+
+  return phrases.some((phrase) => blob.includes(phrase));
+}
+
+export default async function handler(req, res) {
+  setCorsHeaders(res);
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // Browser health check. This prevents the scary Vercel crash page on GET.
   if (req.method === "GET") {
     return res.status(200).json({
       ok: true,
       route: "update-event",
+      version: "v1.1",
       message: "Route is live. Use POST to update an event.",
       time: new Date().toISOString(),
     });
@@ -21,31 +278,16 @@ export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
       ok: false,
+      route: "update-event",
+      version: "v1.1",
       error: "Method not allowed",
     });
   }
 
-  function localDateTimeToEasternIso(value) {
-  if (!value) return "";
-
-  // Softr/Vibe datetime-local sends values like "2026-05-05T17:00".
-  // Treat that as Eastern restaurant time and convert to UTC for Airtable.
-  const [datePart, timePart] = value.split("T");
-  if (!datePart || !timePart) return value;
-
-  const [year, month, day] = datePart.split("-").map(Number);
-  const [hour, minute] = timePart.split(":").map(Number);
-
-  // KitchenPulse first tenant is Georgia/Eastern.
-  // May is EDT, so Eastern local + 4 hours = UTC.
-  const utcMs = Date.UTC(year, month - 1, day, hour + 4, minute || 0, 0);
-
-  return new Date(utcMs).toISOString();
-}
   try {
     const body = req.body || {};
 
-    const recordId = body.recordId;
+    const recordId = text(body.recordId);
     const eventName = body.eventName;
     const startDateTime = body.startDateTime;
     const endDateTime = body.endDateTime;
@@ -56,23 +298,36 @@ export default async function handler(req, res) {
     if (!recordId) {
       return res.status(400).json({
         ok: false,
+        route: "update-event",
+        version: "v1.1",
         error: "Missing recordId",
       });
     }
 
-    const AIRTABLE_TOKEN =
-      process.env.AIRTABLE_PAT ||
-      process.env.AIRTABLE_TOKEN ||
-      process.env.AIRTABLE_API_KEY ||
-      process.env.AIRTABLE_PERSONAL_ACCESS_TOKEN;
+    if (!isValidRecordId(recordId)) {
+      return res.status(400).json({
+        ok: false,
+        route: "update-event",
+        version: "v1.1",
+        error: "Invalid Airtable recordId format",
+      });
+    }
 
-    const AIRTABLE_BASE_ID =
-      process.env.AIRTABLE_BASE_ID ||
-      process.env.KITCHENPULSE_BASE_ID;
+    const AIRTABLE_TOKEN = getEnv("AIRTABLE_PAT", [
+      "AIRTABLE_TOKEN",
+      "AIRTABLE_API_KEY",
+      "AIRTABLE_PERSONAL_ACCESS_TOKEN",
+    ]);
+
+    const AIRTABLE_BASE_ID = getEnv("AIRTABLE_BASE_ID", [
+      "KITCHENPULSE_BASE_ID",
+    ]);
 
     if (!AIRTABLE_TOKEN) {
       return res.status(500).json({
         ok: false,
+        route: "update-event",
+        version: "v1.1",
         error: "Missing Airtable token environment variable",
       });
     }
@@ -80,84 +335,111 @@ export default async function handler(req, res) {
     if (!AIRTABLE_BASE_ID) {
       return res.status(500).json({
         ok: false,
+        route: "update-event",
+        version: "v1.1",
         error: "Missing Airtable base ID environment variable",
       });
     }
 
     const tableName = "External Factors";
 
-    const fields = {};
+    const existing = await fetchAirtableRecord({
+      token: AIRTABLE_TOKEN,
+      baseId: AIRTABLE_BASE_ID,
+      tableName,
+      recordId,
+    });
 
-    // Writable text fields
+    const existingFields = existing?.fields || {};
+
+    if (text(existingFields.Type) && text(existingFields.Type) !== "Event") {
+      return res.status(400).json({
+        ok: false,
+        route: "update-event",
+        version: "v1.1",
+        error: `Refusing to update record because Type is "${existingFields.Type}", not Event.`,
+      });
+    }
+
+    if (looksAdminOrNonDemand(existingFields, body)) {
+      return res.status(400).json({
+        ok: false,
+        route: "update-event",
+        version: "v1.1",
+        error:
+          "Refusing to update record because it looks like an admin/task/test/non-demand item.",
+      });
+    }
+
+    const fields = {
+      Type: "Event",
+    };
+
     if (eventName !== undefined) {
-      fields["Event Name"] = eventName || "";
-      fields["Description"] = eventName || "";
+      fields["Event Name"] = text(eventName);
+      fields["Description"] = text(eventName);
     }
 
     if (venueArea !== undefined) {
-      fields["Venue / Area"] = venueArea || "";
+      fields["Venue / Area"] = text(venueArea);
     }
 
-    // Writable date fields.
-    // Do NOT write Event Sort Date. It is a formula.
-    if (startDateTime !== undefined && startDateTime !== "") {
-  fields["Start DateTime"] = localDateTimeToEasternIso(startDateTime);
-}
+    if (startDateTime !== undefined && text(startDateTime) !== "") {
+      const startIso = localEasternDateTimeToUtcIso(startDateTime);
 
-
-
-    // Writable single-select fields.
-    // Your Airtable choices are exactly:
-    // Estimated Draw: Low, Medium, High, Very High
-    // Traffic Effect: Low, Medium, High, Very High, High positive
-    if (estimatedDraw !== undefined && estimatedDraw !== "") {
-      fields["Estimated Draw"] = estimatedDraw;
-    }
-
-    if (trafficEffect !== undefined && trafficEffect !== "") {
-      fields["Traffic Effect"] = trafficEffect;
-    }
-
-    // Writable checkbox helpers.
-    // Do NOT write Event Board Column. It is a formula.
-    // Airtable formula decides:
-    // Needs Review / Active Today / Upcoming Impact
-    if (startDateTime) {
-      const eventDate = new Date(startDateTime);
-      const now = new Date();
-
-      const eventDay = new Date(
-        eventDate.getFullYear(),
-        eventDate.getMonth(),
-        eventDate.getDate()
-      );
-
-      const today = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate()
-      );
-
-      if (eventDay.getTime() === today.getTime()) {
-        fields["Active"] = true;
-        fields["Needs Review"] = false;
-      } else if (eventDay.getTime() > today.getTime()) {
-        fields["Active"] = false;
-        fields["Needs Review"] = false;
-      } else {
-        fields["Active"] = false;
-        fields["Needs Review"] = false;
+      if (!startIso) {
+        return res.status(400).json({
+          ok: false,
+          route: "update-event",
+          version: "v1.1",
+          error: "Invalid startDateTime",
+        });
       }
+
+      fields["Start DateTime"] = startIso;
+      fields["Start Time"] = startIso;
+
+      const serviceDate = easternDateKeyFromLocalInput(startDateTime);
+      if (serviceDate) {
+        fields["Display Date"] = serviceDate;
+        fields["Forecast Date"] = serviceDate;
+        fields["Date"] = serviceDate;
+      }
+
+      applyActiveStateFromStart(fields, startDateTime);
     }
 
-    console.log("update-event payload:", {
-      recordId,
-      fields,
-    });
+    if (endDateTime !== undefined && text(endDateTime) !== "") {
+      const endIso = localEasternDateTimeToUtcIso(endDateTime);
 
-    const airtableUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(
-      tableName
-    )}/${recordId}`;
+      if (!endIso) {
+        return res.status(400).json({
+          ok: false,
+          route: "update-event",
+          version: "v1.1",
+          error: "Invalid endDateTime",
+        });
+      }
+
+      fields["End DateTime"] = endIso;
+      fields["End Time"] = endIso;
+    }
+
+    if (estimatedDraw !== undefined && text(estimatedDraw) !== "") {
+      fields["Estimated Draw"] = text(estimatedDraw);
+    }
+
+    if (trafficEffect !== undefined && text(trafficEffect) !== "") {
+      fields["Traffic Effect"] = text(trafficEffect);
+    }
+
+    fields["Needs Review"] = false;
+
+    const airtableUrl = buildAirtableUrl({
+      baseId: AIRTABLE_BASE_ID,
+      tableName,
+      recordId,
+    });
 
     const airtableRes = await fetch(airtableUrl, {
       method: "PATCH",
@@ -171,26 +453,20 @@ export default async function handler(req, res) {
       }),
     });
 
-    let airtableData = null;
     const rawText = await airtableRes.text();
 
+    let airtableData = null;
     try {
       airtableData = rawText ? JSON.parse(rawText) : null;
     } catch (parseErr) {
-      airtableData = {
-        raw: rawText,
-      };
+      airtableData = { raw: rawText };
     }
 
     if (!airtableRes.ok) {
-      console.error("Airtable update failed:", {
-        status: airtableRes.status,
-        airtableData,
-        fields,
-      });
-
       return res.status(airtableRes.status).json({
         ok: false,
+        route: "update-event",
+        version: "v1.1",
         error:
           airtableData?.error?.message ||
           airtableData?.error?.type ||
@@ -203,16 +479,20 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
+      route: "update-event",
+      version: "v1.1",
       recordId,
       updatedFields: fields,
       airtable: airtableData,
+      generatedAt: new Date().toISOString(),
     });
   } catch (err) {
-    console.error("update-event crashed:", err);
-
     return res.status(500).json({
       ok: false,
+      route: "update-event",
+      version: "v1.1",
       error: err?.message || "Unknown server error",
+      generatedAt: new Date().toISOString(),
     });
   }
 }
