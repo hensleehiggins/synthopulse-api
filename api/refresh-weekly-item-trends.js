@@ -1,3 +1,35 @@
+/********************************************************************
+ * KitchenPulse API - Refresh Weekly Item Trends v1.1
+ *
+ * Purpose:
+ * - Recalculate Weekly Item Trends for one restaurant/tenant.
+ * - Build current/prior trend windows from completed POS decision runs only.
+ * - Use mapped, Decision Eligible Menu Items and Daily Sales rows.
+ * - Upsert active trend rows and deactivate stale trend rows for the restaurant.
+ *
+ * Request:
+ * - GET or POST
+ * - Pass restaurantId=rec... or restaurantName=Chloe
+ * - Optional x-admin-secret header or ?secret=... when ADMIN_REFRESH_SECRET is set
+ *
+ * Decision-run gate:
+ * - Runs must be:
+ *   - Run Status = Completed
+ *   - Use For Decision Layer = true
+ * - Weekly trends do NOT require Is Latest Decision Run because they need
+ *   multiple historical completed decision runs.
+ *
+ * Touches:
+ * - Weekly Item Trends
+ *
+ * Does NOT:
+ * - Create or update Runs
+ * - Create or update Daily Sales
+ * - Create or update Top/Low Sellers
+ * - Create or update Item Movement
+ * - Create or update Forecasts & Insights
+ ********************************************************************/
+
 const Airtable = require("airtable");
 
 const base = new Airtable({
@@ -5,6 +37,7 @@ const base = new Airtable({
 }).base(process.env.AIRTABLE_BASE_ID);
 
 const REQUIRED_SECRET = process.env.ADMIN_REFRESH_SECRET || "";
+const RUN_STATUS_COMPLETED = "Completed";
 
 const TABLES = {
   restaurants: "Restaurants",
@@ -112,6 +145,32 @@ function isReportingRunId(runId) {
   if (text.includes("imported")) return false;
 
   return true;
+}
+
+function getSelectName(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object" && value.name) return value.name;
+  return "";
+}
+
+function isCompletedDecisionRun(fields = {}) {
+  return (
+    getSelectName(fields["Run Status"]) === RUN_STATUS_COMPLETED &&
+    fields["Use For Decision Layer"] === true
+  );
+}
+
+function normalizeServiceType(value) {
+  const text = String(value || "").trim().toLowerCase();
+
+  if (!text) return "unknown";
+  if (text.includes("dinner")) return "dinner";
+  if (text.includes("lunch")) return "lunch";
+  if (text.includes("brunch")) return "brunch";
+  if (text.includes("full")) return "full_day";
+
+  return text.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "unknown";
 }
 
 function isAllowedOwnerItemName(itemName) {
@@ -458,7 +517,17 @@ module.exports = async function handler(req, res) {
           fields: ["Restaurant Name"],
         }),
         getAllRecords(TABLES.runs, {
-          fields: ["Run ID", "Created Time", "Restaurant"],
+          fields: [
+            "Run ID",
+            "Created Time",
+            "Restaurant",
+            "Run Status",
+            "Use For Decision Layer",
+            "Is Latest Decision Run",
+            "Completion Gate Reason",
+            "Service Date",
+            "Service Type",
+          ],
         }),
         getAllRecords(TABLES.menuItems, {
           fields: [
@@ -520,26 +589,63 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    let skippedNonDecisionRuns = 0;
+    let skippedWrongRestaurantRuns = 0;
+    let skippedNonCloseRuns = 0;
+
     const reportingRuns = runs
       .map((record) => {
         const fields = record.fields || {};
         const runId = fields["Run ID"] || "";
-        const runDate = parseRunDate(runId, fields["Created Time"]);
+        const runDate = fields["Service Date"] || parseRunDate(runId, fields["Created Time"]);
+        const serviceType = getSelectName(fields["Service Type"]);
+        const restaurantIds = getLinkedIds(fields["Restaurant"]);
+        const completedDecisionRun = isCompletedDecisionRun(fields);
 
         return {
           id: record.id,
           runId,
           runDate,
           createdTime: fields["Created Time"] || "",
-          restaurantIds: getLinkedIds(fields["Restaurant"]),
+          restaurantIds,
+          runStatus: getSelectName(fields["Run Status"]),
+          useForDecisionLayer: fields["Use For Decision Layer"] === true,
+          isLatestDecisionRun: fields["Is Latest Decision Run"] === true,
+          serviceType,
+          serviceKey: normalizeServiceType(serviceType),
         };
       })
-      .filter(
-        (run) =>
-          isReportingRunId(run.runId) &&
-          run.runDate &&
-          run.restaurantIds.includes(restaurantId)
-      )
+      .filter((run) => {
+        if (!run.restaurantIds.includes(restaurantId)) {
+          skippedWrongRestaurantRuns++;
+          return false;
+        }
+
+        if (!isReportingRunId(run.runId)) {
+          skippedNonCloseRuns++;
+          return false;
+        }
+
+        if (!run.runDate) {
+          skippedNonCloseRuns++;
+          return false;
+        }
+
+        if (!(run.runStatus === RUN_STATUS_COMPLETED && run.useForDecisionLayer === true)) {
+          skippedNonDecisionRuns++;
+          return false;
+        }
+
+        // Weekly trend rows should compare the same operating service.
+        // Current POS export convention is Close/Dinner, but this remains tenant-safe
+        // because the decision gate is the primary guard and Service Type is metadata.
+        if (run.serviceKey !== "unknown" && run.serviceKey !== "dinner") {
+          skippedNonCloseRuns++;
+          return false;
+        }
+
+        return true;
+      })
       .sort((a, b) => {
         if (a.runDate !== b.runDate) {
           return b.runDate.localeCompare(a.runDate);
@@ -561,9 +667,12 @@ module.exports = async function handler(req, res) {
         reason: "Not enough reporting close runs for weekly trend comparison yet.",
         restaurant: restaurantName,
         restaurantId,
-        reportingRuns: reportingRuns.length,
+        completedDecisionReportingRuns: reportingRuns.length,
         currentRuns: currentRuns.length,
         priorRuns: priorRuns.length,
+        skippedNonDecisionRuns,
+        skippedWrongRestaurantRuns,
+        skippedNonCloseRuns,
       });
     }
 
@@ -733,7 +842,7 @@ module.exports = async function handler(req, res) {
             "Prior:",
             ...priorRuns.map((run) => run.runId),
           ].join("\n"),
-          Notes: `Tenant-safe weekly trend for ${restaurantName}. Current window ${currentWindowStart} to ${currentWindowEnd}; prior window ${priorWindowStart} to ${priorWindowEnd}. Qty ${currentQty} vs ${priorQty}; revenue ${money(
+          Notes: `Tenant-safe weekly trend for ${restaurantName}. Uses completed decision-ready POS dinner/close runs only. Current window ${currentWindowStart} to ${currentWindowEnd}; prior window ${priorWindowStart} to ${priorWindowEnd}. Qty ${currentQty} vs ${priorQty}; revenue ${money(
             trend.revenueChange
           )}; profit ${money(trend.profitChange)}; qty pct ${formatPctShort(
             trend.qtyChangePct
@@ -814,9 +923,26 @@ module.exports = async function handler(req, res) {
       table: TABLES.weeklyTrends,
       restaurant: restaurantName,
       restaurantId,
-      reportingRuns: reportingRuns.length,
+      completedDecisionReportingRuns: reportingRuns.length,
       currentRuns: currentRuns.map((run) => run.runId),
       priorRuns: priorRuns.map((run) => run.runId),
+      currentRunGate: currentRuns.map((run) => ({
+        runId: run.runId,
+        runStatus: run.runStatus,
+        useForDecisionLayer: run.useForDecisionLayer,
+        isLatestDecisionRun: run.isLatestDecisionRun,
+        serviceType: run.serviceType,
+      })),
+      priorRunGate: priorRuns.map((run) => ({
+        runId: run.runId,
+        runStatus: run.runStatus,
+        useForDecisionLayer: run.useForDecisionLayer,
+        isLatestDecisionRun: run.isLatestDecisionRun,
+        serviceType: run.serviceType,
+      })),
+      skippedNonDecisionRuns,
+      skippedWrongRestaurantRuns,
+      skippedNonCloseRuns,
       decisionEligibleMenuItems: menuById.size,
       scannedDailySales: dailySales.length,
       skippedWrongRestaurant,
