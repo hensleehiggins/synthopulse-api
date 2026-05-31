@@ -1,91 +1,42 @@
-/********************************************************************
- * SynthoPulse / KitchenPulse API
- * Route: api/tripleseat-board.js
- * Version: v1.1
- *
- * Purpose:
- * - Return Tripleseat/private-event board data for Softr/Vibe.
- * - Separate review queue, active today, decision drivers, and upcoming
- *   booked demand.
- * - Keep admin/task/demo/weather/non-event records out of the board.
- * - Support future multi-tenant filtering with ?restaurantId=rec...
- *
- * Method:
- * - GET /api/tripleseat-board
- * - GET /api/tripleseat-board?restaurantId=recXXXXXXXXXXXXXX
- *
- * Reads:
- * - Event Intake Queue
- * - External Factors
- *
- * Writes:
- * - Nothing
- *
- * Does NOT:
- * - Promote events
- * - Approve/deny events
- * - Touch POS Runs
- * - Touch Decision Layer output
- ********************************************************************/
-
 const Airtable = require("airtable");
 
-const DEFAULT_RESTAURANT_ID = "recn2LoRESKN33zHW"; // Chloe's Steakhouse
+const base = new Airtable({
+  apiKey: process.env.AIRTABLE_PAT,
+}).base(process.env.AIRTABLE_BASE_ID);
 
-function getEnv(name, aliases = []) {
-  const keys = [name, ...aliases];
-
-  for (const key of keys) {
-    const value = process.env[key];
-    if (value) return value;
-  }
-
-  return "";
-}
-
-function getBase() {
-  const token = getEnv("AIRTABLE_PAT", [
-    "AIRTABLE_TOKEN",
-    "AIRTABLE_API_KEY",
-    "AIRTABLE_PERSONAL_ACCESS_TOKEN",
-  ]);
-
-  const baseId = getEnv("AIRTABLE_BASE_ID", ["KITCHENPULSE_BASE_ID"]);
-
-  if (!token) throw new Error("Missing Airtable token environment variable.");
-  if (!baseId) throw new Error("Missing Airtable base ID environment variable.");
-
-  return new Airtable({ apiKey: token }).base(baseId);
-}
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
 function send(res, status, body) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    res.setHeader(key, value);
+  });
+
   res.status(status).json(body);
 }
 
 function text(value) {
-  if (value === null || value === undefined) return "";
+  if (!value) return "";
 
-  if (typeof value === "string") return value.trim();
+  if (typeof value === "string") return value;
 
   if (Array.isArray(value)) {
     return value
       .map((item) => {
         if (typeof item === "string") return item;
         if (item?.name) return item.name;
-        if (item?.id) return item.id;
         return "";
       })
       .filter(Boolean)
       .join(", ");
   }
 
-  if (value?.name) return String(value.name).trim();
-  if (value?.id) return String(value.id).trim();
+  if (value?.name) return value.name;
 
-  return String(value).trim();
+  return String(value);
 }
 
 function bool(value) {
@@ -99,39 +50,13 @@ function number(value) {
 
 function toIso(value) {
   if (!value) return null;
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-
   return date.toISOString();
-}
-
-function linkedIds(value) {
-  if (!Array.isArray(value)) return [];
-
-  return value
-    .map((item) => {
-      if (typeof item === "string") return item;
-      if (item?.id) return item.id;
-      return "";
-    })
-    .filter(Boolean);
-}
-
-function belongsToRestaurant(fields, restaurantId) {
-  const ids = linkedIds(fields.Restaurant);
-
-  if (!restaurantId) return true;
-
-  // If an older event has no Restaurant link, allow it for Chloe only.
-  if (ids.length === 0 && restaurantId === DEFAULT_RESTAURANT_ID) return true;
-
-  return ids.includes(restaurantId);
 }
 
 function formatDateLabel(value) {
   if (!value) return "";
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
 
@@ -178,109 +103,20 @@ function isToday(value) {
   return Boolean(eventKey && todayKey && eventKey === todayKey);
 }
 
-function eventBlob(fields) {
-  return [
-    fields["Event Name"],
-    fields.Description,
-    fields.Notes,
-    fields["Event Type"],
-    fields["Event Type / Meal Period"],
-    fields["Venue / Area"],
-    fields["Room / Space"],
-    fields["Tripleseat Record Type"],
-    fields.Status,
-    fields["Tripleseat Status"],
-    fields.Source,
-    fields["Source Type"],
-    fields.Type,
-  ]
-    .map(text)
-    .join(" ")
-    .toLowerCase();
-}
-
-function looksAdminOrNonDemand(fields) {
-  const blob = eventBlob(fields);
-
-  const blocked = [
-    "menu finalization",
-    "menu finalisation",
-    "menu pending",
-    "final menu",
-    "deposit follow",
-    "deposit due",
-    "deposit pending",
-    "payment due",
-    "payment follow",
-    "balance due",
-    "contract pending",
-    "contract due",
-    "contract follow",
-    "beo review",
-    "beo pending",
-    "final count",
-    "guest count due",
-    "headcount due",
-    "planning call",
-    "planning meeting",
-    "internal hold",
-    "admin hold",
-    "staff meeting",
-    "manager meeting",
-    "filmed interview",
-    "interview",
-    "task",
-    "todo",
-    "to-do",
-    "reminder",
-    "note",
-    "follow up",
-    "follow-up",
-    "demo",
-    "test event",
-    "webhook test",
-    "api test",
-  ];
-
-  return blocked.some((phrase) => blob.includes(phrase));
-}
-
-function normalizeStatus(value) {
-  const status = text(value).toUpperCase();
-
-  if (status.includes("DEFINITE")) return "Definite";
-  if (status.includes("CONFIRMED")) return "Confirmed";
-  if (status.includes("TENTATIVE")) return "Tentative";
-  if (status.includes("PROSPECT")) return "Prospect";
-  if (status.includes("CANCEL")) return "Cancelled";
-  if (status.includes("LOST")) return "Lost";
-  if (status.includes("CLOSED")) return "Closed";
-
-  return text(value);
-}
-
-function isClosedStatus(fields) {
-  const status = normalizeStatus(fields["Tripleseat Status"] || fields.Status);
-
-  return status === "Cancelled" || status === "Lost" || status === "Closed";
-}
-
 function intakeRecord(record) {
   const fields = record.fields || {};
   const start = fields["Start DateTime"];
 
   return {
     id: record.id,
-    recordId: record.id,
     eventName: text(fields["Event Name"]) || "Unnamed Tripleseat event",
     startDateTime: toIso(start),
     dateLabel: formatDateLabel(start),
-    venueArea: text(fields["Venue / Area"]) || text(fields["Room / Space"]),
-    city: text(fields.City),
-    source: text(fields.Source),
-    status: text(fields.Status),
+    venueArea: text(fields["Venue / Area"]),
+    city: text(fields["City"]),
+    source: text(fields["Source"]),
+    status: text(fields["Status"]),
     tripleseatStatus: text(fields["Tripleseat Status"]),
-    tripleseatRecordType: text(fields["Tripleseat Record Type"]),
     guestCount: number(fields["Guest Count"]),
     eventType: text(fields["Event Type / Meal Period"]),
     room: text(fields["Room / Space"]),
@@ -289,67 +125,56 @@ function intakeRecord(record) {
     suggestedEventWeight: number(fields["Suggested Event Weight"]),
     promoteToDecision: bool(fields["Promote to Decision"]),
     needsReview: bool(fields["Needs Review"]),
-    restaurantIds: linkedIds(fields.Restaurant),
   };
 }
 
 function externalRecord(record) {
   const fields = record.fields || {};
-  const start = fields["Start DateTime"] || fields["Start Time"];
+  const start = fields["Start DateTime"];
 
   return {
     id: record.id,
-    recordId: record.id,
     eventName:
       text(fields["Event Name"]) ||
-      text(fields.Description) ||
+      text(fields["Description"]) ||
       "Unnamed private event",
-    description: text(fields.Description),
+    description: text(fields["Description"]),
     startDateTime: toIso(start),
-    endDateTime: toIso(fields["End DateTime"] || fields["End Time"]),
+    endDateTime: toIso(fields["End DateTime"]),
     dateLabel: formatDateLabel(start),
     venueArea: text(fields["Venue / Area"]),
-    active: bool(fields.Active),
-    activeEvent: bool(fields["Active (Event)"]),
+    active: bool(fields["Active"]),
     eventWeight: number(fields["Event Weight"]),
     impactStrength: number(fields["Impact Strength"]),
-    priorityScore: number(fields["Priority Score"]),
     estimatedDraw: text(fields["Estimated Draw"]),
     trafficEffect: text(fields["Traffic Effect"]),
-    confidence: text(fields.Confidence),
+    confidence: text(fields["Confidence"]),
     decisionDrivingEvent: bool(fields["Decision Driving Event"]),
-    showOnHomeAlert: bool(fields["Show on Home Alert"]),
-    showOnServicePressure: bool(fields["Show on Service Pressure"]),
     externalEventId: text(fields["External Event ID"]),
     eventSummary: text(fields["Event Summary"]),
     decisionNote: text(fields["Decision Note"]),
-    notes: text(fields.Notes),
-    source: text(fields.Source),
+    notes: text(fields["Notes"]),
+    source: text(fields["Source"]),
     sourceType: text(fields["Source Type"]),
-    restaurantIds: linkedIds(fields.Restaurant),
   };
 }
 
-function isTripleseatOrPrivateDemand(record, restaurantId) {
+function isTripleseatOrPrivateDemand(record) {
   const fields = record.fields || {};
 
-  if (!belongsToRestaurant(fields, restaurantId)) return false;
-
-  const type = text(fields.Type).toLowerCase();
+  const type = text(fields["Type"]).toLowerCase();
   if (type !== "event") return false;
 
-  if (!bool(fields.Active)) return false;
-  if (isClosedStatus(fields)) return false;
-  if (looksAdminOrNonDemand(fields)) return false;
+  if (!bool(fields["Active"])) return false;
 
   const externalEventId = text(fields["External Event ID"]).toLowerCase();
-  const notes = text(fields.Notes).toLowerCase();
+  const notes = text(fields["Notes"]).toLowerCase();
   const summary = text(fields["Event Summary"]).toLowerCase();
-  const source = text(fields.Source).toLowerCase();
+  const source = text(fields["Source"]).toLowerCase();
   const sourceType = text(fields["Source Type"]).toLowerCase();
   const venueArea = text(fields["Venue / Area"]).toLowerCase();
   const eventName = text(fields["Event Name"]).toLowerCase();
-  const description = text(fields.Description).toLowerCase();
+  const description = text(fields["Description"]).toLowerCase();
   const decisionNote = text(fields["Decision Note"]).toLowerCase();
 
   const blob = [
@@ -367,6 +192,7 @@ function isTripleseatOrPrivateDemand(record, restaurantId) {
   const fromTripleseat =
     source.includes("tripleseat") ||
     sourceType.includes("tripleseat") ||
+    externalEventId.includes("ts-") ||
     externalEventId.includes("tripleseat") ||
     blob.includes("tripleseat");
 
@@ -386,7 +212,7 @@ function isTripleseatOrPrivateDemand(record, restaurantId) {
   return fromTripleseat || privateDemandLanguage;
 }
 
-async function getAllRecords(base, tableName, options = {}) {
+async function getAllRecords(tableName, options = {}) {
   const records = [];
 
   await base(tableName)
@@ -405,23 +231,12 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== "GET") {
-    return send(res, 405, {
-      ok: false,
-      route: "/api/tripleseat-board",
-      version: "v1.1",
-      error: "Method not allowed",
-    });
+    return send(res, 405, { ok: false, error: "Method not allowed" });
   }
 
   try {
-    const base = getBase();
-    const restaurantId =
-      text(req.query?.restaurantId) ||
-      text(req.query?.restaurant) ||
-      DEFAULT_RESTAURANT_ID;
-
     const [intakeRecords, externalRecords] = await Promise.all([
-      getAllRecords(base, "Event Intake Queue", {
+      getAllRecords("Event Intake Queue", {
         fields: [
           "Event Name",
           "Start DateTime",
@@ -429,8 +244,7 @@ module.exports = async function handler(req, res) {
           "City",
           "Source",
           "Status",
-         
-          "Tripleseat Record Type",
+          "Tripleseat Status",
           "Guest Count",
           "Event Type / Meal Period",
           "Room / Space",
@@ -439,39 +253,29 @@ module.exports = async function handler(req, res) {
           "Suggested Event Weight",
           "Promote to Decision",
           "Needs Review",
-          "Restaurant",
         ],
       }),
-      getAllRecords(base, "External Factors", {
+      getAllRecords("External Factors", {
         fields: [
           "Type",
           "Event Name",
           "Description",
           "Start DateTime",
           "End DateTime",
-          "Start Time",
-          "End Time",
           "Venue / Area",
           "Active",
-          "Active (Event)",
           "Event Weight",
           "Impact Strength",
-          "Priority Score",
           "Estimated Draw",
           "Traffic Effect",
           "Confidence",
           "Decision Driving Event",
-          "Show on Home Alert",
-          "Show on Service Pressure",
           "External Event ID",
           "Event Summary",
           "Decision Note",
           "Notes",
           "Source",
           "Source Type",
-          "Restaurant",
-          
-          "Status",
         ],
       }),
     ]);
@@ -479,19 +283,15 @@ module.exports = async function handler(req, res) {
     const needsReview = intakeRecords
       .filter((record) => {
         const fields = record.fields || {};
-        const source = text(fields.Source).toLowerCase();
-        const status = text(fields.Status).toLowerCase();
-        const recordType = text(fields["Tripleseat Record Type"]);
+        const source = text(fields["Source"]).toLowerCase();
+        const status = text(fields["Status"]).toLowerCase();
 
-        if (!belongsToRestaurant(fields, restaurantId)) return false;
-        if (source !== "tripleseat") return false;
-        if (status === "processed" || status === "ignored") return false;
-        if (!bool(fields["Needs Review"])) return false;
-        if (recordType && recordType !== "Event") return false;
-        if (isClosedStatus(fields)) return false;
-        if (looksAdminOrNonDemand(fields)) return false;
-
-        return true;
+        return (
+          source === "tripleseat" &&
+          status !== "processed" &&
+          status !== "ignored" &&
+          bool(fields["Needs Review"])
+        );
       })
       .map(intakeRecord)
       .filter((event) => isFutureOrToday(event.startDateTime))
@@ -499,10 +299,10 @@ module.exports = async function handler(req, res) {
         (a, b) =>
           new Date(a.startDateTime || 0) - new Date(b.startDateTime || 0)
       )
-      .slice(0, 6);
+      .slice(0, 3);
 
     const privateEvents = externalRecords
-      .filter((record) => isTripleseatOrPrivateDemand(record, restaurantId))
+      .filter(isTripleseatOrPrivateDemand)
       .map(externalRecord)
       .filter((event) => isFutureOrToday(event.startDateTime))
       .sort(
@@ -515,8 +315,7 @@ module.exports = async function handler(req, res) {
         (event) =>
           event.decisionDrivingEvent ||
           event.eventWeight >= 8 ||
-          event.impactStrength >= 8 ||
-          event.priorityScore >= 8
+          event.impactStrength >= 8
       )
       .slice(0, 8);
 
@@ -544,26 +343,19 @@ module.exports = async function handler(req, res) {
 
     return send(res, 200, {
       ok: true,
-      route: "/api/tripleseat-board",
-      version: "v1.1",
-      restaurantId,
       stats,
       needsReview,
       decisionDrivers,
       activeToday,
       upcomingBookedDemand,
       privateEvents,
-      generatedAt: new Date().toISOString(),
     });
   } catch (error) {
     console.error("tripleseat-board error", error);
 
     return send(res, 500, {
       ok: false,
-      route: "/api/tripleseat-board",
-      version: "v1.1",
       error: error.message || "Failed to load Tripleseat board",
-      generatedAt: new Date().toISOString(),
     });
   }
 };
