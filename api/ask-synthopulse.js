@@ -1,3 +1,31 @@
+/********************************************************************
+ * KitchenPulse API - Ask SynthoPulse v1.1
+ *
+ * Purpose:
+ * - Power the Softr SynthoPulse operator-copilot chat block.
+ * - Read the latest protected Forecasts & Insights brief from Airtable.
+ * - Pull movement evidence only from rows marked Is Latest Movement and
+ *   linked to the same Run ID as the current brief.
+ * - Ground OpenAI responses in current KitchenPulse data only.
+ *
+ * Partial-run hardening:
+ * - This route relies on Forecasts & Insights {Is Latest Brief}.
+ * - Airtable Decision Layer v3.8 now only sets latest brief from a
+ *   completed decision-ready run, so this route must not bypass that by
+ *   reading raw latest Runs directly.
+ * - Movement rows are filtered to current-run latest movement evidence only.
+ *
+ * Inputs:
+ * - POST body: { message: string }
+ * - GET: health/context check only
+ *
+ * Environment:
+ * - AIRTABLE_PAT
+ * - AIRTABLE_BASE_ID
+ * - OPENAI_API_KEY
+ * - optional OPENAI_MODEL
+ ********************************************************************/
+
 module.exports = async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
@@ -10,6 +38,7 @@ module.exports = async function handler(req, res) {
   const AIRTABLE_PAT = String(process.env.AIRTABLE_PAT || "").trim();
   const AIRTABLE_BASE_ID = String(process.env.AIRTABLE_BASE_ID || "").trim();
   const OPENAI_API_KEY = String(process.env.OPENAI_API_KEY || "").trim();
+  const OPENAI_MODEL = String(process.env.OPENAI_MODEL || "gpt-4o-mini").trim();
 
   const BRIEFS_TABLE_ID = "tblzlPlaD5KbnE9XP";
   const MOVEMENT_TABLE_ID = "tblt4IDWrqDL9jg0S";
@@ -213,7 +242,12 @@ function normalizeQuestion(message) {
       previousRevenue: safeNumber(fields["Previous Revenue"]),
       notes: safeText(fields["Notes"]),
       currentRunId: safeText(fields["Current Run ID"]),
-      previousRunId: safeText(fields["Previous Run ID"])
+      previousRunId: safeText(fields["Previous Run ID"]),
+      isLatestMovement:
+        fields["Is Latest Movement"] === true ||
+        safeText(fields["Is Latest Movement"]).toLowerCase() === "true" ||
+        safeText(fields["Is Latest Movement"]) === "1",
+      displayRank: safeNumber(fields["Display Rank"], 999)
     };
   }
 
@@ -429,16 +463,40 @@ function normalizeQuestion(message) {
   }
 
   async function fetchRecentMovementRows() {
-    const sortField = encodeURIComponent("Created Time");
+    // Important: do not pull random recent movement rows.
+    // Only rows explicitly marked latest are eligible, then we still filter
+    // to the current brief's Run ID after fetching.
+    const formula = encodeURIComponent("{Is Latest Movement}=1");
+
+    const params = new URLSearchParams();
+    params.set("filterByFormula", formula);
+    params.set("maxRecords", "100");
+    params.set("cellFormat", "string");
+    params.set("timeZone", "America/New_York");
+    params.set("userLocale", "en");
+
+    [
+      "Item",
+      "Movement Type",
+      "List Type",
+      "Impact Level",
+      "Current Qty",
+      "Previous Qty",
+      "Current Revenue",
+      "Previous Revenue",
+      "Notes",
+      "Current Run ID",
+      "Previous Run ID",
+      "Is Latest Movement",
+      "Display Rank"
+    ].forEach(field => params.append("fields[]", field));
+
+    params.append("sort[0][field]", "Display Rank");
+    params.append("sort[0][direction]", "asc");
 
     const movementUrl =
       `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${MOVEMENT_TABLE_ID}` +
-      `?sort[0][field]=${sortField}` +
-      `&sort[0][direction]=desc` +
-      `&maxRecords=100` +
-      `&cellFormat=string` +
-      `&timeZone=America/New_York` +
-      `&userLocale=en`;
+      `?${params.toString()}`;
 
     return fetchJsonOrText(movementUrl, {
       method: "GET",
@@ -451,19 +509,23 @@ function normalizeQuestion(message) {
 
   if (req.method === "GET") {
     const briefCheck = await fetchLatestBrief();
+    const latestRecord = briefCheck.data?.records?.[0];
+    const fields = latestRecord?.fields || {};
 
     return sendJson(200, {
-  reply,
-  meta: {
-  intent,
-  restaurant,
-  runId,
-  priority,
-  recommendation,
-  movement_rows_used: currentRunMovement.length,
-  used_decision_json: !!decisionJson
-}
-});
+      ok: true,
+      route: "ask-synthopulse",
+      version: "v1.1",
+      latestBriefAvailable: !!latestRecord,
+      airtableStatus: briefCheck.status,
+      runId: safeText(fields["Run ID"]),
+      decisionSource: safeText(fields["Decision Source"]),
+      decisionPriority: safeText(fields["Decision Priority"]),
+      recommendation:
+        safeText(fields["Decision Display"]) ||
+        safeText(fields["Action Callout"]) ||
+        safeText(fields["Name"])
+    });
   }
 
   if (req.method !== "POST") {
@@ -544,8 +606,10 @@ function normalizeQuestion(message) {
         .filter(row => {
           if (!row.item) return false;
           if (!runId) return false;
+          if (!row.isLatestMovement) return false;
           return row.currentRunId.includes(runId);
-        });
+        })
+        .sort((a, b) => a.displayRank - b.displayRank);
 
       movementSummary = buildMovementSummary(currentRunMovement);
     }
@@ -686,7 +750,7 @@ ${userQuestion}
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: OPENAI_MODEL,
           instructions: instructionText,
           input: [
             {
