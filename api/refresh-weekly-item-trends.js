@@ -661,20 +661,53 @@ module.exports = async function handler(req, res) {
       CURRENT_RUN_COUNT + PRIOR_RUN_COUNT
     );
 
-    if (currentRuns.length < 2 || priorRuns.length < 2) {
-      return send(res, 200, {
-        ok: false,
-        reason: "Not enough reporting close runs for weekly trend comparison yet.",
-        restaurant: restaurantName,
-        restaurantId,
-        completedDecisionReportingRuns: reportingRuns.length,
-        currentRuns: currentRuns.length,
-        priorRuns: priorRuns.length,
-        skippedNonDecisionRuns,
-        skippedWrongRestaurantRuns,
-        skippedNonCloseRuns,
+if (currentRuns.length < 2 || priorRuns.length < 2) {
+  const staleTrendUpdates = [];
+
+  for (const record of existingTrends) {
+    const fields = record.fields || {};
+    const trendName = fields["Trend Name"] || "";
+    const linkedToRestaurant = hasLinkedId(fields["Restaurant"], restaurantId);
+    const hasNoRestaurantLink = getLinkedIds(fields["Restaurant"]).length === 0;
+
+    const appearsToBelongToRestaurant =
+      linkedToRestaurant ||
+      hasNoRestaurantLink ||
+      String(trendName).toLowerCase().includes(String(restaurantName).toLowerCase());
+
+    if (!appearsToBelongToRestaurant) continue;
+
+    if (fields["Is Active"]) {
+      staleTrendUpdates.push({
+        id: record.id,
+        fields: {
+          "Is Active": false,
+          "Last Calculated At": new Date().toISOString(),
+          Notes: `Deactivated by weekly trend refresh for ${restaurantName}. Not enough completed reporting close runs are available for a safe current/prior comparison.`,
+        },
       });
     }
+  }
+
+  const deactivated = staleTrendUpdates.length
+    ? await updateBatches(TABLES.weeklyTrends, staleTrendUpdates)
+    : [];
+
+  return send(res, 200, {
+    ok: true,
+    status: "skipped",
+    reason: "Not enough reporting close runs for weekly trend comparison yet.",
+    restaurant: restaurantName,
+    restaurantId,
+    completedDecisionReportingRuns: reportingRuns.length,
+    currentRuns: currentRuns.length,
+    priorRuns: priorRuns.length,
+    skippedNonDecisionRuns,
+    skippedWrongRestaurantRuns,
+    skippedNonCloseRuns,
+    deactivatedStaleTrendRows: deactivated.length,
+  });
+}
 
     const currentRunIds = new Set(currentRuns.map((run) => run.id));
     const priorRunIds = new Set(priorRuns.map((run) => run.id));
