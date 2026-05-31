@@ -1,36 +1,4 @@
-/********************************************************************
- * SynthoPulse / KitchenPulse API
- * Route: api/tripleseat-webhook.js
- * Version: v1.1
- *
- * Purpose:
- * - Receive Tripleseat webhook payloads.
- * - Normalize Tripleseat event-like payloads into Event Intake Queue.
- * - Upsert by Source Event ID to prevent duplicate intake records.
- * - Protect KitchenPulse from Tripleseat notes/tasks/admin reminders
- *   being treated as real demand events.
- *
- * Method:
- * - GET  /api/tripleseat-webhook
- * - POST /api/tripleseat-webhook
- *
- * Reads:
- * - Event Intake Queue, for existing Source Event ID lookup
- *
- * Writes:
- * - Event Intake Queue
- *
- * Does NOT:
- * - Promote directly to External Factors
- * - Write Forecasts & Insights
- * - Touch POS Runs / Decision Layer
- *
- * Important behavior:
- * - Obvious tests/admin/task records are still captured for visibility,
- *   but marked Needs Review and Record Type = Review / Non-Demand.
- * - Real event records are marked Tripleseat Record Type = Event,
- *   Needs Review = true, Status = New.
- ********************************************************************/
+// /api/tripleseat-webhook.js
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const AIRTABLE_TOKEN = process.env.AIRTABLE_PAT || process.env.AIRTABLE_TOKEN;
@@ -52,18 +20,6 @@ function firstDefined(...values) {
   return values.find((value) => value !== undefined && value !== null && value !== "");
 }
 
-function text(value) {
-  if (value === null || value === undefined) return "";
-  return String(value).trim();
-}
-
-function numberOrUndefined(value) {
-  if (value === null || value === undefined || value === "") return undefined;
-
-  const n = Number(value);
-  return Number.isFinite(n) ? n : undefined;
-}
-
 function toDateOnly(value) {
   if (!value) return undefined;
 
@@ -71,177 +27,6 @@ function toDateOnly(value) {
   if (Number.isNaN(date.getTime())) return undefined;
 
   return date.toISOString().slice(0, 10);
-}
-
-function toIsoOrUndefined(value) {
-  if (!value) return undefined;
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return undefined;
-
-  return date.toISOString();
-}
-
-function eventBlob(...values) {
-  return values
-    .map(text)
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-}
-
-function normalizeStatus(value) {
-  const status = text(value).toUpperCase();
-
-  if (status.includes("DEFINITE")) return "Definite";
-  if (status.includes("CONFIRMED")) return "Confirmed";
-  if (status.includes("TENTATIVE")) return "Tentative";
-  if (status.includes("PROSPECT")) return "Prospect";
-  if (status.includes("CANCEL")) return "Cancelled";
-  if (status.includes("LOST")) return "Lost";
-  if (status.includes("CLOSED")) return "Closed";
-
-  return text(value);
-}
-
-function classifyTripleseatRecord(normalized, rawBody) {
-  const blob = eventBlob(
-    normalized.eventName,
-    normalized.eventTypeMealPeriod,
-    normalized.roomSpace,
-    normalized.contactAccount,
-    normalized.tripleseatStatus,
-    rawBody?.type,
-    rawBody?.event_type,
-    rawBody?.action,
-    rawBody?.subject,
-    rawBody?.name,
-    rawBody?.description,
-    rawBody?.note,
-    rawBody?.task,
-    rawBody?.todo
-  );
-
-  const adminPhrases = [
-    "menu finalization",
-    "menu finalisation",
-    "menu pending",
-    "final menu",
-    "deposit follow",
-    "deposit due",
-    "deposit pending",
-    "payment due",
-    "payment follow",
-    "balance due",
-    "contract pending",
-    "contract due",
-    "contract follow",
-    "beo review",
-    "beo pending",
-    "final count",
-    "guest count due",
-    "headcount due",
-    "planning call",
-    "planning meeting",
-    "internal hold",
-    "admin hold",
-    "staff meeting",
-    "manager meeting",
-    "filmed interview",
-    "interview",
-    "task",
-    "todo",
-    "to-do",
-    "reminder",
-    "note",
-  ];
-
-  const testPhrases = [
-    "webhook test",
-    "code test",
-    "api test",
-    "test event",
-    "kitchenpulse test",
-    "demo",
-  ];
-
-  const hasEventId = Boolean(normalized.sourceEventId);
-  const hasEventName = Boolean(text(normalized.eventName));
-  const hasStart = Boolean(normalized.startDateTime || normalized.eventDate);
-  const hasDemandSignal =
-    numberOrUndefined(normalized.guestCount) !== undefined ||
-    numberOrUndefined(normalized.estimatedRevenue) !== undefined ||
-    numberOrUndefined(normalized.bookedRevenue) !== undefined ||
-    Boolean(text(normalized.roomSpace));
-
-  const isAdmin = adminPhrases.some((phrase) => blob.includes(phrase));
-  const isTest = testPhrases.some((phrase) => blob.includes(phrase));
-  const status = normalizeStatus(normalized.tripleseatStatus);
-
-  if (!hasEventId) {
-    return {
-      recordType: "Review / Non-Demand",
-      status: "Needs Review",
-      needsReview: true,
-      promoteToDecision: false,
-      reason: "Missing Tripleseat event/source ID.",
-    };
-  }
-
-  if (isTest) {
-    return {
-      recordType: "Review / Non-Demand",
-      status: "Needs Review",
-      needsReview: true,
-      promoteToDecision: false,
-      reason: "Obvious test/demo record. Captured but not treated as demand.",
-    };
-  }
-
-  if (isAdmin) {
-    return {
-      recordType: "Review / Non-Demand",
-      status: "Needs Review",
-      needsReview: true,
-      promoteToDecision: false,
-      reason: "Admin/task/reminder-style Tripleseat record. Captured for review only.",
-    };
-  }
-
-  if (status === "Cancelled" || status === "Lost" || status === "Closed") {
-    return {
-      recordType: "Review / Non-Demand",
-      status: "Needs Review",
-      needsReview: true,
-      promoteToDecision: false,
-      reason: `Tripleseat status is ${status}. Captured but not promoted.`,
-    };
-  }
-
-  if (!hasEventName || !hasStart) {
-    return {
-      recordType: "Review / Non-Demand",
-      status: "Needs Review",
-      needsReview: true,
-      promoteToDecision: false,
-      reason: "Missing event name or start date/time. Captured for review.",
-    };
-  }
-
-  const guestCount = numberOrUndefined(normalized.guestCount) || 0;
-  const isLikelyDecisionDriver =
-    (status === "Definite" || status === "Confirmed") &&
-    (guestCount >= 30 || hasDemandSignal);
-
-  return {
-    recordType: "Event",
-    status: "New",
-    needsReview: true,
-    promoteToDecision: false,
-    reason: isLikelyDecisionDriver
-      ? "Real Tripleseat event with likely demand signal. Needs review before promotion."
-      : "Real Tripleseat event captured. Needs review before promotion.",
-  };
 }
 
 function normalizeTripleseatPayload(body) {
@@ -268,7 +53,6 @@ function normalizeTripleseatPayload(body) {
     event?.title,
     body?.event_name,
     body?.name,
-    body?.title,
     "Tripleseat Event"
   );
 
@@ -278,9 +62,6 @@ function normalizeTripleseatPayload(body) {
     event?.start_datetime,
     event?.startDateTime,
     event?.event_start,
-    event?.event_start_iso8601,
-    event?.event_start_utc,
-    event?.start_date,
     body?.start_time,
     body?.starts_at
   );
@@ -291,9 +72,6 @@ function normalizeTripleseatPayload(body) {
     event?.end_datetime,
     event?.endDateTime,
     event?.event_end,
-    event?.event_end_iso8601,
-    event?.event_end_utc,
-    event?.end_date,
     body?.end_time,
     body?.ends_at
   );
@@ -314,47 +92,13 @@ function normalizeTripleseatPayload(body) {
     body?.booked_at
   );
 
-  const guestCount = firstDefined(
-    event?.guest_count,
-    event?.guestCount,
-    event?.guests,
-    event?.attendance,
-    event?.guaranteed_guest_count
-  );
-
-  const estimatedRevenue = firstDefined(
-    event?.estimated_revenue,
-    event?.estimatedRevenue,
-    event?.revenue_estimate,
-    event?.total_event_grand_total,
-    event?.grand_total,
-    event?.food_and_beverage_min
-  );
-
-  const bookedRevenue = firstDefined(
-    event?.booked_revenue,
-    event?.bookedRevenue,
-    event?.actual_revenue,
-    event?.total_revenue,
-    event?.total_actual_amount
-  );
-
   return {
     eventName,
     sourceEventId,
     tripleseatEventId: sourceEventId,
     tripleseatStatus: firstDefined(event?.status, event?.event_status, body?.status),
-    guestCount,
-    roomSpace: firstDefined(
-      event?.room_name,
-      event?.room,
-      event?.space,
-      event?.location_name,
-      event?.room?.name,
-      Array.isArray(event?.rooms)
-        ? event.rooms.map((room) => room?.name).filter(Boolean).join(", ")
-        : ""
-    ),
+    guestCount: firstDefined(event?.guest_count, event?.guestCount, event?.guests, event?.attendance),
+    roomSpace: firstDefined(event?.room_name, event?.room, event?.space, event?.location_name),
     contactAccount: firstDefined(
       event?.contact_name,
       event?.contact,
@@ -362,8 +106,17 @@ function normalizeTripleseatPayload(body) {
       event?.account,
       event?.customer_name
     ),
-    estimatedRevenue,
-    bookedRevenue,
+    estimatedRevenue: firstDefined(
+      event?.estimated_revenue,
+      event?.estimatedRevenue,
+      event?.revenue_estimate
+    ),
+    bookedRevenue: firstDefined(
+      event?.booked_revenue,
+      event?.bookedRevenue,
+      event?.actual_revenue,
+      event?.total_revenue
+    ),
     depositPaid: firstDefined(event?.deposit_paid, event?.depositPaid, event?.deposit),
     balanceDue: firstDefined(event?.balance_due, event?.balanceDue),
     eventTypeMealPeriod: firstDefined(event?.event_type, event?.meal_period, event?.type),
@@ -373,11 +126,11 @@ function normalizeTripleseatPayload(body) {
       event?.manager_name,
       event?.event_manager
     ),
-    startDateTime: toIsoOrUndefined(startDateTime) || startDateTime,
-    endDateTime: toIsoOrUndefined(endDateTime) || endDateTime,
+    startDateTime,
+    endDateTime,
     eventDate: toDateOnly(firstDefined(event?.event_date, event?.date, startDateTime)),
-    bookedAt: toIsoOrUndefined(bookedAt) || bookedAt,
-    updatedAt: toIsoOrUndefined(updatedAt) || updatedAt,
+    bookedAt,
+    updatedAt,
   };
 }
 
@@ -409,13 +162,13 @@ async function findExistingAirtableRecord(sourceEventId) {
     },
   });
 
-  const responseText = await response.text();
+  const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(`Airtable lookup error ${response.status}: ${responseText}`);
+    throw new Error(`Airtable lookup error ${response.status}: ${text}`);
   }
 
-  const data = JSON.parse(responseText);
+  const data = JSON.parse(text);
   return data.records?.[0] || null;
 }
 
@@ -432,13 +185,13 @@ async function createAirtableRecord(fields) {
     }),
   });
 
-  const responseText = await response.text();
+  const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(`Airtable create error ${response.status}: ${responseText}`);
+    throw new Error(`Airtable create error ${response.status}: ${text}`);
   }
 
-  const data = JSON.parse(responseText);
+  const data = JSON.parse(text);
 
   return {
     action: "created",
@@ -460,13 +213,13 @@ async function updateAirtableRecord(recordId, fields) {
     }),
   });
 
-  const responseText = await response.text();
+  const text = await response.text();
 
   if (!response.ok) {
-    throw new Error(`Airtable update error ${response.status}: ${responseText}`);
+    throw new Error(`Airtable update error ${response.status}: ${text}`);
   }
 
-  const data = JSON.parse(responseText);
+  const data = JSON.parse(text);
 
   return {
     action: "updated",
@@ -517,7 +270,6 @@ export default async function handler(req, res) {
       return res.status(200).json({
         ok: true,
         route: "/api/tripleseat-webhook",
-        version: "v1.1",
         message: "Tripleseat webhook route is live.",
         timestamp: receivedAt,
       });
@@ -526,8 +278,6 @@ export default async function handler(req, res) {
     if (req.method !== "POST") {
       return res.status(405).json({
         ok: false,
-        route: "/api/tripleseat-webhook",
-        version: "v1.1",
         error: "Method not allowed",
       });
     }
@@ -541,37 +291,27 @@ export default async function handler(req, res) {
     };
 
     const normalized = normalizeTripleseatPayload(req.body || {});
-    const classification = classifyTripleseatRecord(normalized, req.body || {});
 
     const fields = {
       "Event Name": normalized.eventName,
       Source: "Tripleseat",
       "Source Event ID": normalized.sourceEventId,
       "Tripleseat Event ID": normalized.tripleseatEventId,
-      "Tripleseat Record Type": classification.recordType,
-      "Needs Review": classification.needsReview,
-      Status: classification.status,
+      "Tripleseat Record Type": "Event",
+      "Needs Review": true,
+      Status: "New",
       "Raw Source": safeJson(rawEnvelope),
-      Notes: `Captured from Tripleseat webhook. ${classification.reason}`,
+      Notes: "Captured from Tripleseat webhook. Review before promotion to External Factors.",
     };
 
-    if (normalized.tripleseatStatus) {
-      fields["Tripleseat Status"] = normalizeStatus(normalized.tripleseatStatus);
-    }
-
-    const guestCount = numberOrUndefined(normalized.guestCount);
-    const estimatedRevenue = numberOrUndefined(normalized.estimatedRevenue);
-    const bookedRevenue = numberOrUndefined(normalized.bookedRevenue);
-    const depositPaid = numberOrUndefined(normalized.depositPaid);
-    const balanceDue = numberOrUndefined(normalized.balanceDue);
-
-    if (guestCount !== undefined) fields["Guest Count"] = guestCount;
+    if (normalized.tripleseatStatus) fields["Tripleseat Status"] = normalized.tripleseatStatus;
+    if (normalized.guestCount !== undefined) fields["Guest Count"] = Number(normalized.guestCount);
     if (normalized.roomSpace) fields["Room / Space"] = normalized.roomSpace;
     if (normalized.contactAccount) fields["Contact / Account"] = normalized.contactAccount;
-    if (estimatedRevenue !== undefined) fields["Estimated Revenue"] = estimatedRevenue;
-    if (bookedRevenue !== undefined) fields["Booked Revenue"] = bookedRevenue;
-    if (depositPaid !== undefined) fields["Deposit Paid"] = depositPaid;
-    if (balanceDue !== undefined) fields["Balance Due"] = balanceDue;
+    if (normalized.estimatedRevenue !== undefined) fields["Estimated Revenue"] = Number(normalized.estimatedRevenue);
+    if (normalized.bookedRevenue !== undefined) fields["Booked Revenue"] = Number(normalized.bookedRevenue);
+    if (normalized.depositPaid !== undefined) fields["Deposit Paid"] = Number(normalized.depositPaid);
+    if (normalized.balanceDue !== undefined) fields["Balance Due"] = Number(normalized.balanceDue);
     if (normalized.eventTypeMealPeriod) fields["Event Type / Meal Period"] = normalized.eventTypeMealPeriod;
     if (normalized.ownerManager) fields["Owner / Event Manager"] = normalized.ownerManager;
     if (normalized.eventDate) fields["Event Date"] = normalized.eventDate;
@@ -588,13 +328,10 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
-      route: "/api/tripleseat-webhook",
-      version: "v1.1",
       message: `Tripleseat webhook received and ${airtableResult.action} in Airtable.`,
       receivedAt,
       airtableAction: airtableResult.action,
       airtableRecordId: airtableResult.recordId,
-      classification,
       normalized,
     });
   } catch (error) {
@@ -602,8 +339,6 @@ export default async function handler(req, res) {
 
     return res.status(500).json({
       ok: false,
-      route: "/api/tripleseat-webhook",
-      version: "v1.1",
       error: error.message,
       receivedAt,
     });
