@@ -1,4 +1,37 @@
-// api/home-alert.js
+/********************************************************************
+ * KitchenPulse Home Alert API v1.1
+ *
+ * Route:
+ * - api/home-alert.js
+ *
+ * Purpose:
+ * - Return the single highest-priority External Factors record that should
+ *   appear as the Home page demand alert.
+ * - Designed for Softr/Home UI blocks that need a lightweight, fail-closed
+ *   alert payload.
+ *
+ * Inputs:
+ * - GET only
+ * - Optional query param: restaurantId=CHLOE
+ *   - Defaults to CHLOE to preserve current Chloe's behavior.
+ *
+ * Source of truth:
+ * - Airtable table: External Factors
+ * - Requires Airtable fields:
+ *   - Home Alert Window
+ *   - Show on Home Alert
+ *   - Active
+ *   - Restaurant ID
+ *
+ * Behavior:
+ * - Returns show=false when no active alert is in the display window.
+ * - Refuses stale/past alerts.
+ * - Does not write to Airtable.
+ *
+ * Notes:
+ * - v1.1 fixes a missing closing brace in fetchHomeAlert() from the uploaded
+ *   repo version and adds explicit version/purpose documentation.
+ ********************************************************************/
 
 const AIRTABLE_BASE_ID =
   process.env.AIRTABLE_BASE_ID || "appD303evZM2SlvMR";
@@ -9,8 +42,7 @@ const AIRTABLE_TOKEN =
   process.env.AIRTABLE_PAT;
 
 const EXTERNAL_FACTORS_TABLE = "External Factors";
-
-const RESTAURANT_ID = "CHLOE";
+const DEFAULT_RESTAURANT_ID = "CHLOE";
 
 function setCors(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -20,11 +52,17 @@ function setCors(res) {
 
 function sendJson(res, status, payload) {
   setCors(res);
-  res.status(status).json(payload);
+  return res.status(status).json(payload);
 }
 
 function clean(value) {
   return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function escapeFormulaString(value) {
+  return String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"');
 }
 
 function getField(record, fieldName) {
@@ -143,44 +181,47 @@ function buildAlert(record) {
     getTextField(record, "Estimated Draw") ||
     "Demand pressure";
 
-    return {
+  const date =
+    getField(record, "Display Date") ||
+    getField(record, "Forecast Date") ||
+    getField(record, "Date") ||
+    getField(record, "Start DateTime");
+
+  const startDateTime =
+    getField(record, "Start DateTime") ||
+    getField(record, "Display Date") ||
+    getField(record, "Forecast Date") ||
+    getField(record, "Date");
+
+  return {
     show: true,
     eventName,
     title: buildTitle(eventName, dateLabel),
     dateLabel,
     summary,
     pressure,
-
-    date:
-      getField(record, "Display Date") ||
-      getField(record, "Forecast Date") ||
-      getField(record, "Date") ||
-      getField(record, "Start DateTime"),
-
-    startDateTime:
-      getField(record, "Start DateTime") ||
-      getField(record, "Display Date") ||
-      getField(record, "Forecast Date") ||
-      getField(record, "Date"),
-
+    date,
+    startDateTime,
     source: getTextField(record, "Source") || "KitchenPulse",
     externalEventId: getTextField(record, "External Event ID"),
     recordId: record.id,
   };
 }
 
-async function fetchHomeAlert() {
+async function fetchHomeAlert({ restaurantId = DEFAULT_RESTAURANT_ID } = {}) {
   if (!AIRTABLE_TOKEN) {
     throw new Error(
       "Missing Airtable token. Set AIRTABLE_API_KEY, AIRTABLE_TOKEN, or AIRTABLE_PAT in Vercel."
     );
   }
 
+  const safeRestaurantId = escapeFormulaString(restaurantId || DEFAULT_RESTAURANT_ID);
+
   const formula = `AND(
     {Home Alert Window} = "Show",
     {Show on Home Alert} = 1,
     {Active} = 1,
-    FIND("${RESTAURANT_ID}", ARRAYJOIN({Restaurant ID}))
+    FIND("${safeRestaurantId}", ARRAYJOIN({Restaurant ID}))
   )`;
 
   const params = new URLSearchParams();
@@ -230,25 +271,32 @@ async function fetchHomeAlert() {
 
   const record = data.records?.[0];
 
-if (!record) {
+  if (!record) {
+    return {
+      show: false,
+      message: "No home alert in window.",
+      restaurantId: safeRestaurantId,
+    };
+  }
+
+  const alert = buildAlert(record);
+  const alertDate = getDateOnly(alert.date || alert.startDateTime);
+  const today = getTodayDateOnly();
+
+  if (alertDate && alertDate < today) {
+    return {
+      show: false,
+      message: "Home alert is past its display date.",
+      restaurantId: safeRestaurantId,
+      recordId: record.id,
+    };
+  }
+
   return {
-    show: false,
-    message: "No home alert in window.",
+    ...alert,
+    restaurantId: safeRestaurantId,
   };
 }
-
-const alert = buildAlert(record);
-const alertDate = getDateOnly(alert.date || alert.startDateTime);
-const today = getTodayDateOnly();
-
-if (alertDate && alertDate < today) {
-  return {
-    show: false,
-    message: "Home alert is past its display date.",
-  };
-}
-
-return alert;
 
 export default async function handler(req, res) {
   setCors(res);
@@ -259,13 +307,16 @@ export default async function handler(req, res) {
 
   if (req.method !== "GET") {
     return sendJson(res, 405, {
+      ok: false,
       show: false,
       error: "Method not allowed",
     });
   }
 
   try {
-    const alert = await fetchHomeAlert();
+    const alert = await fetchHomeAlert({
+      restaurantId: req.query?.restaurantId || DEFAULT_RESTAURANT_ID,
+    });
 
     return sendJson(res, 200, {
       ok: true,
