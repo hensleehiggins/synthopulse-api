@@ -223,14 +223,11 @@ function externalEventRecord(record) {
   };
 }
 
-function buildFormula({ restaurantId }) {
-  const safeRestaurantId = escapeFormulaString(restaurantId || DEFAULT_RESTAURANT_ID);
-
+function buildFormula() {
   return `
     AND(
       {Type} = "Event",
       {Active} = TRUE(),
-      FIND("${safeRestaurantId}", ARRAYJOIN({Restaurant})) > 0,
       OR(
         IS_SAME({Start DateTime}, TODAY(), 'day'),
         IS_AFTER({Start DateTime}, TODAY()),
@@ -266,17 +263,22 @@ export default async function handler(req, res) {
       text(req.query?.restaurant) ||
       DEFAULT_RESTAURANT_ID;
 
-    const records = await base("External Factors")
-      .select({
-        filterByFormula: buildFormula({ restaurantId }),
-        maxRecords: 60,
-        sort: [{ field: "Start DateTime", direction: "asc" }],
-      })
-      .firstPage();
+const records = await base("External Factors")
+  .select({
+    filterByFormula: buildFormula(),
+    maxRecords: 60,
+    sort: [{ field: "Start DateTime", direction: "asc" }],
+  })
+  .firstPage();
 
-    const events = records
-      .map(externalEventRecord)
-      .filter((event) => isFutureOrToday(event.startDateTime || event.start))
+const events = records
+  .map(externalEventRecord)
+  .filter((event) => {
+    if (!restaurantId) return true;
+    if (!event.restaurantIds || event.restaurantIds.length === 0) return true;
+    return event.restaurantIds.includes(restaurantId);
+  })
+  .filter((event) => isFutureOrToday(event.startDateTime || event.start))
       .sort((a, b) => {
         const aMs = new Date(a.startDateTime || a.start || 0).getTime();
         const bMs = new Date(b.startDateTime || b.start || 0).getTime();
