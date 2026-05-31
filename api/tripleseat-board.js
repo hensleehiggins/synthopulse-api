@@ -429,7 +429,7 @@ module.exports = async function handler(req, res) {
           "City",
           "Source",
           "Status",
-          "Tripleseat Status",
+         
           "Tripleseat Record Type",
           "Guest Count",
           "Event Type / Meal Period",
@@ -470,7 +470,7 @@ module.exports = async function handler(req, res) {
           "Source",
           "Source Type",
           "Restaurant",
-          "Tripleseat Status",
+          
           "Status",
         ],
       }),
