@@ -1,3 +1,41 @@
+/********************************************************************
+ * SynthoPulse / KitchenPulse API
+ * Route: api/tripleseat-sync-events.js
+ * Version: v1.1
+ *
+ * Purpose:
+ * - Pull Tripleseat events from the Tripleseat API.
+ * - Normalize valid event records into Event Intake Queue.
+ * - Optionally promote confirmed decision-driving events into External Factors.
+ * - Keep notes, tasks, admin reminders, demos/tests, cancelled/lost/closed
+ *   records, and past events out of live demand pressure.
+ *
+ * Method:
+ * - GET /api/tripleseat-sync-events
+ * - GET /api/tripleseat-sync-events?write=1
+ *
+ * Reads:
+ * - Tripleseat API
+ * - Event Intake Queue
+ * - External Factors
+ *
+ * Writes when ?write=1:
+ * - Event Intake Queue
+ * - External Factors for confirmed decision-driving Tripleseat demand
+ *
+ * Does NOT:
+ * - Touch POS Runs
+ * - Touch Daily Sales
+ * - Touch Forecasts & Insights
+ * - Touch Decision Layer output directly
+ *
+ * Safety:
+ * - Dry-run by default.
+ * - Requires ?write=1 to create/update Airtable records.
+ * - Only definite/confirmed, future/today, real event records are eligible
+ *   for promotion into External Factors.
+ ********************************************************************/
+
 const Airtable = require("airtable");
 
 function requireEnv(name) {
@@ -10,6 +48,10 @@ const base = new Airtable({
   apiKey: requireEnv("AIRTABLE_PAT"),
 }).base(requireEnv("AIRTABLE_BASE_ID"));
 
+const DEFAULT_LOCATION_ID = "34084";
+const DEFAULT_RESTAURANT_ID =
+  process.env.AIRTABLE_CHLOES_RESTAURANT_ID || "recn2LoRESKN33zHW";
+
 function text(value) {
   if (value === null || value === undefined) return "";
   return String(value).trim();
@@ -20,10 +62,16 @@ function number(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function bool(value) {
+  return value === true;
+}
+
 function toIso(value) {
   if (!value) return null;
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
+
   return date.toISOString();
 }
 
@@ -35,7 +83,10 @@ function toAirtableDate(value) {
   const slashMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (slashMatch) {
     const [, month, day, year] = slashMatch;
-    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
+      2,
+      "0"
+    )}`;
   }
 
   const date = new Date(value);
@@ -76,6 +127,7 @@ function normalizeStatus(value) {
   const status = text(value).toUpperCase();
 
   if (status.includes("DEFINITE")) return "Definite";
+  if (status.includes("CONFIRMED")) return "Confirmed";
   if (status.includes("TENTATIVE")) return "Tentative";
   if (status.includes("PROSPECT")) return "Prospect";
   if (status.includes("CANCEL")) return "Cancelled";
@@ -87,10 +139,15 @@ function normalizeStatus(value) {
 
 function getRoomName(event) {
   if (Array.isArray(event.rooms) && event.rooms.length > 0) {
-    return event.rooms.map((room) => room.name).filter(Boolean).join(", ");
+    return event.rooms
+      .map((room) => room?.name)
+      .filter(Boolean)
+      .join(", ");
   }
 
   if (event.room?.name) return event.room.name;
+  if (event.room_name) return event.room_name;
+  if (event.location_name) return event.location_name;
 
   return "";
 }
@@ -105,6 +162,8 @@ function getContactOrAccount(event) {
 
   if (account?.name) return account.name;
   if (event.contact_name) return event.contact_name;
+  if (event.account_name) return event.account_name;
+  if (event.customer_name) return event.customer_name;
 
   return "";
 }
@@ -113,6 +172,7 @@ function getEventType(event) {
   if (event.event_type) return event.event_type;
   if (event.event_type_name) return event.event_type_name;
   if (event.event_style) return event.event_style;
+  if (event.meal_period) return event.meal_period;
   return "";
 }
 
@@ -120,8 +180,23 @@ function getEventStart(event) {
   return (
     event.event_start_iso8601 ||
     event.event_start_utc ||
+    event.start_datetime ||
+    event.starts_at ||
+    event.start_time ||
     event.start_date ||
     event.event_date ||
+    null
+  );
+}
+
+function getEventEnd(event) {
+  return (
+    event.event_end_iso8601 ||
+    event.event_end_utc ||
+    event.end_datetime ||
+    event.ends_at ||
+    event.end_time ||
+    event.end_date ||
     null
   );
 }
@@ -129,17 +204,28 @@ function getEventStart(event) {
 function eventBlob(event) {
   return [
     event.name,
+    event.title,
+    event.subject,
     event.post_as,
     event.booking?.name,
     event.contact?.first_name,
     event.contact?.last_name,
     event.account?.name,
     event.description,
+    event.note,
+    event.notes,
+    event.task,
+    event.todo,
     event.event_type,
     event.event_type_name,
     event.event_style,
+    event.meal_period,
     event.room?.name,
-    Array.isArray(event.rooms) ? event.rooms.map((room) => room.name).join(" ") : "",
+    event.room_name,
+    event.location_name,
+    Array.isArray(event.rooms)
+      ? event.rooms.map((room) => room?.name).join(" ")
+      : "",
   ]
     .map(text)
     .join(" ")
@@ -149,13 +235,17 @@ function eventBlob(event) {
 function isObviousTestRecord(event) {
   const blob = eventBlob(event);
 
-  return (
-    blob.includes("test ") ||
-    blob.includes(" test") ||
-    blob.startsWith("test") ||
-    blob.includes("webhook test") ||
-    blob.includes("code test")
-  );
+  const testPhrases = [
+    "webhook test",
+    "code test",
+    "api test",
+    "test event",
+    "kitchenpulse test",
+    "demo",
+    "sample event",
+  ];
+
+  return testPhrases.some((phrase) => blob.includes(phrase));
 }
 
 function isAdminOrNonDemandEvent(event) {
@@ -188,6 +278,13 @@ function isAdminOrNonDemandEvent(event) {
     "manager meeting",
     "filmed interview",
     "interview",
+    "task",
+    "todo",
+    "to-do",
+    "reminder",
+    "note",
+    "follow up",
+    "follow-up",
   ];
 
   return adminPhrases.some((phrase) => blob.includes(phrase));
@@ -205,7 +302,7 @@ function getSkipReason(event) {
   }
 
   if (!isFutureOrToday(start)) return "past_event";
-  if (isObviousTestRecord(event)) return "test_record";
+  if (isObviousTestRecord(event)) return "test_or_demo_record";
   if (isAdminOrNonDemandEvent(event)) return "admin_or_non_demand";
 
   return null;
@@ -213,6 +310,10 @@ function getSkipReason(event) {
 
 function shouldImportTripleseatEvent(event) {
   return getSkipReason(event) === null;
+}
+
+function isConfirmedDemandStatus(status) {
+  return status === "Definite" || status === "Confirmed";
 }
 
 async function getTripleseatAccessToken() {
@@ -237,57 +338,71 @@ async function getTripleseatAccessToken() {
 
   if (!response.ok || !json.access_token) {
     throw new Error(
-      json.error_description || json.error || "Failed to get Tripleseat access token"
+      json.error_description ||
+        json.error ||
+        "Failed to get Tripleseat access token"
     );
   }
 
   return json.access_token;
 }
 
-function mapTripleseatEventToAirtable(event) {
-  const sourceEventId = text(event.id);
-  const eventName = text(event.name) || `Tripleseat Event ${sourceEventId}`;
-  const status = normalizeStatus(event.status);
+function getGuestCount(event) {
+  return number(
+    event.guest_count ||
+      event.guestCount ||
+      event.guaranteed_guest_count ||
+      event.guaranteedGuestCount ||
+      event.guests ||
+      event.attendance
+  );
+}
 
-  const startDateTime =
-    toIso(event.event_start_iso8601) ||
-    toIso(event.event_start_utc) ||
-    toIso(event.start_date) ||
-    toIso(event.event_date);
-
-  const endDateTime =
-    toIso(event.event_end_iso8601) ||
-    toIso(event.event_end_utc) ||
-    toIso(event.end_date);
-
-  const location = event.location || {};
-  const roomName = getRoomName(event);
-  const guestCount = number(event.guest_count || event.guaranteed_guest_count);
-
-  const estimatedRevenue = number(
+function getEstimatedRevenue(event) {
+  return number(
     event.total_event_grand_total ||
       event.grand_total ||
       event.food_and_beverage_min ||
-      event.total_actual_amount
+      event.total_actual_amount ||
+      event.estimated_revenue ||
+      event.estimatedRevenue
   );
+}
 
-  const roomText = roomName.toLowerCase();
+function getSuggestedWeight({ guestCount, roomName }) {
+  const roomText = text(roomName).toLowerCase();
 
-  const suggestedWeight =
-    guestCount >= 100 ? 10 :
-    guestCount >= 75 ? 9 :
-    guestCount >= 50 ? 8 :
-    guestCount >= 30 ? 7 :
-    guestCount >= 15 ? 5 :
-    3;
+  let baseWeight =
+    guestCount >= 100
+      ? 10
+      : guestCount >= 75
+        ? 9
+        : guestCount >= 50
+          ? 8
+          : guestCount >= 30
+            ? 7
+            : guestCount >= 15
+              ? 5
+              : 3;
 
-    const isDefinite = status === "Definite";
-  const isTentativeOrProspect = status === "Tentative" || status === "Prospect";
+  if (
+    roomText.includes("private") ||
+    roomText.includes("ascend") ||
+    roomText.includes("patio") ||
+    roomText.includes("bar")
+  ) {
+    baseWeight = Math.max(baseWeight, 7);
+  }
 
-    const isMeaningfulPrivateDemand =
-    isDefinite &&
-    guestCount >= 30 &&
-    suggestedWeight >= 7;
+  return baseWeight;
+}
+
+function classifyDemand(event) {
+  const status = normalizeStatus(event.status);
+  const roomName = getRoomName(event);
+  const guestCount = getGuestCount(event);
+  const suggestedWeight = getSuggestedWeight({ guestCount, roomName });
+  const roomText = text(roomName).toLowerCase();
 
   const isRoomPressure =
     roomText.includes("bar") ||
@@ -296,58 +411,77 @@ function mapTripleseatEventToAirtable(event) {
     roomText.includes("ascend") ||
     roomText.includes("dining");
 
+  const confirmedDemandStatus = isConfirmedDemandStatus(status);
+  const meaningfulPrivateDemand =
+    confirmedDemandStatus && guestCount >= 30 && suggestedWeight >= 7;
+
   const isDecisionDriver =
-    isDefinite &&
-    (
-      isMeaningfulPrivateDemand ||
+    confirmedDemandStatus &&
+    (meaningfulPrivateDemand ||
       suggestedWeight >= 7 ||
       guestCount >= 30 ||
-      isRoomPressure
-    );
+      isRoomPressure);
 
-  const isBookedDemand = isDefinite && suggestedWeight >= 4;
-
-  // Confirmed/definite private events are operational demand signals.
-  // Keep tentative/prospect events in review, but promote definite booked demand
-  // so Shift Watch, Home, and Service Pressure do not miss known room pressure.
-  const needsReview = isTentativeOrProspect;
-
-  const kitchenPulseStatus =
-    isBookedDemand || isDecisionDriver ? "Processed" : "Needs Review";
-
-    const classificationNote = isDecisionDriver
-    ? "Tripleseat confirmed booked demand. Promoted as a decision driver for Shift Watch, service pressure, pacing, room coverage, and pre-shift planning."
-    : isBookedDemand
-      ? "Tripleseat confirmed booked demand. Visible as upcoming booked demand."
-      : "Tripleseat event is not yet definite. Keep in review until Tripleseat status changes.";
+  const isBookedDemand = confirmedDemandStatus && suggestedWeight >= 4;
+  const needsReview = !confirmedDemandStatus;
 
   return {
+    status,
+    roomName,
+    guestCount,
+    suggestedWeight,
+    isRoomPressure,
+    isDecisionDriver,
+    isBookedDemand,
+    needsReview,
+    kitchenPulseStatus:
+      isBookedDemand || isDecisionDriver ? "Processed" : "Needs Review",
+    classificationNote: isDecisionDriver
+      ? "Tripleseat confirmed booked demand. Promoted as a decision driver for Shift Watch, service pressure, pacing, room coverage, and pre-shift planning."
+      : isBookedDemand
+        ? "Tripleseat confirmed booked demand. Visible as upcoming booked demand."
+        : "Tripleseat event is not yet definite/confirmed. Keep in review until Tripleseat status changes.",
+  };
+}
+
+function mapTripleseatEventToAirtable(event) {
+  const sourceEventId = text(event.id);
+  const eventName = text(event.name) || `Tripleseat Event ${sourceEventId}`;
+  const demand = classifyDemand(event);
+
+  const startDateTime = toIso(getEventStart(event));
+  const endDateTime = toIso(getEventEnd(event));
+
+  const location = event.location || {};
+  const estimatedRevenue = getEstimatedRevenue(event);
+
+  return removeEmptyFields({
     "Event Name": eventName,
     "Start DateTime": startDateTime,
     "End DateTime": endDateTime,
-    "Venue / Area": roomName,
-    "City": text(location.city),
-    "Source": "Tripleseat",
+    "Venue / Area": demand.roomName,
+    City: text(location.city),
+    Source: "Tripleseat",
     "Source Event ID": sourceEventId,
     "Raw Source": JSON.stringify(event).slice(0, 95000),
 
-    "Local Confidence": suggestedWeight,
-    "Suggested Event Weight": suggestedWeight,
-    "Promote to Decision": isDecisionDriver,
-    "Needs Review": needsReview,
+    "Local Confidence": demand.suggestedWeight,
+    "Suggested Event Weight": demand.suggestedWeight,
+    "Promote to Decision": demand.isDecisionDriver,
+    "Needs Review": demand.needsReview,
 
     "External Event ID": `tripleseat-${sourceEventId}`,
-    "Status": kitchenPulseStatus,
+    Status: demand.kitchenPulseStatus,
 
-    "Notes": `Imported from Tripleseat. Status: ${status}. Guests: ${
-      guestCount || "unknown"
-    }. ${classificationNote}`,
+    Notes: `Imported from Tripleseat. Status: ${demand.status}. Guests: ${
+      demand.guestCount || "unknown"
+    }. ${demand.classificationNote}`,
 
     "Tripleseat Event ID": sourceEventId,
-    "Tripleseat Status": status,
-    "Guest Count": guestCount,
+    "Tripleseat Status": demand.status,
+    "Guest Count": demand.guestCount,
     "Event Type / Meal Period": getEventType(event),
-    "Room / Space": roomName,
+    "Room / Space": demand.roomName,
     "Contact / Account": getContactOrAccount(event),
     "Tripleseat Record Type": "Event",
     "Estimated Revenue": estimatedRevenue,
@@ -356,7 +490,8 @@ function mapTripleseatEventToAirtable(event) {
     "Updated At": toIso(event.updated_at),
     "Owner / Event Manager": event.owner?.first_name || event.owner?.email || "",
     "Revenue Status": estimatedRevenue > 0 ? "Estimated" : "",
-  };
+    Restaurant: DEFAULT_RESTAURANT_ID ? [DEFAULT_RESTAURANT_ID] : undefined,
+  });
 }
 
 function removeEmptyFields(fields) {
@@ -391,19 +526,23 @@ function getTrafficEffect(guestCount, suggestedWeight) {
 function buildEventSummary({ eventName, guestCount, venue }) {
   return `${eventName} is a confirmed ${
     guestCount || "booked"
-  }-guest Tripleseat event${venue ? ` in ${venue}` : ""}. Confirm room coverage, pacing, and kitchen/bar awareness before service.`;
+  }-guest Tripleseat event${
+    venue ? ` in ${venue}` : ""
+  }. Confirm room coverage, pacing, and kitchen/bar awareness before service.`;
 }
 
 function buildDecisionNote({ eventName, guestCount, venue }) {
   return `Confirmed Tripleseat private event: ${eventName}${
     guestCount ? `, ${guestCount} guests` : ""
-  }${venue ? `, ${venue}` : ""}. Treat as booked demand pressure for pre-shift planning, room coverage, pacing, and handoff notes.`;
+  }${
+    venue ? `, ${venue}` : ""
+  }. Treat as booked demand pressure for pre-shift planning, room coverage, pacing, and handoff notes.`;
 }
 
 async function findExternalFactorByExternalEventId(externalEventId) {
   if (!externalEventId) return null;
 
-  const safeId = String(externalEventId).replace(/"/g, '\\"');
+  const safeId = String(externalEventId).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 
   const matches = await base("External Factors")
     .select({
@@ -418,7 +557,9 @@ async function findExternalFactorByExternalEventId(externalEventId) {
 function buildExternalFieldsFromIntakeFields(fields) {
   const eventName =
     text(fields["Event Name"]) ||
-    `Tripleseat Event ${text(fields["Tripleseat Event ID"]) || text(fields["Source Event ID"])}`;
+    `Tripleseat Event ${
+      text(fields["Tripleseat Event ID"]) || text(fields["Source Event ID"])
+    }`;
 
   const startDateTime = toIso(fields["Start DateTime"]);
   const endDateTime = toIso(fields["End DateTime"]);
@@ -511,6 +652,11 @@ async function promoteTripleseatIntakeRecordsToExternalFactors(records) {
       continue;
     }
 
+    if (!isConfirmedDemandStatus(normalizeStatus(fields["Tripleseat Status"]))) {
+      skipped.push({ recordId: record.id, reason: "not_confirmed_or_definite" });
+      continue;
+    }
+
     const externalFields = buildExternalFieldsFromIntakeFields(fields);
     const externalEventId = externalFields["External Event ID"];
 
@@ -531,10 +677,13 @@ async function promoteTripleseatIntakeRecordsToExternalFactors(records) {
     if (existingExternal) {
       externalRecord = await base("External Factors").update(
         existingExternal.id,
-        externalFields
+        externalFields,
+        { typecast: true }
       );
     } else {
-      externalRecord = await base("External Factors").create(externalFields);
+      externalRecord = await base("External Factors").create(externalFields, {
+        typecast: true,
+      });
     }
 
     promoted.push({
@@ -555,8 +704,9 @@ function summarizeEvent(event, reason = null) {
     id: event.id,
     name: event.name,
     status: event.status,
+    normalizedStatus: normalizeStatus(event.status),
     eventDate: event.event_date,
-    start: event.event_start_iso8601 || event.event_start_utc || event.start_date,
+    start: getEventStart(event),
     guestCount: event.guest_count || event.guaranteed_guest_count || null,
     locationId: event.location_id,
     deletedAt: event.deleted_at || null,
@@ -567,7 +717,7 @@ function summarizeEvent(event, reason = null) {
 async function fetchTripleseatEvents() {
   const accessToken = await getTripleseatAccessToken();
   const apiBaseUrl = requireEnv("TRIPLESEAT_API_BASE_URL").replace(/\/$/, "");
-  const locationId = process.env.TRIPLESEAT_LOCATION_ID || "34084";
+  const locationId = process.env.TRIPLESEAT_LOCATION_ID || DEFAULT_LOCATION_ID;
 
   const url = new URL(`${apiBaseUrl}/events`);
   url.searchParams.set("location_id", locationId);
@@ -577,7 +727,7 @@ async function fetchTripleseatEvents() {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       Accept: "application/json",
-      "User-Agent": "KitchenPulse/1.0",
+      "User-Agent": "KitchenPulse/1.1",
     },
   });
 
@@ -601,15 +751,16 @@ async function fetchTripleseatEvents() {
   for (const event of rawEvents) {
     const skipReason = getSkipReason(event);
 
-    if (!skipReason) {
+    if (!skipReason && shouldImportTripleseatEvent(event)) {
       events.push(event);
     } else {
-      skipped.push(summarizeEvent(event, skipReason));
+      skipped.push(summarizeEvent(event, skipReason || "not_importable"));
     }
   }
 
   return {
     url: url.toString(),
+    locationId,
     totalPages: json.total_pages || null,
     rawCount: rawEvents.length,
     importableCount: events.length,
@@ -624,7 +775,7 @@ async function getExistingTripleseatRecords() {
 
   await base("Event Intake Queue")
     .select({
-            fields: ["Source", "Source Event ID", "External Event ID", "Restaurant"],
+      fields: ["Source", "Source Event ID", "External Event ID", "Restaurant"],
     })
     .eachPage((records, fetchNextPage) => {
       for (const record of records) {
@@ -697,7 +848,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-        let createdCount = 0;
+    let createdCount = 0;
     let updatedCount = 0;
     let promotedExternalCount = 0;
     let promotedExternal = [];
@@ -722,8 +873,11 @@ module.exports = async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
+      route: "/api/tripleseat-sync-events",
+      version: "v1.1",
       mode: write ? "write" : "dry_run",
       sourceUrl: fetched.url,
+      locationId: fetched.locationId,
       totalPages: fetched.totalPages,
       rawFetchedCount: fetched.rawCount,
       importableCount: fetched.importableCount,
@@ -734,11 +888,11 @@ module.exports = async function handler(req, res) {
       updatedCount,
       promotedExternalCount,
       promotedExternalSample: promotedExternal.slice(0, 5),
-      skippedPromotionSample: skippedPromotion.slice(0, 5),
+      skippedPromotionSample: skippedPromotion.slice(0, 8),
       sampleCreate: creates.slice(0, 3).map((record) => ({
         eventName: record.fields["Event Name"],
         startDateTime: record.fields["Start DateTime"],
-        status: record.fields["Status"],
+        status: record.fields.Status,
         needsReview: record.fields["Needs Review"],
         promoteToDecision: record.fields["Promote to Decision"],
         tripleseatStatus: record.fields["Tripleseat Status"],
@@ -749,21 +903,25 @@ module.exports = async function handler(req, res) {
         recordId: record.id,
         eventName: record.fields["Event Name"],
         startDateTime: record.fields["Start DateTime"],
-        status: record.fields["Status"],
+        status: record.fields.Status,
         needsReview: record.fields["Needs Review"],
         promoteToDecision: record.fields["Promote to Decision"],
         tripleseatStatus: record.fields["Tripleseat Status"],
         guestCount: record.fields["Guest Count"],
         suggestedEventWeight: record.fields["Suggested Event Weight"],
       })),
-      skippedSample: fetched.skipped.slice(0, 8),
+      skippedSample: fetched.skipped.slice(0, 10),
+      generatedAt: new Date().toISOString(),
     });
   } catch (error) {
     console.error("tripleseat-sync-events error", error);
 
     return res.status(500).json({
       ok: false,
+      route: "/api/tripleseat-sync-events",
+      version: "v1.1",
       error: error.message || "Tripleseat event sync failed",
+      generatedAt: new Date().toISOString(),
     });
   }
 };
