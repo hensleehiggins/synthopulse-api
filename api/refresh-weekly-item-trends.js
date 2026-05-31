@@ -154,10 +154,26 @@ function getSelectName(value) {
   return "";
 }
 
-function isCompletedDecisionRun(fields = {}) {
-  return (
-    getSelectName(fields["Run Status"]) === RUN_STATUS_COMPLETED &&
-    fields["Use For Decision Layer"] === true
+function isCompletedReportingRun(fields = {}) {
+  return getSelectName(fields["Run Status"]) === RUN_STATUS_COMPLETED;
+}
+
+function isExplicitlyUnsafeHistoricalRun(fields = {}) {
+  const runId = String(fields["Run ID"] || "").toLowerCase();
+  const gateReason = String(fields["Completion Gate Reason"] || "").toLowerCase();
+
+  const blockedFragments = [
+    "partial",
+    "test",
+    "fake",
+    "sample",
+    "imported",
+    "historical test",
+    "do not use",
+  ];
+
+  return blockedFragments.some(
+    (fragment) => runId.includes(fragment) || gateReason.includes(fragment)
   );
 }
 
@@ -600,20 +616,23 @@ module.exports = async function handler(req, res) {
         const runDate = fields["Service Date"] || parseRunDate(runId, fields["Created Time"]);
         const serviceType = getSelectName(fields["Service Type"]);
         const restaurantIds = getLinkedIds(fields["Restaurant"]);
-        const completedDecisionRun = isCompletedDecisionRun(fields);
+        const completedReportingRun = isCompletedReportingRun(fields);
+        const explicitlyUnsafeHistoricalRun = isExplicitlyUnsafeHistoricalRun(fields);
 
         return {
-          id: record.id,
-          runId,
-          runDate,
-          createdTime: fields["Created Time"] || "",
-          restaurantIds,
-          runStatus: getSelectName(fields["Run Status"]),
-          useForDecisionLayer: fields["Use For Decision Layer"] === true,
-          isLatestDecisionRun: fields["Is Latest Decision Run"] === true,
-          serviceType,
-          serviceKey: normalizeServiceType(serviceType),
-        };
+  id: record.id,
+  runId,
+  runDate,
+  createdTime: fields["Created Time"] || "",
+  restaurantIds,
+  runStatus: getSelectName(fields["Run Status"]),
+  useForDecisionLayer: fields["Use For Decision Layer"] === true,
+  isLatestDecisionRun: fields["Is Latest Decision Run"] === true,
+  completedReportingRun,
+  explicitlyUnsafeHistoricalRun,
+  serviceType,
+  serviceKey: normalizeServiceType(serviceType),
+};
       })
       .filter((run) => {
         if (!run.restaurantIds.includes(restaurantId)) {
@@ -631,10 +650,10 @@ module.exports = async function handler(req, res) {
           return false;
         }
 
-        if (!(run.runStatus === RUN_STATUS_COMPLETED && run.useForDecisionLayer === true)) {
-          skippedNonDecisionRuns++;
-          return false;
-        }
+       if (!run.completedReportingRun || run.explicitlyUnsafeHistoricalRun) {
+  skippedNonDecisionRuns++;
+  return false;
+}
 
         // Weekly trend rows should compare the same operating service.
         // Current POS export convention is Close/Dinner, but this remains tenant-safe
@@ -699,7 +718,7 @@ if (currentRuns.length < 2 || priorRuns.length < 2) {
     reason: "Not enough reporting close runs for weekly trend comparison yet.",
     restaurant: restaurantName,
     restaurantId,
-    completedDecisionReportingRuns: reportingRuns.length,
+    completedReportingCloseRuns: reportingRuns.length,
     currentRuns: currentRuns.length,
     priorRuns: priorRuns.length,
     skippedNonDecisionRuns,
@@ -956,7 +975,7 @@ if (currentRuns.length < 2 || priorRuns.length < 2) {
       table: TABLES.weeklyTrends,
       restaurant: restaurantName,
       restaurantId,
-      completedDecisionReportingRuns: reportingRuns.length,
+      completedReportingCloseRuns: reportingRuns.length,
       currentRuns: currentRuns.map((run) => run.runId),
       priorRuns: priorRuns.map((run) => run.runId),
       currentRunGate: currentRuns.map((run) => ({
