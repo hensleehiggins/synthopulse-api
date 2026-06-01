@@ -51,11 +51,19 @@ const CURRENT_RUN_COUNT = 5;
 const PRIOR_RUN_COUNT = 5;
 
 const MATERIALITY = {
-  minCurrentOrPriorQty: 3,
-  minRevenueChange: 150,
-  minProfitChange: 100,
-  minQtyChange: 5,
-  minDisplayPriority: 55,
+  // Minimum baseline needed before a row is worth calculating.
+  minCurrentOrPriorQty: 2,
+
+  // Lower row-creation thresholds. Softr still ranks and limits display.
+  minRevenueChange: 50,
+  minProfitChange: 25,
+  minQtyChange: 1,
+  minDisplayPriority: 20,
+
+  // Stronger owner-alert thresholds used for Trend Strength, not row creation.
+  ownerRevenueChange: 200,
+  ownerProfitChange: 100,
+  ownerQtyChange: 5,
 };
 
 function send(res, status, body) {
@@ -308,6 +316,10 @@ function classifyTrend({
   const absRevenueChange = Math.abs(revenueChange);
   const absProfitChange = Math.abs(profitChange);
   const absQtyChange = Math.abs(qtyChange);
+  const hasUsefulMovement =
+  absProfitChange >= MATERIALITY.minProfitChange ||
+  absRevenueChange >= MATERIALITY.minRevenueChange ||
+  absQtyChange >= MATERIALITY.minQtyChange;
 
   let direction = "Stable";
 
@@ -351,32 +363,27 @@ function classifyTrend({
   } else if (absProfitChange >= 200 || absRevenueChange >= 500 || absQtyChange >= 10) {
     strength = "Medium";
   } else if (
-    absProfitChange >= MATERIALITY.minProfitChange ||
-    absRevenueChange >= MATERIALITY.minRevenueChange ||
-    absQtyChange >= MATERIALITY.minQtyChange
-  ) {
-    strength = "Low";
-  }
+  absProfitChange >= MATERIALITY.ownerProfitChange ||
+  absRevenueChange >= MATERIALITY.ownerRevenueChange ||
+  absQtyChange >= MATERIALITY.ownerQtyChange
+) {
+  strength = "Low";
+} else if (hasUsefulMovement) {
+  strength = "Light";
+}
 
   const priority =
     Math.round(
       Math.min(100, absProfitChange / 4 + absRevenueChange / 25 + absQtyChange * 4)
     ) + (direction === "Declining" ? 20 : direction === "Softening" ? 8 : 0);
 
-  const material =
-    maxQty >= MATERIALITY.minCurrentOrPriorQty &&
-    (
-      absProfitChange >= MATERIALITY.minProfitChange ||
-      absRevenueChange >= MATERIALITY.minRevenueChange ||
-      absQtyChange >= MATERIALITY.minQtyChange
-    );
+  const hasBaseline = maxQty >= MATERIALITY.minCurrentOrPriorQty;
 
-  const active =
-    material &&
-    priority >= MATERIALITY.minDisplayPriority &&
-    confidence !== "Insufficient Data" &&
-    direction !== "Stable" &&
-    direction !== "New / Insufficient Baseline";
+const active =
+  hasBaseline &&
+  (hasUsefulMovement || priority >= MATERIALITY.minDisplayPriority) &&
+  direction !== "Stable" &&
+  direction !== "New / Insufficient Baseline";
 
   return {
     direction,
@@ -894,7 +901,7 @@ if (currentRuns.length < 2 || priorRuns.length < 2) {
             "Prior:",
             ...priorRuns.map((run) => run.runId),
           ].join("\n"),
-          Notes: `Tenant-safe weekly trend for ${restaurantName}. Uses completed decision-ready POS dinner/close runs only. Current window ${currentWindowStart} to ${currentWindowEnd}; prior window ${priorWindowStart} to ${priorWindowEnd}. Qty ${currentQty} vs ${priorQty}; revenue ${money(
+          Notes: `Tenant-safe weekly trend for ${restaurantName}. Uses clean completed POS dinner/close reporting runs only. Current window ${currentWindowStart} to ${currentWindowEnd}; prior window ${priorWindowStart} to ${priorWindowEnd}. Qty ${currentQty} vs ${priorQty}; revenue ${money(
             trend.revenueChange
           )}; profit ${money(trend.profitChange)}; qty pct ${formatPctShort(
             trend.qtyChangePct
