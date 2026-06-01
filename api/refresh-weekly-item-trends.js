@@ -67,6 +67,7 @@ const MATERIALITY = {
   minCurrentOrPriorQty: 2,
 
   // Lower row-creation thresholds. Softr still ranks and limits display.
+// Lighter signals use Trend Strength = Watch to avoid creating new Airtable select options.
   minRevenueChange: 50,
   minProfitChange: 25,
   minQtyChange: 1,
@@ -393,7 +394,7 @@ function classifyTrend({
 ) {
   strength = "Low";
 } else if (hasUsefulMovement) {
-  strength = "Light";
+  strength = "Watch";
 }
 
   const priority =
