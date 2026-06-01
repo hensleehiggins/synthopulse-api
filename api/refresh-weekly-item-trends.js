@@ -1,26 +1,38 @@
 /********************************************************************
  * KitchenPulse API - Refresh Weekly Item Trends v1.1
  *
- * Purpose:
+* Purpose:
  * - Recalculate Weekly Item Trends for one restaurant/tenant.
- * - Build current/prior trend windows from completed POS decision runs only.
+ * - Build current/prior trend windows from clean completed POS dinner/close
+ *   reporting runs.
  * - Use mapped, Decision Eligible Menu Items and Daily Sales rows.
- * - Upsert active trend rows and deactivate stale trend rows for the restaurant.
+ * - Upsert useful current-vs-prior trend rows and deactivate stale trend rows
+ *   for the restaurant.
  *
  * Request:
  * - GET or POST
  * - Pass restaurantId=rec... or restaurantName=Chloe
  * - Optional x-admin-secret header or ?secret=... when ADMIN_REFRESH_SECRET is set
  *
- * Decision-run gate:
+ * Reporting-run gate:
  * - Runs must be:
  *   - Run Status = Completed
- *   - Use For Decision Layer = true
- * - Weekly trends do NOT require Is Latest Decision Run because they need
- *   multiple historical completed decision runs.
+ *   - Same restaurant/tenant
+ *   - POS close/dinner reporting run
+ *   - Not partial, test, fake, sample, imported, or explicitly unsafe
+ *
+ * Important:
+ * - Weekly Trends do NOT require Use For Decision Layer.
+ * - Weekly Trends do NOT require Is Latest Decision Run.
+ * - Those flags control current decision truth, not historical reporting windows.
+ * - This route intentionally compares multiple clean historical close runs so
+ *   weekly movement does not collapse to only the latest decision run.
  *
  * Touches:
  * - Weekly Item Trends
+ *   - Creates/updates useful movement rows
+ *   - Marks current calculated rows active
+ *   - Deactivates stale rows for this restaurant
  *
  * Does NOT:
  * - Create or update Runs
