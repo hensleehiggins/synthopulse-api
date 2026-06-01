@@ -628,6 +628,7 @@ module.exports = async function handler(req, res) {
     let skippedNonDecisionRuns = 0;
     let skippedWrongRestaurantRuns = 0;
     let skippedNonCloseRuns = 0;
+    const rejectedRunExamples = [];
 
     const reportingRuns = runs
       .map((record) => {
@@ -656,22 +657,68 @@ module.exports = async function handler(req, res) {
       })
       .filter((run) => {
         if (!run.restaurantIds.includes(restaurantId)) {
-          skippedWrongRestaurantRuns++;
-          return false;
-        }
+        skippedWrongRestaurantRuns++;
+        if (rejectedRunExamples.length < 20) {
+        rejectedRunExamples.push({
+        runId: run.runId,
+        reason: "Wrong restaurant",
+        runStatus: run.runStatus,
+        serviceType: run.serviceType,
+        serviceKey: run.serviceKey,
+        useForDecisionLayer: run.useForDecisionLayer,
+        isLatestDecisionRun: run.isLatestDecisionRun,
+      });
+    }
+  return false;
+}
 
         if (!isReportingRunId(run.runId)) {
-          skippedNonCloseRuns++;
-          return false;
-        }
+  skippedNonCloseRuns++;
+  if (rejectedRunExamples.length < 20) {
+    rejectedRunExamples.push({
+      runId: run.runId,
+      reason: "Run ID is not POS close format",
+      runStatus: run.runStatus,
+      serviceType: run.serviceType,
+      serviceKey: run.serviceKey,
+      useForDecisionLayer: run.useForDecisionLayer,
+      isLatestDecisionRun: run.isLatestDecisionRun,
+    });
+  }
+  return false;
+}
 
         if (!run.runDate) {
-          skippedNonCloseRuns++;
-          return false;
-        }
+  skippedNonCloseRuns++;
+  if (rejectedRunExamples.length < 20) {
+    rejectedRunExamples.push({
+      runId: run.runId,
+      reason: "Missing run date",
+      runStatus: run.runStatus,
+      serviceType: run.serviceType,
+      serviceKey: run.serviceKey,
+      useForDecisionLayer: run.useForDecisionLayer,
+      isLatestDecisionRun: run.isLatestDecisionRun,
+    });
+  }
+  return false;
+}
 
        if (!run.completedReportingRun || run.explicitlyUnsafeHistoricalRun) {
   skippedNonDecisionRuns++;
+  if (rejectedRunExamples.length < 20) {
+    rejectedRunExamples.push({
+      runId: run.runId,
+      reason: !run.completedReportingRun
+        ? "Run Status is not Completed"
+        : "Explicitly unsafe historical run",
+      runStatus: run.runStatus,
+      serviceType: run.serviceType,
+      serviceKey: run.serviceKey,
+      useForDecisionLayer: run.useForDecisionLayer,
+      isLatestDecisionRun: run.isLatestDecisionRun,
+    });
+  }
   return false;
 }
 
@@ -679,9 +726,20 @@ module.exports = async function handler(req, res) {
         // Current POS export convention is Close/Dinner, but this remains tenant-safe
         // because the decision gate is the primary guard and Service Type is metadata.
         if (run.serviceKey !== "unknown" && run.serviceKey !== "dinner") {
-          skippedNonCloseRuns++;
-          return false;
-        }
+  skippedNonCloseRuns++;
+  if (rejectedRunExamples.length < 20) {
+    rejectedRunExamples.push({
+      runId: run.runId,
+      reason: "Service Type is not dinner/unknown",
+      runStatus: run.runStatus,
+      serviceType: run.serviceType,
+      serviceKey: run.serviceKey,
+      useForDecisionLayer: run.useForDecisionLayer,
+      isLatestDecisionRun: run.isLatestDecisionRun,
+    });
+  }
+  return false;
+}
 
         return true;
       })
@@ -745,6 +803,7 @@ if (currentRuns.length < 2 || priorRuns.length < 2) {
     skippedWrongRestaurantRuns,
     skippedNonCloseRuns,
     deactivatedStaleTrendRows: deactivated.length,
+    rejectedRunExamples,
   });
 }
 
