@@ -809,6 +809,7 @@ const sale = {
 
     const allKeys = new Set([...currentBucket.keys(), ...priorBucket.keys()]);
     const trendRows = [];
+    const rejectedTrendExamples = [];
 
     const currentWindowStart = currentRuns[currentRuns.length - 1].runDate;
     const currentWindowEnd = currentRuns[0].runDate;
@@ -854,7 +855,27 @@ const sale = {
         priorMargin,
       });
 
-      if (!trend.active) continue;
+     if (!trend.active) {
+  if (rejectedTrendExamples.length < 12) {
+    rejectedTrendExamples.push({
+      item: current.itemName || prior.itemName || key,
+      direction: trend.direction,
+      strength: trend.strength,
+      confidence: trend.confidence,
+      priority: trend.priority,
+      qty: `${currentQty} vs ${priorQty}`,
+      qtyChange: trend.qtyChange,
+      revenueChange: money(trend.revenueChange),
+      profitChange: money(trend.profitChange),
+      currentRevenue,
+      priorRevenue,
+      currentProfit,
+      priorProfit,
+    });
+  }
+
+  continue;
+}
 
       const itemName = current.itemName || prior.itemName;
       const trendName = `${restaurantName} — ${itemName} — ${trend.direction} — ${currentWindowEnd}`;
@@ -1025,6 +1046,7 @@ const sale = {
       activeTrendRows: trendRows.length,
       created: created.length,
       updated: updated.length,
+      rejectedTrendExamples,
       topExamples: trendRows.slice(0, 8).map((row) => ({
         item: row.fields["Item Name"],
         direction: row.fields["Trend Direction"],
