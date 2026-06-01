@@ -224,6 +224,7 @@ function isAllowedOwnerItemName(itemName) {
     "gift card",
     "employee meal",
     "comp",
+    "miller lite",
   ];
 
   return !blockedFragments.some((fragment) => text.includes(fragment));
@@ -777,22 +778,25 @@ if (currentRuns.length < 2 || priorRuns.length < 2) {
         continue;
       }
 
-      const itemName = fields["Item"] || menuById.get(menuItemId)?.itemName || "";
+     const menuItem = menuById.get(menuItemId);
+const rawItemName = fields["Item"] || "";
+const itemName = menuItem?.itemName || rawItemName;
 
-      if (!isAllowedOwnerItemName(itemName)) {
-        skippedUnmappedOrIneligible++;
-        continue;
-      }
+if (!isAllowedOwnerItemName(itemName)) {
+  skippedUnmappedOrIneligible++;
+  continue;
+}
 
-      const sale = {
-        recordId: record.id,
-        runId,
-        itemName,
-        qty: num(fields["Qty"]),
-        revenue: num(fields["Net Sales"]),
-        profitFallback: num(fields["Profit"]),
-        menuItemId,
-      };
+const sale = {
+  recordId: record.id,
+  runId,
+  itemName,
+  rawItemName,
+  qty: num(fields["Qty"]),
+  revenue: num(fields["Net Sales"]),
+  profitFallback: num(fields["Profit"]),
+  menuItemId,
+};
 
       if (!sale.itemName || (sale.qty === 0 && sale.revenue === 0)) continue;
 
