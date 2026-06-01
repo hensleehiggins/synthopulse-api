@@ -175,7 +175,18 @@ function getSelectName(value) {
 }
 
 function isCompletedReportingRun(fields = {}) {
-  return getSelectName(fields["Run Status"]) === RUN_STATUS_COMPLETED;
+  const status = getSelectName(fields["Run Status"]);
+
+  // New hardened runs should explicitly say Completed.
+  if (status === RUN_STATUS_COMPLETED) return true;
+
+  // Legacy POS close runs created before Run Status hardening often have no
+  // Run Status value. Weekly Trends may use those as historical reporting runs
+  // if they pass the later restaurant, close-run, unsafe-history, and Daily Sales
+  // gates.
+  if (!status) return true;
+
+  return false;
 }
 
 function isExplicitlyUnsafeHistoricalRun(fields = {}) {
@@ -710,8 +721,8 @@ module.exports = async function handler(req, res) {
     rejectedRunExamples.push({
       runId: run.runId,
       reason: !run.completedReportingRun
-        ? "Run Status is not Completed"
-        : "Explicitly unsafe historical run",
+  ? "Run Status is neither Completed nor blank legacy reporting status"
+  : "Explicitly unsafe historical run",
       runStatus: run.runStatus,
       serviceType: run.serviceType,
       serviceKey: run.serviceKey,
