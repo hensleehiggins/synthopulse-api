@@ -16,6 +16,9 @@ module.exports = async function handler(req, res) {
   const EXTERNAL_FACTORS_TABLE_ID = "tbl73d4esGTQcHg6c";
   const DAILY_SALES_TABLE_ID = "tbl2FbE1R7b2QesQE";
   const MENU_ITEMS_TABLE_ID = "tblD56pucadUQj7TY";
+  const COST_SOURCE_ITEMS_TABLE_ID = "tblLSKZODdEi5X2un";
+  const VENDOR_RECEIPT_LINES_TABLE_ID = "tblbQ2BwFHbHFnOht";
+  const RECEIPT_COST_PROPOSALS_TABLE_ID = "tblbdvzF3VUCQduj4";
 
   function sendJson(status, payload) {
     return res.status(status).json(payload);
@@ -46,6 +49,19 @@ module.exports = async function handler(req, res) {
   function safeNumber(value, fallback = 0) {
     const n = Number(String(value ?? "").replace(/[$,%]/g, "").trim());
     return Number.isFinite(n) ? n : fallback;
+  }
+
+  function safeBool(value) {
+    const clean = safeText(value).toLowerCase();
+
+    return (
+      clean === "true" ||
+      clean === "yes" ||
+      clean === "1" ||
+      clean === "checked" ||
+      clean === "approved" ||
+      value === true
+    );
   }
 
   async function fetchJsonOrText(url, options = {}) {
@@ -672,6 +688,293 @@ function cleanAssistantReply(text) {
     );
   }
 
+  function questionNeedsCostLookup(message) {
+    const clean = normalizeForSearch(message);
+
+    return (
+      clean.includes("cost") ||
+      clean.includes("price") ||
+      clean.includes("pricing") ||
+      clean.includes("paying") ||
+      clean.includes("paid") ||
+      clean.includes("vendor") ||
+      clean.includes("supplier") ||
+      clean.includes("invoice") ||
+      clean.includes("receipt") ||
+      clean.includes("food cost") ||
+      clean.includes("what am i paying") ||
+      clean.includes("what are we paying") ||
+      clean.includes("who do we buy") ||
+      clean.includes("who supplies") ||
+      clean.includes("price book")
+    );
+  }
+
+  function extractCostLookupWords(message) {
+    const clean = normalizeForSearch(message);
+
+    const stopWords = new Set([
+      "what",
+      "whats",
+      "whatre",
+      "were",
+      "we",
+      "are",
+      "am",
+      "is",
+      "i",
+      "me",
+      "my",
+      "our",
+      "the",
+      "a",
+      "an",
+      "for",
+      "of",
+      "on",
+      "to",
+      "from",
+      "right",
+      "now",
+      "current",
+      "currently",
+      "pay",
+      "paying",
+      "paid",
+      "price",
+      "prices",
+      "pricing",
+      "cost",
+      "costs",
+      "vendor",
+      "vendors",
+      "supplier",
+      "suppliers",
+      "invoice",
+      "receipt",
+      "receipts",
+      "item",
+      "items",
+      "show",
+      "check",
+      "lookup",
+      "look",
+      "find",
+      "much",
+      "many",
+      "do",
+      "does",
+      "did",
+      "buy",
+      "buying",
+    ]);
+
+    return clean
+      .split(" ")
+      .map((word) => word.trim())
+      .filter((word) => word.length >= 3 && !stopWords.has(word));
+  }
+
+  function costRowScore(fields = {}, words = [], fieldNames = []) {
+    if (!words.length) return 1;
+
+    const haystack = normalizeForSearch(
+      fieldNames.map((fieldName) => safeText(fields[fieldName])).join(" ")
+    );
+
+    if (!haystack) return 0;
+
+    return words.reduce((score, word) => {
+      if (haystack.includes(word)) return score + 2;
+
+      const partial = haystack
+        .split(" ")
+        .some((token) => token.includes(word) || word.includes(token));
+
+      return partial ? score + 1 : score;
+    }, 0);
+  }
+
+  function formatMoney(value) {
+    const n = safeNumber(value, NaN);
+
+    if (!Number.isFinite(n)) return "";
+
+    return `$${n.toFixed(2)}`;
+  }
+
+  function summarizeCostLookupQuestion({
+    message,
+    costSourceRows = [],
+    proposalRows = [],
+    receiptLineRows = [],
+  }) {
+    const words = extractCostLookupWords(message);
+    const scope = words.length ? words.join(", ") : "general vendor cost lookup";
+
+    const sourceMatches = costSourceRows
+      .map((record) => {
+        const fields = record.fields || {};
+
+        return {
+          fields,
+          score: costRowScore(fields, words, [
+            "Source Item Name",
+            "Supplier",
+            "SKU",
+            "Category",
+            "Unit",
+            "Cost Notes",
+            "Match Key",
+          ]),
+        };
+      })
+      .filter((row) => row.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10)
+      .map(({ fields }) => {
+        const item = safeText(fields["Source Item Name"]);
+        const supplier = safeText(fields["Supplier"]);
+        const sku = safeText(fields["SKU"]);
+        const category = safeText(fields["Category"]);
+        const unit = safeText(fields["Unit"]);
+        const finalPrice =
+          formatMoney(fields["Final Price"]) ||
+          formatMoney(fields["Unit Price"]) ||
+          formatMoney(fields["Price"]);
+        const packagePrice = formatMoney(fields["Price"]);
+        const unitPrice = formatMoney(fields["Unit Price"]);
+        const notes = safeText(fields["Cost Notes"]);
+
+        return [
+          item && `item ${item}`,
+          supplier && `supplier ${supplier}`,
+          sku && `sku ${sku}`,
+          category && `category ${category}`,
+          finalPrice && `current price ${finalPrice}`,
+          packagePrice &&
+            packagePrice !== finalPrice &&
+            `package price ${packagePrice}`,
+          unitPrice && unitPrice !== finalPrice && `unit price ${unitPrice}`,
+          unit && `unit ${unit}`,
+          notes && `notes ${notes}`,
+        ]
+          .filter(Boolean)
+          .join(" • ");
+      });
+
+    const appliedProposalMatches = proposalRows
+      .map((record) => {
+        const fields = record.fields || {};
+
+        return {
+          fields,
+          score: costRowScore(fields, words, [
+            "Proposal Name",
+            "Vendor",
+            "Parsed Item Name",
+            "Proposal Reason",
+            "Notes",
+          ]),
+        };
+      })
+      .filter((row) => row.score > 0)
+      .filter(({ fields }) => safeBool(fields["Approved"]) || safeBool(fields["Applied"]))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map(({ fields }) => {
+        const item = safeText(fields["Parsed Item Name"]) || safeText(fields["Proposal Name"]);
+        const vendor = safeText(fields["Vendor"]);
+        const currentCost = formatMoney(fields["Current Cost"]);
+        const proposedCost = formatMoney(fields["Proposed Cost"]);
+        const changePercent = safeNumber(fields["Change Percent"], NaN);
+        const status = safeText(fields["Proposal Status"]);
+        const approved = safeBool(fields["Approved"]);
+        const applied = safeBool(fields["Applied"]);
+        const reason = safeText(fields["Proposal Reason"]);
+
+        return [
+          item && `item ${item}`,
+          vendor && `vendor ${vendor}`,
+          currentCost && `previous ${currentCost}`,
+          proposedCost && `proposed/applied ${proposedCost}`,
+          Number.isFinite(changePercent) &&
+            `change ${(changePercent * 100).toFixed(1)}%`,
+          status && `status ${status}`,
+          approved && "approved",
+          applied && "applied",
+          reason && `reason ${reason}`,
+        ]
+          .filter(Boolean)
+          .join(" • ");
+      });
+
+    const approvedReceiptMatches = receiptLineRows
+      .map((record) => {
+        const fields = record.fields || {};
+
+        return {
+          fields,
+          score: costRowScore(fields, words, [
+            "Line Name",
+            "Vendor",
+            "Line Item Name",
+            "Category",
+            "Unit",
+            "Package Size",
+            "Raw Line Text",
+            "Notes",
+          ]),
+        };
+      })
+      .filter((row) => row.score > 0)
+      .filter(({ fields }) => safeBool(fields["Approved"]) && !safeBool(fields["Needs Review"]))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map(({ fields }) => {
+        const item = safeText(fields["Line Item Name"]) || safeText(fields["Line Name"]);
+        const vendor = safeText(fields["Vendor"]);
+        const category = safeText(fields["Category"]);
+        const qty = safeText(fields["Quantity"]);
+        const unit = safeText(fields["Unit"]);
+        const packageSize = safeText(fields["Package Size"]);
+        const unitCost = formatMoney(fields["Unit Cost"]);
+        const lineTotal = formatMoney(fields["Line Total"]);
+        const confidence = safeText(fields["Confidence"]);
+
+        return [
+          item && `item ${item}`,
+          vendor && `vendor ${vendor}`,
+          category && `category ${category}`,
+          qty && `qty ${qty}`,
+          unit && `unit ${unit}`,
+          packageSize && `package ${packageSize}`,
+          unitCost && `unit cost ${unitCost}`,
+          lineTotal && `line total ${lineTotal}`,
+          confidence && `confidence ${confidence}`,
+        ]
+          .filter(Boolean)
+          .join(" • ");
+      });
+
+    const lines = [
+      "Cost Lookup:",
+      `Question scope: ${scope}`,
+      sourceMatches.length
+        ? `Current vendor price book matches:\n${sourceMatches.join("\n")}`
+        : "Current vendor price book matches: none found.",
+      appliedProposalMatches.length
+        ? `Approved/applied cost proposal evidence:\n${appliedProposalMatches.join("\n")}`
+        : "Approved/applied cost proposal evidence: none found.",
+      approvedReceiptMatches.length
+        ? `Approved receipt-line evidence:\n${approvedReceiptMatches.join("\n")}`
+        : "Approved receipt-line evidence: none found.",
+      "Source rule: Treat current price book matches as the best current answer. Use approved/applied proposals and approved receipt lines as supporting evidence only. Do not treat unapproved or needs-review receipt lines as current cost.",
+    ];
+
+    return lines.join("\n");
+  }
+
   function getProductHelpContext() {
   return `
 KitchenPulse Product Help Context
@@ -824,7 +1127,7 @@ Receipt Intake safety rules:
       const topRisk = safeText(decisionPayload?.topRisk?.item);
 
       let opener =
-        "Ask me what to push today, what’s at risk, or what changed since last run.";
+        "Ask me what to push today, what’s at risk, what changed since last run, or what you’re paying for an item or vendor.";
 
       if (topOpportunity || topRisk) {
         opener =
@@ -832,12 +1135,12 @@ Receipt Intake safety rules:
             topOpportunity || "not clearly identified yet"
           }. ` +
           `Biggest risk: ${topRisk || "not clearly identified yet"}. ` +
-          `Ask me what to push, what’s at risk, or how to play tonight.`;
+          `Ask me what to push, what’s at risk, how to play tonight, or what you’re paying for an item.`;
       } else if (recommendation || actionCallout) {
         opener =
           `${restaurantName ? restaurantName + " — " : ""}` +
           `${actionCallout || recommendation}. ` +
-          `Ask me what to push, what’s at risk, or how to play tonight.`;
+          `Ask me what to push, what’s at risk, how to play tonight, or what you’re paying for an item.`;
       }
 
       return sendJson(200, {
@@ -851,7 +1154,8 @@ Receipt Intake safety rules:
     } catch (err) {
       return sendJson(200, {
         status: "ok",
-        opener: "Ask me what to push today, what’s at risk, or what changed since last run.",
+        opener:
+          "Ask me what to push today, what’s at risk, what changed since last run, or what you’re paying for an item or vendor.",
       });
     }
   }
@@ -949,6 +1253,7 @@ Receipt Intake safety rules:
       : "Menu item context unavailable.";
 
     let deepQuestionContext = "No deep question-specific lookup was needed.";
+    let costQuestionContext = "No cost lookup was needed.";
 
     const menuRecordsForLookup = menuItemsResult.ok
       ? menuItemsResult.data?.records || []
@@ -956,6 +1261,7 @@ Receipt Intake safety rules:
 
     const needsDeepSales = questionNeedsDeepSales(rawMessage);
     const needsWeatherContext = questionNeedsWeatherContext(rawMessage);
+    const needsCostLookup = questionNeedsCostLookup(rawMessage);
 
     if (needsDeepSales || needsWeatherContext) {
       const [deepSalesResult, deepExternalResult] = await Promise.all([
@@ -1039,6 +1345,108 @@ Receipt Intake safety rules:
         pieces.filter(Boolean).join("\n\n") || deepQuestionContext;
     }
 
+    if (needsCostLookup) {
+      const [costSourceResult, proposalResult, receiptLineResult] = await Promise.all([
+        airtableGetAll(COST_SOURCE_ITEMS_TABLE_ID, {
+          fields: [
+            "Source Item Name",
+            "Source Sheet",
+            "Supplier",
+            "SKU",
+            "Category",
+            "Unit",
+            "Package Qty",
+            "Price",
+            "Unit Price",
+            "Final Price",
+            "Cost Notes",
+            "Match Key",
+          ],
+          sortField: "Source Item Name",
+          sortDirection: "asc",
+          maxRecords: 1200,
+        }),
+        airtableGetAll(RECEIPT_COST_PROPOSALS_TABLE_ID, {
+          fields: [
+            "Proposal Name",
+            "Vendor",
+            "Parsed Item Name",
+            "Current Cost",
+            "Proposed Cost",
+            "Change Percent",
+            "Proposal Status",
+            "Approved",
+            "Applied",
+            "Proposal Reason",
+            "Notes",
+          ],
+          sortField: "Proposal Name",
+          sortDirection: "asc",
+          maxRecords: 800,
+        }),
+        airtableGetAll(VENDOR_RECEIPT_LINES_TABLE_ID, {
+          fields: [
+            "Line Name",
+            "Vendor",
+            "Line Item Name",
+            "Category",
+            "Quantity",
+            "Unit",
+            "Package Size",
+            "Unit Cost",
+            "Line Total",
+            "Confidence",
+            "Needs Review",
+            "Approved",
+            "Raw Line Text",
+            "Notes",
+          ],
+          sortField: "Line Name",
+          sortDirection: "asc",
+          maxRecords: 1200,
+        }),
+      ]);
+
+      const pieces = [];
+
+      if (costSourceResult.ok || proposalResult.ok || receiptLineResult.ok) {
+        pieces.push(
+          summarizeCostLookupQuestion({
+            message: rawMessage,
+            costSourceRows: costSourceResult.ok ? costSourceResult.records : [],
+            proposalRows: proposalResult.ok ? proposalResult.records : [],
+            receiptLineRows: receiptLineResult.ok ? receiptLineResult.records : [],
+          })
+        );
+      }
+
+      if (!costSourceResult.ok) {
+        pieces.push(
+          `Cost source item lookup failed: ${
+            costSourceResult.error || "Unknown Airtable error"
+          }`
+        );
+      }
+
+      if (!proposalResult.ok) {
+        pieces.push(
+          `Receipt cost proposal lookup failed: ${
+            proposalResult.error || "Unknown Airtable error"
+          }`
+        );
+      }
+
+      if (!receiptLineResult.ok) {
+        pieces.push(
+          `Vendor receipt line lookup failed: ${
+            receiptLineResult.error || "Unknown Airtable error"
+          }`
+        );
+      }
+
+      costQuestionContext = pieces.filter(Boolean).join("\n\n") || costQuestionContext;
+    }
+
     const decisionPayloadSummary = decisionPayload
       ? JSON.stringify(decisionPayload, null, 2)
       : "No structured decision payload available.";
@@ -1106,6 +1514,9 @@ ${getProductHelpContext()}
 Question-Specific Deep Lookup:
 ${deepQuestionContext}
 
+Question-Specific Cost Lookup:
+${costQuestionContext}
+
 Decision Payload:
 ${decisionPayloadSummary}
 `.trim();
@@ -1122,6 +1533,8 @@ PRIMARY RULE:
 Always answer from the current KitchenPulse context first.
 
 When the context includes "Question-Specific Deep Lookup", treat it as the most relevant source for item/date/sales/margin/weather questions. If the deep lookup gives exact totals, use those totals directly. If the lookup says no matching rows were found, say that clearly and do not invent numbers. For broad analytical questions, synthesize the deep lookup with movement, menu economics, weather, events, and the latest brief rather than answering from only one section.
+
+When the context includes "Question-Specific Cost Lookup", treat it as the strongest source for vendor price, supplier, receipt, invoice, and "what are we paying" questions. Use Current vendor price book matches as the best current answer. Use approved/applied cost proposal evidence and approved receipt-line evidence as support or audit trail. Do not treat unapproved receipt lines, needs-review receipt lines, or unapplied proposals as current cost. If the cost lookup finds no match, say that clearly and suggest checking Cost Center or the original receipt.
 NEVER SAY:
 - "Send me your sales data"
 - "Tell me about your restaurant"
@@ -1147,6 +1560,8 @@ Explain what you can do using the current restaurant data already available:
 - interpret movement signals
 - connect sales, margin, weather, events, staffing, and menu economics
 - answer scoped item/date sales questions when a deep lookup is available
+- answer current vendor price, supplier, and "what are we paying" questions when a cost lookup is available
+- explain whether a cost came from the price book, an approved/applied proposal, or approved receipt-line evidence
 - suggest next operator actions
 
 WHEN CONTEXT IS LIMITED:
@@ -1175,6 +1590,7 @@ BOUNDARIES:
 - Never invent numbers or projections
 - Never claim to have searched all history unless the deep lookup context says the exact scope was loaded
 - If a question asks for a date range, item total, margin, profit, or sales count, use the Question-Specific Deep Lookup when available
+- If a question asks for current item cost, vendor pricing, supplier, receipt price, invoice price, or "what are we paying", use the Question-Specific Cost Lookup when available
 - If only a sample is available, call it a sample
 - Only reference numbers if clearly supported by the provided context
 - Do not pretend to see data that is not in the KitchenPulse context
@@ -1264,6 +1680,7 @@ return sendJson(200, {
         menu_loaded: menuItemsResult.ok,
         deep_sales_lookup_used: needsDeepSales,
         weather_lookup_used: needsWeatherContext,
+        cost_lookup_used: needsCostLookup,
       },
     });
   } catch (err) {
