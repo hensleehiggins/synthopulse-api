@@ -257,48 +257,65 @@ module.exports = async function handler(req, res) {
   }
 
   function eventStart(fields = {}) {
-    return (
-      fields["Start DateTime"] ||
-      fields["Forecast Date"] ||
-      fields["Display Date"] ||
-      fields["Date"] ||
-      null
-    );
+  return (
+    fields["Start DateTime"] ||
+    fields["Start Time"] ||
+    fields["Event Start DateTime"] ||
+    fields["Event Start"] ||
+    fields["Event Sort Date"] ||
+    null
+  );
+}
+
+function eventEnd(fields = {}) {
+  const startRaw = eventStart(fields);
+  if (!startRaw) return null;
+
+  const start = new Date(startRaw);
+  if (Number.isNaN(start.getTime())) return null;
+
+  const rawEnd =
+    fields["End DateTime"] ||
+    fields["End Time"] ||
+    fields["Event End DateTime"] ||
+    fields["Event End"] ||
+    null;
+
+  if (!rawEnd) {
+    return new Date(start.getTime() + 4 * 60 * 60 * 1000).toISOString();
   }
 
-  function eventEnd(fields = {}) {
-    const startRaw = eventStart(fields);
-    if (!startRaw) return null;
+  const end = new Date(rawEnd);
 
-    const start = new Date(startRaw);
-    if (Number.isNaN(start.getTime())) return null;
-
-    if (!fields["End DateTime"]) {
-      return new Date(start.getTime() + 4 * 60 * 60 * 1000).toISOString();
-    }
-
-    const end = new Date(fields["End DateTime"]);
-
-    if (Number.isNaN(end.getTime()) || end <= start) {
-      return new Date(start.getTime() + 4 * 60 * 60 * 1000).toISOString();
-    }
-
-    return fields["End DateTime"];
+  if (Number.isNaN(end.getTime()) || end <= start) {
+    return new Date(start.getTime() + 4 * 60 * 60 * 1000).toISOString();
   }
 
-  function isTodayOrTonightEvent(fields = {}) {
-    const rawStart = eventStart(fields);
-    const rawEnd = eventEnd(fields);
+  return rawEnd;
+}
 
-    if (!rawStart || !rawEnd) return false;
+function isTodayOrTonightEvent(fields = {}) {
+  const rawStart = eventStart(fields);
+  const rawEnd = eventEnd(fields);
 
-    const now = new Date();
-    const start = new Date(rawStart);
-    const end = new Date(rawEnd);
+  if (!rawStart || !rawEnd) return false;
 
-    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-      return false;
-    }
+  const now = new Date();
+  const start = new Date(rawStart);
+  const end = new Date(rawEnd);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return false;
+  }
+
+  const startsToday = isSameEtDate(start, now);
+  const happeningNow = start <= now && end >= now;
+  const notAlreadyOver = end >= now;
+  const startsWithinServiceWindow =
+    startsToday && start.getTime() - now.getTime() <= 18 * 60 * 60 * 1000;
+
+  return notAlreadyOver && (happeningNow || startsWithinServiceWindow);
+}
 
     const hoursSinceEnd = (now.getTime() - end.getTime()) / (1000 * 60 * 60);
     const hoursUntilStart = (start.getTime() - now.getTime()) / (1000 * 60 * 60);
@@ -809,11 +826,11 @@ ${actionCallout || "None"}
 Brief Summary:
 ${summary || "None"}
 
-Formatted Brief:
-${formattedBrief || "None"}
+Latest Brief Text:
+${summary || actionCallout || recommendation || "None"}
 
-Decision Payload:
-${decisionPayload ? JSON.stringify(decisionPayload, null, 2) : "No structured payload."}
+Important event freshness rule:
+Only the events listed under "Tonight / Today Event Pressure" are live service-pressure events. Do not mention event names, private events, local events, or "looming" demand from Latest Brief Text, Decision Payload, or older brief language unless that same event also appears under "Tonight / Today Event Pressure".
 
 Tonight / Today Event Pressure:
 ${
@@ -864,6 +881,11 @@ This should sound like a sharp restaurant consultant or strong operator reading 
 Use the KitchenPulse context provided.
 Do not invent specific facts, numbers, events, weather, staff counts, or item names.
 If a signal is missing, do not fake it. Work from what is known.
+
+Event freshness rule:
+Only mention events that appear in the "Tonight / Today Event Pressure" section.
+Do not mention stale events, prior-day local events, old private events, or future booked demand unless it is explicitly listed in that section.
+If that section says no major active event pressure, say there is no live event pressure currently flagged.
 
 Goal:
 Give the GM something worth reading at lineup. It should feel alive, specific, and service-minded.
