@@ -256,76 +256,65 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  function eventStart(fields = {}) {
-  return (
-    fields["Start DateTime"] ||
-    fields["Start Time"] ||
-    fields["Event Start DateTime"] ||
-    fields["Event Start"] ||
-    fields["Event Sort Date"] ||
-    null
-  );
-}
-
-function eventEnd(fields = {}) {
-  const startRaw = eventStart(fields);
-  if (!startRaw) return null;
-
-  const start = new Date(startRaw);
-  if (Number.isNaN(start.getTime())) return null;
-
-  const rawEnd =
-    fields["End DateTime"] ||
-    fields["End Time"] ||
-    fields["Event End DateTime"] ||
-    fields["Event End"] ||
-    null;
-
-  if (!rawEnd) {
-    return new Date(start.getTime() + 4 * 60 * 60 * 1000).toISOString();
+   function eventStart(fields = {}) {
+    return (
+      fields["Start DateTime"] ||
+      fields["Start Time"] ||
+      fields["Event Start DateTime"] ||
+      fields["Event Start"] ||
+      fields["Event Sort Date"] ||
+      null
+    );
   }
 
-  const end = new Date(rawEnd);
+  function eventEnd(fields = {}) {
+    const startRaw = eventStart(fields);
+    if (!startRaw) return null;
 
-  if (Number.isNaN(end.getTime()) || end <= start) {
-    return new Date(start.getTime() + 4 * 60 * 60 * 1000).toISOString();
+    const start = new Date(startRaw);
+    if (Number.isNaN(start.getTime())) return null;
+
+    const rawEnd =
+      fields["End DateTime"] ||
+      fields["End Time"] ||
+      fields["Event End DateTime"] ||
+      fields["Event End"] ||
+      null;
+
+    if (!rawEnd) {
+      return new Date(start.getTime() + 4 * 60 * 60 * 1000).toISOString();
+    }
+
+    const end = new Date(rawEnd);
+
+    if (Number.isNaN(end.getTime()) || end <= start) {
+      return new Date(start.getTime() + 4 * 60 * 60 * 1000).toISOString();
+    }
+
+    return rawEnd;
   }
 
-  return rawEnd;
-}
+  function isTodayOrTonightEvent(fields = {}) {
+    const rawStart = eventStart(fields);
+    const rawEnd = eventEnd(fields);
 
-function isTodayOrTonightEvent(fields = {}) {
-  const rawStart = eventStart(fields);
-  const rawEnd = eventEnd(fields);
+    if (!rawStart || !rawEnd) return false;
 
-  if (!rawStart || !rawEnd) return false;
+    const now = new Date();
+    const start = new Date(rawStart);
+    const end = new Date(rawEnd);
 
-  const now = new Date();
-  const start = new Date(rawStart);
-  const end = new Date(rawEnd);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return false;
+    }
 
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    return false;
-  }
-
-  const startsToday = isSameEtDate(start, now);
-  const happeningNow = start <= now && end >= now;
-  const notAlreadyOver = end >= now;
-  const startsWithinServiceWindow =
-    startsToday && start.getTime() - now.getTime() <= 18 * 60 * 60 * 1000;
-
-  return notAlreadyOver && (happeningNow || startsWithinServiceWindow);
-}
-
-    const hoursSinceEnd = (now.getTime() - end.getTime()) / (1000 * 60 * 60);
-    const hoursUntilStart = (start.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-    const happeningNow = start <= now && end >= now;
     const startsToday = isSameEtDate(start, now);
-    const upcomingToday = startsToday && hoursUntilStart >= -2 && hoursUntilStart <= 18;
-    const recentlyEnded = hoursSinceEnd >= 0 && hoursSinceEnd <= 2;
+    const happeningNow = start <= now && end >= now;
+    const notAlreadyOver = end >= now;
+    const startsWithinServiceWindow =
+      startsToday && start.getTime() - now.getTime() <= 18 * 60 * 60 * 1000;
 
-    return happeningNow || upcomingToday || recentlyEnded;
+    return notAlreadyOver && (happeningNow || startsWithinServiceWindow);
   }
 
   function eventScore(fields = {}) {
@@ -1027,29 +1016,22 @@ if (eventRows.length === 0) {
   const staleEventLanguage =
     /\b(event traffic|live event|live events|private event|private events|booked event|booked demand|looming private|bar crawl|downtown crawl|local surge)\b/i;
 
-  if (
+    if (
     staleEventLanguage.test(finalManagerRead) ||
     staleEventLanguage.test(finalLineupScript) ||
     finalWatchPoints.some((point) => staleEventLanguage.test(point))
   ) {
-    finalManagerRead = finalManagerRead
-      .replace(/\s*This momentum is likely fueled by live event traffic and favorable weather\./gi, "")
-      .replace(/\s*especially with live events bringing in extra guests\./gi, "")
-      .replace(/\s*We’re not carrying any live event pressure right now\./gi, "")
-      .trim();
+    finalManagerRead =
+      "We are not carrying any live event pressure right now. The useful read is coming from item movement, weather, staffing, and the latest KitchenPulse recommendation. Keep the push focused, watch the weaker item, and manage the shift through normal service pacing.";
 
-    finalLineupScript = finalLineupScript
-      .replace(/\s*With live events bringing in extra guests,?/gi, "")
-      .replace(/\s*with live event traffic,?/gi, "")
-      .replace(/\s*around live event traffic,?/gi, "")
-      .trim();
+    finalLineupScript =
+      "Team, today looks steady from an event-pressure standpoint. We do not have a live local or private-event signal driving the shift right now, so keep the focus on clean execution, table awareness, and the current KitchenPulse recommendation. Push the winning item clearly, keep an eye on the weaker item, and call out problems before they stack up.";
 
-    finalWatchPoints = finalWatchPoints.map((point) =>
-      point
-        .replace(/\s*during increased foot traffic.*$/gi, "during the service window.")
-        .replace(/\s*with live event traffic.*$/gi, "during the service window.")
-        .trim()
-    );
+    finalWatchPoints = [
+      "Host/floor: keep the floor read tight and adjust before normal service pressure stacks up.",
+      "Kitchen/bar: protect timing, handoffs, and quality around the current item movement signal.",
+      "Menu/service: keep the recommended item visible while watching the item KitchenPulse flagged as weaker.",
+    ];
   }
 
   finalSignalsUsed = finalSignalsUsed.filter((signal) => {
