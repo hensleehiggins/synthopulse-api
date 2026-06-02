@@ -1010,29 +1010,75 @@ Avoid repeating the same generic "communication and pacing" line unless that is 
       ? parsed.signalsUsed.map(safeText).filter(Boolean).slice(0, 8)
       : ["Latest brief", "Events", "Staffing", "Movement"];
 
-    return {
-      tone: safeText(parsed.tone) || tone,
-      managerRead:
-        safeText(parsed.managerRead) ||
-        fallbackHuddle({ tone, events: eventRows, staffingSummary, movementSummary })
-          .managerRead,
-      lineupScript:
-        safeText(parsed.lineupScript) ||
-        fallbackHuddle({ tone, events: eventRows, staffingSummary, movementSummary })
-          .lineupScript,
-      watchPoints,
-      confidence: safeText(parsed.confidence) || "Directional",
-      signalsUsed,
-      fallback: false,
-      meta: {
-        restaurant: restaurantName,
-        runId,
-        event_count: eventRows.length,
-        movement_rows: movementRows.length,
-        staffing_loaded: staffingResult.ok,
-        weather_rows: weatherRows.length,
-      },
-    };
+    let finalManagerRead =
+  safeText(parsed.managerRead) ||
+  fallbackHuddle({ tone, events: eventRows, staffingSummary, movementSummary })
+    .managerRead;
+
+let finalLineupScript =
+  safeText(parsed.lineupScript) ||
+  fallbackHuddle({ tone, events: eventRows, staffingSummary, movementSummary })
+    .lineupScript;
+
+let finalWatchPoints = watchPoints;
+let finalSignalsUsed = signalsUsed;
+
+if (eventRows.length === 0) {
+  const staleEventLanguage =
+    /\b(event traffic|live event|live events|private event|private events|booked event|booked demand|looming private|bar crawl|downtown crawl|local surge)\b/i;
+
+  if (
+    staleEventLanguage.test(finalManagerRead) ||
+    staleEventLanguage.test(finalLineupScript) ||
+    finalWatchPoints.some((point) => staleEventLanguage.test(point))
+  ) {
+    finalManagerRead = finalManagerRead
+      .replace(/\s*This momentum is likely fueled by live event traffic and favorable weather\./gi, "")
+      .replace(/\s*especially with live events bringing in extra guests\./gi, "")
+      .replace(/\s*We’re not carrying any live event pressure right now\./gi, "")
+      .trim();
+
+    finalLineupScript = finalLineupScript
+      .replace(/\s*With live events bringing in extra guests,?/gi, "")
+      .replace(/\s*with live event traffic,?/gi, "")
+      .replace(/\s*around live event traffic,?/gi, "")
+      .trim();
+
+    finalWatchPoints = finalWatchPoints.map((point) =>
+      point
+        .replace(/\s*during increased foot traffic.*$/gi, "during the service window.")
+        .replace(/\s*with live event traffic.*$/gi, "during the service window.")
+        .trim()
+    );
+  }
+
+  finalSignalsUsed = finalSignalsUsed.filter((signal) => {
+    const clean = normalizeForSearch(signal);
+    return clean !== "events" && clean !== "event";
+  });
+
+  if (!finalSignalsUsed.length) {
+    finalSignalsUsed = ["Latest brief", "Weather", "Staffing", "Movement", "Sales"];
+  }
+}
+
+return {
+  tone: safeText(parsed.tone) || tone,
+  managerRead: finalManagerRead,
+  lineupScript: finalLineupScript,
+  watchPoints: finalWatchPoints,
+  confidence: safeText(parsed.confidence) || "Directional",
+  signalsUsed: finalSignalsUsed,
+  fallback: false,
+  meta: {
+    restaurant: restaurantName,
+    runId,
+    event_count: eventRows.length,
+    movement_rows: movementRows.length,
+    staffing_loaded: staffingResult.ok,
+    weather_rows: weatherRows.length,
+  },
+};
   }
 
   if (req.method !== "GET" && req.method !== "POST") {
