@@ -1,3 +1,37 @@
+/********************************************************************
+ * SynthoPulse / KitchenPulse API
+ * Route: api/receipt-parse.js
+ * Version: v2.0-orientation-candidates
+ *
+ * Purpose:
+ * - Parse approved Vendor Receipts into Vendor Receipt Lines.
+ * - Keep receipt uploads review-first and staging-first.
+ * - Replace the temporary rotated-image hard block with a production-safe
+ *   orientation candidate loop.
+ *
+ * Long-term behavior:
+ * - Staff/GM can upload real-world receipt photos and walk away.
+ * - KitchenPulse tries multiple orientation interpretations automatically.
+ * - The best parse candidate wins based on receipt evidence, not a brittle
+ *   one-shot orientation guess.
+ * - Rotated/uncertain images become internal review context, not user-facing
+ *   parse blockers.
+ *
+ * Reads:
+ * - Vendor Receipts
+ * - Vendor Receipt Lines
+ *
+ * Writes:
+ * - Vendor Receipts
+ * - Vendor Receipt Lines
+ *
+ * Notes:
+ * - This version does not physically rotate image files. It runs multiple
+ *   orientation-specific parse candidates against the same uploaded image.
+ * - A future v2.1 can add true normalized-image generation with sharp/Vercel
+ *   Blob once package/dependency changes are intentionally made.
+ ********************************************************************/
+
 export const config = {
   api: {
     bodyParser: true,
@@ -11,6 +45,17 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
 const VENDOR_RECEIPT_LINES_TABLE = "Vendor Receipt Lines";
+const PARSER_VERSION = "receipt-parse-v2.0-orientation-candidates";
+const MAX_PARSE_CANDIDATES = 4;
+const PARSED_LINE_LIMIT = 50;
+const AIRTABLE_BATCH_SIZE = 10;
+
+const ORIENTATION_CANDIDATES = [
+  "upright",
+  "rotate_90_clockwise",
+  "rotate_90_counterclockwise",
+  "upside_down",
+];
 
 function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -77,6 +122,16 @@ function safeDate(value) {
   }
 
   return date.toISOString().slice(0, 10);
+}
+
+function chunkArray(items, size) {
+  const chunks = [];
+
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+
+  return chunks;
 }
 
 function getFirstAttachment(fields) {
@@ -181,13 +236,36 @@ async function createReceiptLines(lines) {
     VENDOR_RECEIPT_LINES_TABLE
   )}`;
 
-  return airtableFetch(path, {
-    method: "POST",
-    body: JSON.stringify({
-      records: lines.map((fields) => ({ fields })),
-      typecast: true,
-    }),
-  });
+  const createdRecords = [];
+
+  for (const batch of chunkArray(lines, AIRTABLE_BATCH_SIZE)) {
+    const result = await airtableFetch(path, {
+      method: "POST",
+      body: JSON.stringify({
+        records: batch.map((fields) => ({ fields })),
+        typecast: true,
+      }),
+    });
+
+    if (!result.ok) {
+      return {
+        ok: false,
+        status: result.status,
+        data: result.data,
+        createdRecords,
+      };
+    }
+
+    createdRecords.push(...(result.data?.records || []));
+  }
+
+  return {
+    ok: true,
+    status: 200,
+    data: {
+      records: createdRecords,
+    },
+  };
 }
 
 async function fetchExistingReceiptLinesForReceipt(receiptId) {
@@ -257,6 +335,28 @@ function parseJsonFromModelText(text) {
   }
 }
 
+function extractOpenAIText(openAiData) {
+  if (typeof openAiData?.output_text === "string") {
+    return openAiData.output_text;
+  }
+
+  const output = Array.isArray(openAiData?.output) ? openAiData.output : [];
+
+  const textParts = [];
+
+  for (const item of output) {
+    const content = Array.isArray(item?.content) ? item.content : [];
+
+    for (const contentItem of content) {
+      if (typeof contentItem?.text === "string") {
+        textParts.push(contentItem.text);
+      }
+    }
+  }
+
+  return textParts.join("\n").trim();
+}
+
 function normalizeImagePreflight(value) {
   const allowedOrientations = new Set([
     "upright",
@@ -308,6 +408,11 @@ Allowed readability values:
 - good
 - fair
 - poor
+
+Important:
+- This is only a clue for the parser.
+- Do not reject the upload just because it is rotated.
+- If uncertain, use orientation unclear and readability fair.
 
 Return this exact JSON shape:
 {
@@ -400,6 +505,56 @@ async function runImagePreflight(receipt) {
   }
 }
 
+function makeCandidatePreflight(basePreflight, orientation, source) {
+  const normalizedBase = normalizeImagePreflight(basePreflight || {});
+
+  return normalizeImagePreflight({
+    ...normalizedBase,
+    orientation,
+    warning: [
+      normalizedBase.warning,
+      source === "candidate"
+        ? `Parser candidate assumes orientation=${orientation}.`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" "),
+  });
+}
+
+function buildOrientationCandidates(imagePreflight) {
+  const normalized = normalizeImagePreflight(imagePreflight || {});
+  const preferred = normalized.orientation;
+  const ordered = [];
+
+  if (preferred && preferred !== "unclear") {
+    ordered.push(preferred);
+  }
+
+  ordered.push(...ORIENTATION_CANDIDATES);
+
+  const uniqueOrientations = [];
+
+  for (const orientation of ordered) {
+    if (!ORIENTATION_CANDIDATES.includes(orientation)) continue;
+    if (uniqueOrientations.includes(orientation)) continue;
+    uniqueOrientations.push(orientation);
+  }
+
+  return uniqueOrientations.slice(0, MAX_PARSE_CANDIDATES).map((orientation, index) => {
+    return {
+      index,
+      orientation,
+      source: orientation === preferred ? "preflight-preferred" : "candidate",
+      imagePreflight: makeCandidatePreflight(
+        normalized,
+        orientation,
+        orientation === preferred ? "preflight-preferred" : "candidate"
+      ),
+    };
+  });
+}
+
 function buildOrientationInstruction(imagePreflight) {
   if (!imagePreflight) {
     return "";
@@ -411,25 +566,29 @@ function buildOrientationInstruction(imagePreflight) {
 
   const orientationGuidance = {
     upright:
-      "The receipt appears upright. Parse normally.",
+      "Assume this candidate is upright. Parse normally using the rows and columns as shown.",
     rotate_90_clockwise:
-      "The receipt image appears rotated 90 degrees clockwise. Mentally rotate it 90 degrees counterclockwise before reading rows and columns.",
+      "Assume this candidate image is rotated 90 degrees clockwise. Mentally rotate it 90 degrees counterclockwise before reading rows and columns.",
     rotate_90_counterclockwise:
-      "The receipt image appears rotated 90 degrees counterclockwise. Mentally rotate it 90 degrees clockwise before reading rows and columns.",
+      "Assume this candidate image is rotated 90 degrees counterclockwise. Mentally rotate it 90 degrees clockwise before reading rows and columns.",
     upside_down:
-      "The receipt image appears upside down. Mentally rotate it 180 degrees before reading rows and columns.",
+      "Assume this candidate image is upside down. Mentally rotate it 180 degrees before reading rows and columns.",
     unclear:
       "The receipt orientation is unclear. Inspect the image carefully and only parse rows that are readable with confidence.",
   };
 
   return `
-Image preflight:
-- Detected orientation: ${orientation}
+Image orientation candidate:
+- Candidate orientation: ${orientation}
 - Detected readability: ${readability}
 - Preflight warning: ${warning || "none"}
 - Orientation handling: ${orientationGuidance[orientation] || orientationGuidance.unclear}
 
-If the image is rotated or upside down, interpret the receipt after applying the orientation handling above. Do not punish the operator for a rotated upload. If text or row alignment remains uncertain, leave questionable values blank and set confidence Low.
+Important:
+- This is one candidate pass in an automatic orientation recovery system.
+- If the receipt becomes more readable after applying the orientation handling above, parse it.
+- If this candidate orientation makes row/column alignment poor, return fewer lines, use lower confidence, and explain the alignment concern in reviewReason.
+- Do not punish the operator for a rotated upload.
 `.trim();
 }
 
@@ -599,28 +758,6 @@ async function callOpenAIForReceipt(receipt, imagePreflight) {
   };
 }
 
-function extractOpenAIText(openAiData) {
-  if (typeof openAiData?.output_text === "string") {
-    return openAiData.output_text;
-  }
-
-  const output = Array.isArray(openAiData?.output) ? openAiData.output : [];
-
-  const textParts = [];
-
-  for (const item of output) {
-    const content = Array.isArray(item?.content) ? item.content : [];
-
-    for (const contentItem of content) {
-      if (typeof contentItem?.text === "string") {
-        textParts.push(contentItem.text);
-      }
-    }
-  }
-
-  return textParts.join("\n").trim();
-}
-
 function makeLineName({ receipt, parsed, line, index }) {
   const vendor =
     normalizeText(parsed.vendor) ||
@@ -674,6 +811,14 @@ function normalizeConfidence(value) {
   return "Low";
 }
 
+function confidenceScore(value) {
+  const confidence = normalizeConfidence(value);
+
+  if (confidence === "High") return 18;
+  if (confidence === "Medium") return 10;
+  return 3;
+}
+
 function isUnsupportedDocument(parsed) {
   const documentType = normalizeText(parsed?.documentType).toLowerCase();
   const unsupportedReason = normalizeText(parsed?.unsupportedReason).toLowerCase();
@@ -713,41 +858,212 @@ function unsupportedDocumentMessage(parsed) {
   );
 }
 
-function buildReceiptUpdateFields(receipt, parsed, parsedText, imagePreflight) {
+function scoreParsedReceipt(parsed, parsedText, imagePreflight) {
+  if (!parsed || typeof parsed !== "object") {
+    return -1000;
+  }
+
+  if (isUnsupportedDocument(parsed)) {
+    return -500;
+  }
+
+  const lines = Array.isArray(parsed.lines) ? parsed.lines : [];
+  const nonEmptyLines = lines.filter((line) => {
+    return (
+      normalizeText(line?.lineItemName) ||
+      normalizeText(line?.rawLineText) ||
+      safeNumber(line?.lineTotal) !== null
+    );
+  });
+
+  const pricedLines = nonEmptyLines.filter((line) => {
+    return safeNumber(line?.unitCost) !== null || safeNumber(line?.lineTotal) !== null;
+  });
+
+  const namedLines = nonEmptyLines.filter((line) => normalizeText(line?.lineItemName));
+  const highConfidenceLines = nonEmptyLines.filter(
+    (line) => normalizeConfidence(line?.confidence) === "High"
+  );
+  const mediumConfidenceLines = nonEmptyLines.filter(
+    (line) => normalizeConfidence(line?.confidence) === "Medium"
+  );
+
+  const rawTextLength = normalizeText(parsed.rawText || parsedText).length;
+
+  let score = 0;
+
+  score += nonEmptyLines.length * 8;
+  score += pricedLines.length * 5;
+  score += namedLines.length * 3;
+  score += highConfidenceLines.length * 2;
+  score += mediumConfidenceLines.length;
+  score += Math.min(20, Math.floor(rawTextLength / 200));
+  score += confidenceScore(parsed.confidence);
+
+  if (normalizeText(parsed.vendor)) score += 12;
+  if (safeDate(parsed.receiptDate)) score += 10;
+  if (safeNumber(parsed.totalAmount) !== null) score += 8;
+  if (safeNumber(parsed.subtotal) !== null) score += 4;
+  if (safeNumber(parsed.tax) !== null) score += 2;
+
+  if (imagePreflight?.readability === "poor") score -= 6;
+  if (imagePreflight?.confidence === "Low") score -= 3;
+
+  if (nonEmptyLines.length === 0) score -= 40;
+  if (!normalizeText(parsed.vendor) && !normalizeText(parsed.rawText)) score -= 20;
+
+  return score;
+}
+
+function summarizeCandidate(candidateResult) {
+  const parsed = candidateResult.parsed || {};
+  const lines = Array.isArray(parsed.lines) ? parsed.lines : [];
+
+  return {
+    orientation: candidateResult.orientation,
+    source: candidateResult.source,
+    ok: Boolean(candidateResult.ok),
+    status: candidateResult.status || null,
+    score: candidateResult.score ?? null,
+    lineCount: lines.length,
+    vendor: normalizeText(parsed.vendor),
+    receiptDate: normalizeText(parsed.receiptDate),
+    totalAmount: safeNumber(parsed.totalAmount),
+    confidence: normalizeText(parsed.confidence),
+    unsupported: candidateResult.parsed ? isUnsupportedDocument(parsed) : false,
+    error: normalizeText(candidateResult.error),
+  };
+}
+
+async function runReceiptParseCandidates(receipt, imagePreflight) {
+  const candidates = buildOrientationCandidates(imagePreflight);
+  const results = [];
+
+  for (const candidate of candidates) {
+    try {
+      const openAiResult = await callOpenAIForReceipt(
+        receipt,
+        candidate.imagePreflight
+      );
+
+      if (!openAiResult.ok) {
+        results.push({
+          ...candidate,
+          ok: false,
+          status: openAiResult.status,
+          error: "OpenAI receipt parsing failed for orientation candidate.",
+          details: openAiResult.data,
+          score: -1000,
+        });
+        continue;
+      }
+
+      const parsedText = extractOpenAIText(openAiResult.data);
+      const parsed = parseJsonFromModelText(parsedText);
+      const score = scoreParsedReceipt(
+        parsed,
+        parsedText,
+        candidate.imagePreflight
+      );
+
+      results.push({
+        ...candidate,
+        ok: true,
+        status: 200,
+        data: openAiResult.data,
+        parsedText,
+        parsed,
+        score,
+      });
+    } catch (error) {
+      results.push({
+        ...candidate,
+        ok: false,
+        status: 500,
+        error: error.message || "Candidate parse failed.",
+        score: -1000,
+      });
+    }
+  }
+
+  const viable = results.filter((result) => result.ok && result.parsed);
+  const supported = viable.filter((result) => !isUnsupportedDocument(result.parsed));
+  const pool = supported.length ? supported : viable;
+
+  const best = pool.sort((a, b) => b.score - a.score)[0] || null;
+
+  return {
+    best,
+    results,
+    summary: results.map(summarizeCandidate),
+  };
+}
+
+function buildReceiptUpdateFields({
+  receipt,
+  parsed,
+  parsedText,
+  selectedPreflight,
+  originalPreflight,
+  candidateSummary,
+}) {
   const parsedVendor = normalizeText(parsed.vendor);
   const parsedDate = safeDate(parsed.receiptDate);
   const parsedTotal = safeNumber(parsed.totalAmount);
 
   const lineCount = Array.isArray(parsed.lines) ? parsed.lines.length : 0;
 
-  const preflightWarning = normalizeText(imagePreflight?.warning);
+  const selectedWarning = normalizeText(selectedPreflight?.warning);
+  const originalWarning = normalizeText(originalPreflight?.warning);
+  const orientationChanged =
+    selectedPreflight?.orientation &&
+    originalPreflight?.orientation &&
+    selectedPreflight.orientation !== originalPreflight.orientation;
   const preflightNeedsAttention =
-    imagePreflight?.orientation &&
-    imagePreflight.orientation !== "upright" ||
-    imagePreflight?.readability === "poor" ||
-    imagePreflight?.confidence === "Low";
+    lineCount === 0 ||
+    Boolean(orientationChanged) ||
+    selectedPreflight?.orientation !== "upright" ||
+    selectedPreflight?.readability === "poor" ||
+    selectedPreflight?.confidence === "Low" ||
+    parsed?.confidence === "Low";
 
   const parsedForStorage = {
     ...parsed,
-    imagePreflight,
+    parserVersion: PARSER_VERSION,
+    selectedOrientation: selectedPreflight?.orientation || "unclear",
+    originalImagePreflight: originalPreflight || null,
+    selectedImagePreflight: selectedPreflight || null,
+    orientationCandidateSummary: candidateSummary || [],
   };
 
   const notesParts = [
     receipt.notes || "",
-    `PARSING ACTION ${new Date().toISOString()}: AI parsed receipt into staging data. ${lineCount} line(s) detected.`,
-    imagePreflight
-      ? `Image preflight: orientation=${imagePreflight.orientation}, readability=${imagePreflight.readability}, confidence=${imagePreflight.confidence}.${preflightWarning ? ` Warning: ${preflightWarning}` : ""}`
+    `PARSING ACTION ${new Date().toISOString()}: AI parsed receipt into staging data. ${lineCount} line(s) detected. Parser=${PARSER_VERSION}.`,
+    selectedPreflight
+      ? `Selected orientation: ${selectedPreflight.orientation}. Readability=${selectedPreflight.readability}. Confidence=${selectedPreflight.confidence}.${selectedWarning ? ` Warning: ${selectedWarning}` : ""}`
+      : "",
+    originalPreflight
+      ? `Original preflight: orientation=${originalPreflight.orientation}, readability=${originalPreflight.readability}, confidence=${originalPreflight.confidence}.${originalWarning ? ` Warning: ${originalWarning}` : ""}`
+      : "",
+    orientationChanged
+      ? `Orientation recovery: selected ${selectedPreflight.orientation} instead of original preflight ${originalPreflight.orientation}.`
+      : "",
+    candidateSummary?.length
+      ? `Orientation candidates: ${candidateSummary
+          .map((candidate) => `${candidate.orientation}: score=${candidate.score}, lines=${candidate.lineCount}`)
+          .join(" | ")}`
       : "",
     parsed.reviewReason ? `Parser review reason: ${parsed.reviewReason}` : "",
   ];
 
   const fields = {
     "Processing Status": lineCount > 0 ? "Parsed" : "Needs Review",
-    "Review Needed": lineCount === 0 || Boolean(preflightNeedsAttention),
+    "Review Needed": Boolean(preflightNeedsAttention),
     Approved: true,
     "Raw OCR / AI Text": normalizeText(parsed.rawText) || parsedText,
     "Parsed JSON": JSON.stringify(parsedForStorage, null, 2),
     "Processed At": new Date().toISOString(),
+    "Error Message": "",
     Notes: notesParts.filter(Boolean).join("\n\n"),
   };
 
@@ -856,7 +1172,7 @@ function normalizeParsedLine(line) {
   return normalized;
 }
 
-function buildLineFields({ receipt, parsed, line, index, imagePreflight }) {
+function buildLineFields({ receipt, parsed, line, index, selectedPreflight }) {
   const vendor =
     normalizeText(parsed.vendor) ||
     normalizeText(receipt.vendor) ||
@@ -865,11 +1181,11 @@ function buildLineFields({ receipt, parsed, line, index, imagePreflight }) {
   const normalizedLine = normalizeParsedLine(line);
 
   const preflightNote =
-    imagePreflight &&
-    (imagePreflight.orientation !== "upright" ||
-      imagePreflight.readability === "poor" ||
-      imagePreflight.confidence === "Low")
-      ? `Image preflight: orientation=${imagePreflight.orientation}, readability=${imagePreflight.readability}. Verify row alignment.`
+    selectedPreflight &&
+    (selectedPreflight.orientation !== "upright" ||
+      selectedPreflight.readability === "poor" ||
+      selectedPreflight.confidence === "Low")
+      ? `Image orientation recovery: selected=${selectedPreflight.orientation}, readability=${selectedPreflight.readability}. Verify row alignment.`
       : "";
 
   return {
@@ -914,6 +1230,7 @@ export default async function handler(req, res) {
     return sendJson(res, 200, {
       ok: true,
       route: "receipt-parse",
+      version: PARSER_VERSION,
       message: "Receipt parse API is reachable. Use POST with { recordId }.",
     });
   }
@@ -1006,94 +1323,61 @@ export default async function handler(req, res) {
       "Error Message": "",
     });
 
-    const imagePreflight = await runImagePreflight(receipt);
+    const originalPreflight = await runImagePreflight(receipt);
+    const candidateRun = await runReceiptParseCandidates(receipt, originalPreflight);
+    const bestCandidate = candidateRun.best;
 
-const rotatedOrUnsafeImage = [
-  "rotate_90_clockwise",
-  "rotate_90_counterclockwise",
-  "upside_down",
-].includes(imagePreflight.orientation);
-
-const poorReadability = imagePreflight.readability === "poor";
-
-if (rotatedOrUnsafeImage || poorReadability) {
-  const imageIssueMessage = rotatedOrUnsafeImage
-    ? `Receipt image appears rotated (${imagePreflight.orientation}). Re-upload the receipt upright before parsing so KitchenPulse does not misread row prices or merge category headers into item names.`
-    : "Receipt image readability is poor. Re-upload a clearer image before parsing so KitchenPulse does not misread row prices.";
-
-  await updateReceipt(receipt.id, {
-    "Processing Status": "Needs Review",
-    "Review Needed": true,
-    Approved: false,
-    "Raw OCR / AI Text": "",
-    "Parsed JSON": JSON.stringify(
-      {
-        documentType: "unknown",
-        isReceiptOrInvoice: true,
-        unsupportedReason: imageIssueMessage,
-        rawText: "",
-        vendor: imagePreflight.visibleVendor || receipt.vendor || "",
-        receiptDate: imagePreflight.visibleDate || receipt.receiptDate || "",
-        invoiceNumber: "",
-        totalAmount: null,
-        subtotal: null,
-        tax: null,
-        confidence: "Low",
-        needsReview: true,
-        reviewReason: imageIssueMessage,
-        lines: [],
-        imagePreflight,
-      },
-      null,
-      2
-    ),
-    "Error Message": imageIssueMessage,
-    "Processed At": new Date().toISOString(),
-    Notes: [
-      receipt.notes || "",
-      `IMAGE PREFLIGHT BLOCKED PARSE ${new Date().toISOString()}: ${imageIssueMessage}`,
-      `Image preflight: orientation=${imagePreflight.orientation}, readability=${imagePreflight.readability}, confidence=${imagePreflight.confidence}.`,
-    ]
-      .filter(Boolean)
-      .join("\n\n"),
-  });
-
-  return sendJson(res, 422, {
-    ok: false,
-    errorType: "rotated_or_unreadable_receipt_image",
-    error: imageIssueMessage,
-    recordId: receipt.id,
-    imagePreflight,
-  });
-}
-
-const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
-
-    if (!openAiResult.ok) {
+    if (!bestCandidate) {
       await updateReceipt(receipt.id, {
-        "Processing Status": "Error",
+        "Processing Status": "Needs Review",
         "Review Needed": true,
         Approved: false,
-        "Error Message": "OpenAI receipt parsing failed.",
+        "Error Message":
+          "KitchenPulse could not parse this receipt after trying orientation recovery candidates.",
         "Processed At": new Date().toISOString(),
+        "Parsed JSON": JSON.stringify(
+          {
+            parserVersion: PARSER_VERSION,
+            originalImagePreflight: originalPreflight,
+            orientationCandidateSummary: candidateRun.summary,
+          },
+          null,
+          2
+        ),
+        Notes: [
+          receipt.notes || "",
+          `PARSING FAILED ${new Date().toISOString()}: No orientation candidate produced parseable receipt JSON.`,
+          `Orientation candidates: ${candidateRun.summary
+            .map((candidate) => `${candidate.orientation}: ok=${candidate.ok}, score=${candidate.score}, error=${candidate.error}`)
+            .join(" | ")}`,
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
       });
 
-      return sendJson(res, openAiResult.status, {
+      return sendJson(res, 422, {
         ok: false,
-        error: "OpenAI receipt parsing failed.",
-        imagePreflight,
-        details: openAiResult.data,
+        errorType: "receipt_parse_orientation_candidates_failed",
+        error:
+          "KitchenPulse could not parse this receipt after trying orientation recovery candidates.",
+        recordId: receipt.id,
+        originalPreflight,
+        orientationCandidateSummary: candidateRun.summary,
       });
     }
 
-    const parsedText = extractOpenAIText(openAiResult.data);
-    const parsed = parseJsonFromModelText(parsedText);
+    const parsed = bestCandidate.parsed;
+    const parsedText = bestCandidate.parsedText || "";
+    const selectedPreflight = bestCandidate.imagePreflight;
 
     if (isUnsupportedDocument(parsed)) {
       const message = unsupportedDocumentMessage(parsed);
       const parsedForStorage = {
         ...parsed,
-        imagePreflight,
+        parserVersion: PARSER_VERSION,
+        originalImagePreflight: originalPreflight,
+        selectedImagePreflight: selectedPreflight,
+        orientationCandidateSummary: candidateRun.summary,
       };
 
       await updateReceipt(receipt.id, {
@@ -1107,7 +1391,10 @@ const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
         Notes: [
           receipt.notes || "",
           `PARSING REJECTED ${new Date().toISOString()}: ${message}`,
-          `Image preflight: orientation=${imagePreflight.orientation}, readability=${imagePreflight.readability}, confidence=${imagePreflight.confidence}.`,
+          `Selected orientation: ${selectedPreflight.orientation}. Original preflight orientation: ${originalPreflight.orientation}.`,
+          `Orientation candidates: ${candidateRun.summary
+            .map((candidate) => `${candidate.orientation}: score=${candidate.score}, lines=${candidate.lineCount}`)
+            .join(" | ")}`,
         ]
           .filter(Boolean)
           .join("\n\n"),
@@ -1118,13 +1405,14 @@ const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
         errorType: "unsupported_document_type",
         error: message,
         recordId: receipt.id,
-        imagePreflight,
+        originalPreflight,
+        selectedPreflight,
+        orientationCandidateSummary: candidateRun.summary,
       });
     }
 
     const parsedLines = Array.isArray(parsed.lines) ? parsed.lines : [];
-    const parsedLineLimit = 50;
-    const wasLineLimited = parsedLines.length > parsedLineLimit;
+    const wasLineLimited = parsedLines.length > PARSED_LINE_LIMIT;
 
     const lineFields = parsedLines
       .filter((line) => {
@@ -1134,22 +1422,30 @@ const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
           safeNumber(line.lineTotal) !== null
         );
       })
-      .slice(0, parsedLineLimit)
+      .slice(0, PARSED_LINE_LIMIT)
       .map((line, index) =>
-        buildLineFields({ receipt, parsed, line, index, imagePreflight })
+        buildLineFields({
+          receipt,
+          parsed,
+          line,
+          index,
+          selectedPreflight,
+        })
       );
 
-    const receiptUpdateFields = buildReceiptUpdateFields(
+    const receiptUpdateFields = buildReceiptUpdateFields({
       receipt,
       parsed,
       parsedText,
-      imagePreflight
-    );
+      selectedPreflight,
+      originalPreflight,
+      candidateSummary: candidateRun.summary,
+    });
 
     if (wasLineLimited) {
       receiptUpdateFields.Notes = [
         receiptUpdateFields.Notes || "",
-        `KitchenPulse parsed the first ${parsedLineLimit} visible line items from a larger receipt/invoice. Upload remaining pages separately if more lines are needed.`,
+        `KitchenPulse parsed the first ${PARSED_LINE_LIMIT} visible line items from a larger receipt/invoice. Upload remaining pages separately if more lines are needed.`,
       ]
         .filter(Boolean)
         .join("\n\n");
@@ -1164,7 +1460,9 @@ const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
       return sendJson(res, receiptUpdateResult.status, {
         ok: false,
         error: "Airtable rejected the parsed receipt update.",
-        imagePreflight,
+        originalPreflight,
+        selectedPreflight,
+        orientationCandidateSummary: candidateRun.summary,
         details: receiptUpdateResult.data,
       });
     }
@@ -1185,7 +1483,9 @@ const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
         ok: false,
         error:
           "Receipt parsed, but Airtable rejected one or more parsed line records.",
-        imagePreflight,
+        originalPreflight,
+        selectedPreflight,
+        orientationCandidateSummary: candidateRun.summary,
         details: lineCreateResult.data,
       });
     }
@@ -1193,13 +1493,17 @@ const openAiResult = await callOpenAIForReceipt(receipt, imagePreflight);
     return sendJson(res, 200, {
       ok: true,
       message: "Receipt parsed into staging lines.",
+      parserVersion: PARSER_VERSION,
       recordId: receipt.id,
       receiptName: receipt.receiptName,
       parsedVendor: parsed.vendor || "",
       parsedReceiptDate: parsed.receiptDate || "",
       parsedTotalAmount: safeNumber(parsed.totalAmount),
       lineCount: lineFields.length,
-      imagePreflight,
+      originalPreflight,
+      selectedPreflight,
+      selectedOrientation: selectedPreflight?.orientation || "unclear",
+      orientationCandidateSummary: candidateRun.summary,
       createdLineIds: lineCreateResult.data.records.map((record) => record.id),
     });
   } catch (error) {
