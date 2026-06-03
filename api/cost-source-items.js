@@ -12,7 +12,7 @@ if (!AIRTABLE_BASE_ID) {
 const COST_MOVEMENT_TABLE = "Cost Movement";
 
 const COST_MOVEMENT_FIELD_IDS = {
-  costSourceItems: "fldBFbZ2lVjCVIcna",
+  costSourceItems: "fldQm9oR7NCaDCjX2",
   previousCost: "fldI5qZmL4FCtGFRv",
   movementName: "fldJEbKfznts1bZli",
   movementDate: "fldKpWYzCjZzIvIOw",
@@ -218,7 +218,7 @@ function movementDirectionFromValue(value, changeAmount) {
   return amount > 0 ? "up" : "down";
 }
 
-function buildCostMovementByCostSourceItem(records) {
+function buildCostMovementByCostSourceItem(records, itemsById = new Map()) {
   const movementByCostSourceItem = new Map();
 
   records.forEach((record) => {
@@ -251,6 +251,7 @@ function buildCostMovementByCostSourceItem(records) {
     const movement = {
       source: "Cost Movement",
       recordId: record.id,
+      createdTime: record.createdTime || "",
       movementDate,
       previousCost,
       latestReceiptCost: latestCost,
@@ -273,11 +274,49 @@ function buildCostMovementByCostSourceItem(records) {
 
     costSourceItemIds.forEach((costSourceItemId) => {
       const existing = movementByCostSourceItem.get(costSourceItemId);
+      const item = itemsById.get(costSourceItemId);
+      const currentCost = item?.currentCost ?? null;
 
-      if (
-        !existing ||
-        String(movement.movementDate || "") > String(existing.movementDate || "")
-      ) {
+      const movementMatchesCurrent =
+        currentCost !== null &&
+        latestCost !== null &&
+        Math.abs(Number(latestCost) - Number(currentCost)) <= 0.01;
+
+      const existingMatchesCurrent =
+        currentCost !== null &&
+        existing?.latestReceiptCost !== null &&
+        Math.abs(Number(existing.latestReceiptCost) - Number(currentCost)) <= 0.01;
+
+      if (!existing) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+        return;
+      }
+
+      // Prefer the movement that matches the current Cost Source Item price.
+      // This handles cases like Asparagus where an older inverse movement is still active.
+      if (movementMatchesCurrent && !existingMatchesCurrent) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+        return;
+      }
+
+      if (!movementMatchesCurrent && existingMatchesCurrent) {
+        return;
+      }
+
+      // If both match or neither matches, prefer newest movement date, then newest created time.
+      const movementDateValue = String(movement.movementDate || "");
+      const existingDateValue = String(existing.movementDate || "");
+
+      if (movementDateValue > existingDateValue) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+        return;
+      }
+
+      if (movementDateValue < existingDateValue) {
+        return;
+      }
+
+      if (String(movement.createdTime || "") > String(existing.createdTime || "")) {
         movementByCostSourceItem.set(costSourceItemId, movement);
       }
     });
@@ -667,8 +706,10 @@ export default async function handler(req, res) {
 
 try {
   const costMovementRecords = await fetchAllRecords(COST_MOVEMENT_TABLE);
-  costMovementByCostSourceItem =
-    buildCostMovementByCostSourceItem(costMovementRecords);
+  const itemsById = new Map(items.map((item) => [item.id, item]));
+
+costMovementByCostSourceItem =
+  buildCostMovementByCostSourceItem(costMovementRecords, itemsById);
 } catch (movementError) {
   console.error("Cost source ledger could not hydrate Cost Movement:", movementError);
   costMovementByCostSourceItem = new Map();
