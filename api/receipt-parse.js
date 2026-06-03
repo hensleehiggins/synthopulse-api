@@ -37,7 +37,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
 const VENDOR_RECEIPT_LINES_TABLE = "Vendor Receipt Lines";
-const PARSER_VERSION = "receipt-parse-v3.3-physical-rotation-us-date-sync";
+const PARSER_VERSION = "receipt-parse-v3.4-physical-rotation-json-repair";
 const MAX_PARSE_CANDIDATES = 4;
 const PARSED_LINE_LIMIT = 50;
 const AIRTABLE_BATCH_SIZE = 10;
@@ -440,6 +440,24 @@ async function fetchExistingReceiptLinesForReceipt(receiptId) {
   };
 }
 
+function repairInvalidJsonEscapes(value) {
+  return String(value || "").replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+}
+
+function parseJsonCandidate(rawJsonText) {
+  try {
+    return JSON.parse(rawJsonText);
+  } catch (firstError) {
+    const repaired = repairInvalidJsonEscapes(rawJsonText);
+
+    if (repaired !== rawJsonText) {
+      return JSON.parse(repaired);
+    }
+
+    throw firstError;
+  }
+}
+
 function parseJsonFromModelText(text) {
   const raw = normalizeText(text);
 
@@ -448,7 +466,7 @@ function parseJsonFromModelText(text) {
   }
 
   try {
-    return JSON.parse(raw);
+    return parseJsonCandidate(raw);
   } catch (directError) {
     const match = raw.match(/\{[\s\S]*\}/);
 
@@ -456,7 +474,13 @@ function parseJsonFromModelText(text) {
       throw new Error("OpenAI response did not contain parseable JSON.");
     }
 
-    return JSON.parse(match[0]);
+    try {
+      return parseJsonCandidate(match[0]);
+    } catch (matchedError) {
+      throw new Error(
+        `OpenAI response contained JSON but it could not be parsed after repair. ${matchedError.message}`
+      );
+    }
   }
 }
 
