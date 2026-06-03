@@ -1,7 +1,7 @@
 /********************************************************************
  * SynthoPulse / KitchenPulse API
  * Route: api/receipt-parse.js
- * Version: v3.5-preflight-weighted-candidate-selection
+ * Version: v3.6-review-safety-reconciliation
  *
  * Purpose:
  * - Parse approved Vendor Receipts into Vendor Receipt Lines.
@@ -37,7 +37,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
 const VENDOR_RECEIPT_LINES_TABLE = "Vendor Receipt Lines";
-const PARSER_VERSION = "receipt-parse-v3.5-preflight-weighted-candidate-selection";
+const PARSER_VERSION = "receipt-parse-v3.6-review-safety-reconciliation";
 const MAX_PARSE_CANDIDATES = 4;
 const PARSED_LINE_LIMIT = 50;
 const AIRTABLE_BATCH_SIZE = 10;
@@ -817,6 +817,130 @@ function sumParsedLineTotals(parsed) {
   };
 }
 
+function receiptReviewSafety(parsed, parsedText = "") {
+  const lines = Array.isArray(parsed?.lines) ? parsed.lines : [];
+  const lineCount = lines.length;
+  const lineTotalSummary = sumParsedLineTotals(parsed);
+  const parsedTotal = safeNumber(parsed?.totalAmount);
+  const parsedSubtotal = safeNumber(parsed?.subtotal);
+  const confidence = normalizeConfidence(parsed?.confidence);
+  const rawText = normalizeText(parsed?.rawText || parsedText);
+  const lowerRaw = rawText.toLowerCase();
+  const vendorText = normalizeText(parsed?.vendor).toLowerCase();
+  const isSysco = vendorText.includes("sysco") || lowerRaw.includes("sysco");
+  const originalReviewReason = normalizeText(parsed?.reviewReason);
+  const reasons = [];
+
+  if (parsed?.needsReview === true) {
+    reasons.push(originalReviewReason || "Parser requested human review.");
+  }
+
+  if (confidence === "Low") {
+    reasons.push("Receipt-level parser confidence is Low.");
+  }
+
+  if (lineCount === 0) {
+    reasons.push("No parsed line items were detected.");
+  }
+
+  if (isSysco && lineCount >= 8 && parsedTotal === null && parsedSubtotal === null) {
+    reasons.push("Sysco receipt has many parsed lines but no reliable invoice total or subtotal.");
+  }
+
+  if (lineTotalSummary.count >= 4) {
+    const largestLineTotal = lines.reduce((max, line) => {
+      const value = safeNumber(line?.lineTotal);
+      return value !== null ? Math.max(max, value) : max;
+    }, 0);
+
+    if (parsedTotal !== null) {
+      const difference = Math.abs(parsedTotal - lineTotalSummary.sum);
+      const denominator = Math.max(Math.abs(parsedTotal), Math.abs(lineTotalSummary.sum), 1);
+      const percentDifference = difference / denominator;
+
+      if (difference > 5 && percentDifference > 0.05) {
+        reasons.push(
+          `Parsed invoice total ${parsedTotal.toFixed(2)} does not reconcile with parsed line total sum ${lineTotalSummary.sum.toFixed(2)}.`
+        );
+      }
+
+      if (lineCount >= 8 && largestLineTotal > 0 && Math.abs(parsedTotal - largestLineTotal) <= 0.01) {
+        reasons.push(
+          "Parsed invoice total appears to be a single line amount rather than the full receipt total."
+        );
+      }
+    }
+
+    if (parsedSubtotal !== null) {
+      const difference = Math.abs(parsedSubtotal - lineTotalSummary.sum);
+      const denominator = Math.max(Math.abs(parsedSubtotal), Math.abs(lineTotalSummary.sum), 1);
+      const percentDifference = difference / denominator;
+
+      if (difference > 5 && percentDifference > 0.05) {
+        reasons.push(
+          `Parsed subtotal ${parsedSubtotal.toFixed(2)} does not reconcile with parsed line total sum ${lineTotalSummary.sum.toFixed(2)}.`
+        );
+      }
+    }
+  }
+
+  const syscoReviewTerms = [
+    "group total",
+    "cont. on page",
+    "continued on page",
+    "equal opportunity",
+    "41 cfr",
+    "30680-2530",
+    "minimum cheese",
+    "shortining",
+    "capper nonareil",
+    "normarelli",
+    "marrinara",
+    "edwlrd",
+    "choe's",
+  ];
+
+  if (isSysco) {
+    const noisyTermsFound = syscoReviewTerms.filter((term) => lowerRaw.includes(term));
+
+    if (noisyTermsFound.length >= 2) {
+      reasons.push(
+        `Sysco OCR contains noisy alignment markers: ${noisyTermsFound.slice(0, 5).join(", ")}.`
+      );
+    }
+  }
+
+  const lowOrMediumLineCount = lines.filter((line) => {
+    const lineConfidence = normalizeConfidence(line?.confidence);
+    return lineConfidence === "Low" || lineConfidence === "Medium";
+  }).length;
+
+  if (lineCount >= 8 && lowOrMediumLineCount / Math.max(lineCount, 1) >= 0.25) {
+    reasons.push("A material share of parsed lines are Medium/Low confidence.");
+  }
+
+  const uniqueReasons = [];
+
+  for (const reason of reasons) {
+    const normalized = normalizeText(reason);
+    if (normalized && !uniqueReasons.includes(normalized)) {
+      uniqueReasons.push(normalized);
+    }
+  }
+
+  const needsReview = uniqueReasons.length > 0;
+  const downgradedConfidence = needsReview && confidence === "High" ? "Medium" : confidence;
+
+  return {
+    needsReview,
+    confidence: downgradedConfidence,
+    reasons: uniqueReasons,
+    reasonText: uniqueReasons.join(" ").slice(0, 1000),
+    lineTotalSum: lineTotalSummary.sum,
+    lineTotalCount: lineTotalSummary.count,
+  };
+}
+
 function makeCandidatePreflight(basePreflight, candidate) {
   const normalizedBase = normalizeImagePreflight(basePreflight || {});
   const transformApplied = normalizeTransformApplied(candidate.transformApplied);
@@ -1386,7 +1510,8 @@ function buildOrientationDebugSummary({ bestCandidate, parsed, candidateSummary 
   const lineCount = Array.isArray(parsed?.lines) ? parsed.lines.length : 0;
   const vendor = normalizeText(parsed?.vendor) || "no vendor detected";
   const totalDetected = safeNumber(parsed?.totalAmount) !== null;
-  const confidence = normalizeConfidence(parsed?.confidence);
+  const reviewSafety = receiptReviewSafety(parsed, bestCandidate?.parsedText || "");
+  const confidence = reviewSafety.confidence;
 
   const candidateText = Array.isArray(candidateSummary)
     ? candidateSummary
@@ -1399,6 +1524,7 @@ function buildOrientationDebugSummary({ bestCandidate, parsed, candidateSummary 
 
   return [
     `Selected ${transformApplied}. Candidate scored ${score} with ${lineCount} parsed line(s), vendor ${vendor}, ${totalDetected ? "total detected" : "no total detected"}, and ${confidence} confidence.`,
+    reviewSafety.needsReview ? `Review safety: ${reviewSafety.reasonText}` : "",
     candidateText ? `Candidates: ${candidateText}` : "",
   ]
     .filter(Boolean)
@@ -1425,21 +1551,33 @@ function buildReceiptUpdateFields({
   const orientationScore = Number.isFinite(bestCandidate?.score)
     ? Math.round(bestCandidate.score)
     : 0;
-  const orientationConfidence = normalizeConfidence(parsed.confidence);
+  const reviewSafety = receiptReviewSafety(parsed, parsedText);
+  const orientationConfidence = reviewSafety.confidence;
   const orientationNeedsReview =
     lineCount === 0 ||
     transformApplied === "unresolved" ||
     selectedPreflight?.readability === "poor" ||
     selectedPreflight?.confidence === "Low" ||
-    parsed?.confidence === "Low" ||
-    parsed?.needsReview === true ||
-    Boolean(normalizeText(parsed?.reviewReason));
+    reviewSafety.needsReview;
+  const finalReviewReason = [
+    normalizeText(parsed.reviewReason),
+    reviewSafety.reasonText,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .slice(0, 1000);
 
   const selectedWarning = normalizeText(selectedPreflight?.warning);
   const originalWarning = normalizeText(originalPreflight?.warning);
 
   const parsedForStorage = {
     ...parsed,
+    confidence: orientationConfidence,
+    needsReview: Boolean(orientationNeedsReview),
+    reviewReason: finalReviewReason,
+    reviewSafetyReasons: reviewSafety.reasons,
+    reviewSafetyLineTotalSum: reviewSafety.lineTotalSum,
+    reviewSafetyLineTotalCount: reviewSafety.lineTotalCount,
     parserVersion: PARSER_VERSION,
     transformApplied,
     selectedOrientation,
@@ -1473,7 +1611,7 @@ function buildReceiptUpdateFields({
           )
           .join(" | ")}`
       : "",
-    parsed.reviewReason ? `Parser review reason: ${parsed.reviewReason}` : "",
+    finalReviewReason ? `Parser/reconciliation review reason: ${finalReviewReason}` : "",
   ];
 
   const fields = {
@@ -1995,7 +2133,8 @@ export default async function handler(req, res) {
         ? Math.round(bestCandidate.score)
         : 0,
       orientationLineCount: Array.isArray(parsed.lines) ? parsed.lines.length : 0,
-      orientationConfidence: normalizeConfidence(parsed.confidence),
+      orientationConfidence: receiptReviewSafety(parsed, parsedText).confidence,
+      orientationNeedsReview: receiptReviewSafety(parsed, parsedText).needsReview,
       orientationCandidateSummary: candidateRun.summary,
       createdLineIds: lineCreateResult.data.records.map((record) => record.id),
     });
