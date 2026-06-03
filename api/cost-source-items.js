@@ -295,6 +295,118 @@ const existingMatchesCurrent =
   return;
 }
 
+      function buildCostMovementByCostSourceItemByName(records, itemsById = new Map()) {
+  const movementByCostSourceItem = new Map();
+
+  records.forEach((record) => {
+    const fields = record.fields || {};
+
+    const costSourceItemIds = getLinkedIds(
+      fields["Cost Source Item"] ||
+        fields["Cost Source Items"] ||
+        fields["Cost Source Item Link"] ||
+        fields["Matched Cost Source Item"]
+    );
+
+    if (!costSourceItemIds.length) return;
+
+    const status = selectName(fields.Status).toLowerCase();
+    const active = fields.Active === true;
+
+    if (status && status !== "active" && !active) return;
+
+    const movementDate =
+      toIsoDate(fields["Signal Date"]) ||
+      toIsoDate(fields["Movement Date"]) ||
+      toIsoDate(record.createdTime);
+
+    const previousCost = roundMoney(fields["Previous Cost"]);
+    const latestCost = roundMoney(fields["Latest Cost"]);
+    const changeAmount = roundMoney(fields["Change Amount"]);
+    const changePercent = numberOrNull(fields["Change Percent"]);
+
+    const movementDirection = movementDirectionFromValue(
+      fields.Direction,
+      changeAmount
+    );
+
+    const movement = {
+      source: "Cost Movement",
+      recordId: record.id,
+      createdTime: record.createdTime || "",
+      movementDate,
+      previousCost,
+      latestReceiptCost: latestCost,
+      changeAmount,
+      changePercent,
+      movementDirection,
+      movementLabel:
+        movementDirection === "up"
+          ? "Up"
+          : movementDirection === "down"
+            ? "Down"
+            : movementDirection === "flat"
+              ? "Flat"
+              : "No prior",
+      itemName: text(fields["Item Name"]),
+      supplier: normalizeSupplierName(fields.Vendor),
+      summary: text(fields["Movement Name"]),
+      priceHistory: [],
+    };
+
+    costSourceItemIds.forEach((costSourceItemId) => {
+      const existing = movementByCostSourceItem.get(costSourceItemId);
+      const item = itemsById.get(costSourceItemId);
+
+      const currentCost =
+        item?.currentCost !== null && item?.currentCost !== undefined
+          ? Number(item.currentCost)
+          : null;
+
+      const movementMatchesCurrent =
+        Number.isFinite(currentCost) &&
+        latestCost !== null &&
+        Math.abs(Number(latestCost) - currentCost) <= 0.011;
+
+      const existingMatchesCurrent =
+        Number.isFinite(currentCost) &&
+        existing?.latestReceiptCost !== null &&
+        Math.abs(Number(existing.latestReceiptCost) - currentCost) <= 0.011;
+
+      if (!existing) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+        return;
+      }
+
+      if (movementMatchesCurrent !== existingMatchesCurrent) {
+        if (movementMatchesCurrent) {
+          movementByCostSourceItem.set(costSourceItemId, movement);
+        }
+
+        return;
+      }
+
+      const movementDateValue = String(movement.movementDate || "");
+      const existingDateValue = String(existing.movementDate || "");
+
+      if (movementDateValue > existingDateValue) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+        return;
+      }
+
+      if (movementDateValue < existingDateValue) {
+        return;
+      }
+
+      if (String(movement.createdTime || "") > String(existing.createdTime || "")) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+      }
+    });
+  });
+
+  return movementByCostSourceItem;
+}
+
 // Hard rule: if exactly one movement matches the current Cost Source Item price,
 // use that movement. This prevents inverse duplicate movements from winning.
 if (movementMatchesCurrent !== existingMatchesCurrent) {
@@ -707,13 +819,11 @@ export default async function handler(req, res) {
     let costMovementByCostSourceItem = new Map();
 
 try {
-  const costMovementRecords = await fetchAllRecords(COST_MOVEMENT_TABLE, {
-    returnFieldsByFieldId: true,
-  });
+  const costMovementRecords = await fetchAllRecords(COST_MOVEMENT_TABLE);
 
   const itemsById = new Map(items.map((item) => [item.id, item]));
 
-  costMovementByCostSourceItem = buildCostMovementByCostSourceItem(
+  costMovementByCostSourceItem = buildCostMovementByCostSourceItemByName(
     costMovementRecords,
     itemsById
   );
