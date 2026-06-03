@@ -1,7 +1,7 @@
 /********************************************************************
  * SynthoPulse / KitchenPulse API
  * Route: api/receipt-parse.js
- * Version: v3.1-physical-rotation-us-date-normalization
+ * Version: v3.2-physical-rotation-us-date-normalization-scoring
  *
  * Purpose:
  * - Parse approved Vendor Receipts into Vendor Receipt Lines.
@@ -37,7 +37,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
 const VENDOR_RECEIPT_LINES_TABLE = "Vendor Receipt Lines";
-const PARSER_VERSION = "receipt-parse-v3.1-physical-rotation-us-date-normalization";
+const PARSER_VERSION = "receipt-parse-v3.2-physical-rotation-us-date-normalization-scoring";
 const MAX_PARSE_CANDIDATES = 4;
 const PARSED_LINE_LIMIT = 50;
 const AIRTABLE_BATCH_SIZE = 10;
@@ -1064,30 +1064,69 @@ function scoreParsedReceipt(parsed, parsedText, imagePreflight) {
   const mediumConfidenceLines = nonEmptyLines.filter(
     (line) => normalizeConfidence(line?.confidence) === "Medium"
   );
+  const lowConfidenceLines = nonEmptyLines.filter(
+    (line) => normalizeConfidence(line?.confidence) === "Low"
+  );
 
   const rawTextLength = normalizeText(parsed.rawText || parsedText).length;
+  const normalizedDate = normalizeReceiptDate(parsed.receiptDate, parsed.rawText || parsedText);
+  const parsedTotal = safeNumber(parsed.totalAmount);
+  const parsedSubtotal = safeNumber(parsed.subtotal);
+  const confidence = normalizeConfidence(parsed.confidence);
+  const reviewReason = normalizeText(parsed.reviewReason).toLowerCase();
 
   let score = 0;
 
-  score += nonEmptyLines.length * 8;
-  score += pricedLines.length * 5;
-  score += namedLines.length * 3;
-  score += highConfidenceLines.length * 2;
+  // Evidence score: reward real receipt structure, but do not let "more noisy lines"
+  // beat a cleaner candidate with better totals/confidence.
+  score += nonEmptyLines.length * 6;
+  score += pricedLines.length * 3;
+  score += namedLines.length * 2;
+  score += highConfidenceLines.length * 4;
   score += mediumConfidenceLines.length;
+  score -= lowConfidenceLines.length * 4;
   score += Math.min(20, Math.floor(rawTextLength / 200));
-  score += confidenceScore(parsed.confidence);
+
+  if (confidence === "High") score += 35;
+  if (confidence === "Medium") score += 12;
+  if (confidence === "Low") score -= 15;
 
   if (normalizeText(parsed.vendor)) score += 12;
-  if (normalizeReceiptDate(parsed.receiptDate, parsed.rawText || parsedText)) score += 10;
-  if (safeNumber(parsed.totalAmount) !== null) score += 8;
-  if (safeNumber(parsed.subtotal) !== null) score += 4;
+  if (normalizedDate) score += 10;
+
+  if (parsedTotal !== null) score += 16;
+  if (parsedSubtotal !== null) score += 6;
   if (safeNumber(parsed.tax) !== null) score += 2;
+
+  if (parsedTotal !== null && parsedSubtotal !== null) {
+    const difference = Math.abs(parsedTotal - parsedSubtotal);
+    const denominator = Math.max(Math.abs(parsedTotal), Math.abs(parsedSubtotal), 1);
+    const percentDifference = difference / denominator;
+
+    if (percentDifference <= 0.02) {
+      score += 18;
+    } else if (percentDifference >= 0.15) {
+      score -= 25;
+    }
+  }
+
+  if (parsed?.needsReview === true) score -= 25;
+
+  if (
+    reviewReason.includes("uncertain") ||
+    reviewReason.includes("misread") ||
+    reviewReason.includes("partial") ||
+    reviewReason.includes("alignment") ||
+    reviewReason.includes("possible")
+  ) {
+    score -= 20;
+  }
 
   if (imagePreflight?.readability === "poor") score -= 6;
   if (imagePreflight?.confidence === "Low") score -= 3;
 
-  if (nonEmptyLines.length === 0) score -= 40;
-  if (!normalizeText(parsed.vendor) && !normalizeText(parsed.rawText)) score -= 20;
+  if (nonEmptyLines.length === 0) score -= 60;
+  if (!normalizeText(parsed.vendor) && !normalizeText(parsed.rawText)) score -= 25;
 
   return score;
 }
@@ -1237,7 +1276,9 @@ function buildReceiptUpdateFields({
     transformApplied === "unresolved" ||
     selectedPreflight?.readability === "poor" ||
     selectedPreflight?.confidence === "Low" ||
-    parsed?.confidence === "Low";
+    parsed?.confidence === "Low" ||
+    parsed?.needsReview === true ||
+    Boolean(normalizeText(parsed?.reviewReason));
 
   const selectedWarning = normalizeText(selectedPreflight?.warning);
   const originalWarning = normalizeText(originalPreflight?.warning);
