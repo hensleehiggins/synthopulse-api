@@ -9,6 +9,24 @@ if (!AIRTABLE_BASE_ID) {
   console.error("Missing AIRTABLE_BASE_ID env var.");
 }
 
+const COST_MOVEMENT_TABLE = "Cost Movement";
+
+const COST_MOVEMENT_FIELD_IDS = {
+  costSourceItems: "fldBFbZ2lVjCVIcna",
+  previousCost: "fldI5qZmL4FCtGFRv",
+  movementName: "fldJEbKfznts1bZli",
+  movementDate: "fldKpWYzCjZzIvIOw",
+  signalDate: "fldLC9rQlJ4VBHZbA",
+  itemName: "fldR6ue6PnpWGErfR",
+  status: "fldNi2qMbGFz042a9",
+  latestCost: "fldYjqopqSgT82D70",
+  changePercent: "fldhLiA9HmOnKYkW2",
+  vendor: "fldp2mDXFUqAXkCyM",
+  direction: "fldpVAh3ihF7TirUV",
+  active: "fldwgCG4QqJsoc3l6",
+  changeAmount: "fldzrAqTOZieB1Gmk",
+};
+
 const COST_SOURCE_TABLE = "Cost Source Items";
 
 const COST_FIELDS = [
@@ -162,6 +180,110 @@ function text(value) {
   if (typeof value === "object" && value.name) return value.name;
 
   return String(value);
+}
+
+function normalizeSupplierName(value) {
+  const raw = text(value).trim();
+  const compact = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+  if (
+    compact.includes("SYSCO") ||
+    compact.includes("SYCSO") ||
+    compact.includes("SYSCOATLANTA") ||
+    compact.includes("SYCSOATLANTA")
+  ) {
+    return "Sysco Atlanta LLC";
+  }
+
+  return raw;
+}
+
+function selectName(value) {
+  if (!value) return "";
+  if (typeof value === "object" && value.name) return String(value.name);
+  return text(value);
+}
+
+function movementDirectionFromValue(value, changeAmount) {
+  const raw = selectName(value).toLowerCase();
+
+  if (raw.includes("increase") || raw.includes("up")) return "up";
+  if (raw.includes("decrease") || raw.includes("down")) return "down";
+
+  const amount = numberOrNull(changeAmount);
+
+  if (amount === null) return "baseline";
+  if (Math.abs(amount) < 0.01) return "flat";
+
+  return amount > 0 ? "up" : "down";
+}
+
+function buildCostMovementByCostSourceItem(records) {
+  const movementByCostSourceItem = new Map();
+
+  records.forEach((record) => {
+    const fields = record.fields || {};
+    const costSourceItemIds = getLinkedIds(
+      fields[COST_MOVEMENT_FIELD_IDS.costSourceItems]
+    );
+
+    if (!costSourceItemIds.length) return;
+
+    const status = selectName(fields[COST_MOVEMENT_FIELD_IDS.status]).toLowerCase();
+    const active = fields[COST_MOVEMENT_FIELD_IDS.active] === true;
+
+    if (status && status !== "active" && !active) return;
+
+    const movementDate =
+      toIsoDate(fields[COST_MOVEMENT_FIELD_IDS.signalDate]) ||
+      toIsoDate(fields[COST_MOVEMENT_FIELD_IDS.movementDate]) ||
+      toIsoDate(record.createdTime);
+
+    const previousCost = roundMoney(fields[COST_MOVEMENT_FIELD_IDS.previousCost]);
+    const latestCost = roundMoney(fields[COST_MOVEMENT_FIELD_IDS.latestCost]);
+    const changeAmount = roundMoney(fields[COST_MOVEMENT_FIELD_IDS.changeAmount]);
+    const changePercent = numberOrNull(fields[COST_MOVEMENT_FIELD_IDS.changePercent]);
+    const movementDirection = movementDirectionFromValue(
+      fields[COST_MOVEMENT_FIELD_IDS.direction],
+      changeAmount
+    );
+
+    const movement = {
+      source: "Cost Movement",
+      recordId: record.id,
+      movementDate,
+      previousCost,
+      latestReceiptCost: latestCost,
+      changeAmount,
+      changePercent,
+      movementDirection,
+      movementLabel:
+        movementDirection === "up"
+          ? "Up"
+          : movementDirection === "down"
+            ? "Down"
+            : movementDirection === "flat"
+              ? "Flat"
+              : "No prior",
+      itemName: text(fields[COST_MOVEMENT_FIELD_IDS.itemName]),
+      supplier: normalizeSupplierName(fields[COST_MOVEMENT_FIELD_IDS.vendor]),
+      summary: text(fields[COST_MOVEMENT_FIELD_IDS.movementName]),
+      priceHistory: [],
+    };
+
+    costSourceItemIds.forEach((costSourceItemId) => {
+      const existing = movementByCostSourceItem.get(costSourceItemId);
+
+      if (
+        !existing ||
+        String(movement.movementDate || "") > String(existing.movementDate || "")
+      ) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+      }
+    });
+  });
+
+  return movementByCostSourceItem;
 }
 
 function numberOrNull(value) {
@@ -495,7 +617,7 @@ export default async function handler(req, res) {
       return {
         id: record.id,
         itemName: text(fields["Source Item Name"]) || "Unnamed cost item",
-        supplier: text(fields.Supplier) || "Unknown vendor",
+        supplier: normalizeSupplierName(fields.Supplier) || "Unknown vendor",
         sku: text(fields.SKU),
         category: text(fields.Category) || "Other",
         unit: text(fields.Unit),
@@ -541,12 +663,25 @@ export default async function handler(req, res) {
       }
     }
 
+    let costMovementByCostSourceItem = new Map();
+
+try {
+  const costMovementRecords = await fetchAllRecords(COST_MOVEMENT_TABLE);
+  costMovementByCostSourceItem =
+    buildCostMovementByCostSourceItem(costMovementRecords);
+} catch (movementError) {
+  console.error("Cost source ledger could not hydrate Cost Movement:", movementError);
+  costMovementByCostSourceItem = new Map();
+}
+
     const hydratedItems = items.map((item) => {
       const linkedLines = item.linkedReceiptLineIds
         .map((id) => receiptLinesById.get(id))
         .filter(Boolean);
 
-      const movement = buildMovement(item, linkedLines);
+      const fallbackMovement = buildMovement(item, linkedLines);
+const activeMovement = costMovementByCostSourceItem.get(item.id);
+const movement = activeMovement || fallbackMovement;
       const lastSeenDate =
         newestReceiptDateFromLinkedLines(linkedLines) ||
         movement.priceHistory?.[0]?.date ||
