@@ -126,22 +126,26 @@ function titleCaseItemName(value) {
 function isNonItemChargeLine(value) {
   const upper = String(value || "").toUpperCase();
 
+  // Out-of-stock / remote-stock lines are not delivered cost items,
+  // even when the product itself is normally valid food.
+  if (
+    /\bREMOTE\s*-\s*STOCK\b/.test(upper) ||
+    /\bREMOTE\s+STOCK\b/.test(upper) ||
+    /\bF\s+OUT\b/.test(upper) ||
+    /\bOUT\s+EA\b/.test(upper) ||
+    /\bOUT\s+CS\b/.test(upper)
+  ) {
+    return true;
+  }
+
   // Food products can legitimately contain words like Bowl/Bowls.
-  // Do not treat Sysco sourdough bread bowls as disposable bowls.
-   if (
+  // Do not treat delivered Sysco sourdough bread bowls as disposable bowls.
+  if (
     /\bBREAD\b/.test(upper) &&
     /\b(SOUR|DGH|DOUGH)\b/.test(upper) &&
     /\b(BOWL|BOWLS)\b/.test(upper)
   ) {
     return false;
-  }
-
-  if (
-    /\bREMOTE\s*-\s*STOCK\b/.test(upper) ||
-    /\bOUT\s+EA\b/.test(upper) ||
-    /\bOUT\s+CS\b/.test(upper)
-  ) {
-    return true;
   }
 
   if (
@@ -181,7 +185,7 @@ function isNonItemChargeLine(value) {
     // Disposable / supply lines we do not want in food cost tracking right now
     /\b(CONTAINER|CNTNR|CUP|CUPS|LID|LIDS|COVER|COVERS|CUTLERY|FORK|FORKS|KNIFE|KNIVES|SPOON|SPOONS|NAPKIN|NAPKINS|STRAW|STRAWS|PLATE|PLATES|BOWL|BOWLS|TRAY|TRAYS|LINER|LINERS|GLOVE|GLOVES|NITRILE|PAD\s+SCOUR|SCOUR\s+PAD|SCOUR|BRUSH|TOWEL|TOWELS)\b/.test(upper)
   ) || (
-    /\bPLAS\b/.test(upper) && /\b(CONTAINER|CUP|CLR|CLEAR|MICRO|BLACK|BLK)\b/.test(upper)
+    /\bPLAS\b/.test(upper) && /\b(CONTAINER|CUP|CLR|CLEAR|MICRO|BLACK|BLK|COVER|COVERS)\b/.test(upper)
   ) || (
     /\bEARTHCHO\b/.test(upper) && /\bKIT\b/.test(upper) && /\bCUTLERY\b/.test(upper)
   );
