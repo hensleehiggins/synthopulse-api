@@ -717,9 +717,17 @@ function preferredTransformFromPreflight(imagePreflight) {
     return "";
   }
 
+  // IMPORTANT:
+  // Preflight orientation describes how the uploaded image appears.
+  // transformApplied describes what KitchenPulse should DO to make it readable.
+  // So clockwise/ counterclockwise must be corrective opposites.
   if (normalized.orientation === "upright") return "none";
-  if (normalized.orientation === "rotate_90_clockwise") return "rotate_90_clockwise";
-  if (normalized.orientation === "rotate_90_counterclockwise") return "rotate_90_counterclockwise";
+  if (normalized.orientation === "rotate_90_clockwise") {
+    return "rotate_90_counterclockwise";
+  }
+  if (normalized.orientation === "rotate_90_counterclockwise") {
+    return "rotate_90_clockwise";
+  }
   if (normalized.orientation === "upside_down") return "rotate_180";
 
   return "";
@@ -736,19 +744,10 @@ function isPreflightPreferredTransform(candidate, imagePreflight) {
 }
 
 function applyPreflightPreferenceScore(baseScore, candidate, imagePreflight) {
-  const preferredTransform = preferredTransformFromPreflight(imagePreflight);
-
-  if (!preferredTransform) {
-    return baseScore;
-  }
-
-  const candidateTransform = normalizeTransformApplied(candidate?.transformApplied);
-
-  if (candidateTransform === preferredTransform) {
-    return baseScore + 180;
-  }
-
-  return baseScore - 50;
+  // Safety patch:
+  // Preflight has already proven too brittle to decide production output.
+  // Keep it for debug only. Let actual parse quality pick the winner.
+  return baseScore;
 }
 
 function suspiciousSyscoTextPenalty(parsed) {
@@ -784,17 +783,72 @@ function suspiciousSyscoTextPenalty(parsed) {
     "breaktime",
     "udyki",
     "sauce steak grass",
+    "sauce steak grasss",
     "maxonnaise",
     "chesse",
+    "capper nonareil",
+    "normarelli",
+    "marrinara",
+    "mayonnaise eyvo",
+    "mayo eyvo",
+    "oil olive jasmine",
+    "olive jasmine thai",
+    "sys refi mayonnaise",
+    "reli mayonnaise eyvo",
+    "dressing ranch mayonnaise",
   ];
 
   for (const term of suspiciousItemTerms) {
     if (itemText.includes(term)) {
-      penalty += 20;
+      penalty += 35;
     }
   }
 
-  return Math.min(180, penalty);
+  const rowMixPatterns = [
+    /\bmayonnaise\b[\s\S]{0,35}\beyvo\b/i,
+    /\beyvo\b[\s\S]{0,35}\bmayonnaise\b/i,
+    /\boil olive\b[\s\S]{0,35}\bjasmine\b/i,
+    /\bjasmine\b[\s\S]{0,35}\boil olive\b/i,
+    /\bcaper\b[\s\S]{0,35}\branch\b/i,
+    /\branch\b[\s\S]{0,35}\bcaper\b/i,
+    /\bshortening\b[\s\S]{0,35}\bmarinara\b/i,
+    /\bmarinara\b[\s\S]{0,35}\bshortening\b/i,
+  ];
+
+  for (const pattern of rowMixPatterns) {
+    if (pattern.test(itemText)) {
+      penalty += 50;
+    }
+  }
+
+  const duplicateReadableNames = new Map();
+
+  for (const line of lines) {
+    const name = normalizeText(line?.lineItemName).toLowerCase();
+
+    if (!name) continue;
+
+    duplicateReadableNames.set(name, (duplicateReadableNames.get(name) || 0) + 1);
+  }
+
+  for (const [name, count] of duplicateReadableNames.entries()) {
+    if (count <= 1) continue;
+
+    // Two separate real lines can share a family, but exact duplicate polished
+    // names on Sysco usually mean row-mix or over-normalization.
+    if (
+      name.includes("extra virgin olive oil") ||
+      name === "olive oil" ||
+      name === "sauce" ||
+      name === "dressing" ||
+      name === "cheese" ||
+      name === "bread"
+    ) {
+      penalty += 45 * (count - 1);
+    }
+  }
+
+  return Math.min(260, penalty);
 }
 
 function sumParsedLineTotals(parsed) {
@@ -1312,16 +1366,55 @@ function scoreParsedReceipt(parsed, parsedText, imagePreflight) {
     return safeNumber(line?.unitCost) !== null || safeNumber(line?.lineTotal) !== null;
   });
 
+  const fullyPricedLines = nonEmptyLines.filter((line) => {
+    return safeNumber(line?.unitCost) !== null && safeNumber(line?.lineTotal) !== null;
+  });
+
+  const quantityLines = nonEmptyLines.filter((line) => {
+    return safeNumber(line?.quantity) !== null;
+  });
+
+  const packageSizeLines = nonEmptyLines.filter((line) => {
+    return Boolean(normalizeText(line?.packageSize));
+  });
+
   const namedLines = nonEmptyLines.filter((line) => normalizeText(line?.lineItemName));
+
   const highConfidenceLines = nonEmptyLines.filter(
     (line) => normalizeConfidence(line?.confidence) === "High"
   );
+
   const mediumConfidenceLines = nonEmptyLines.filter(
     (line) => normalizeConfidence(line?.confidence) === "Medium"
   );
+
   const lowConfidenceLines = nonEmptyLines.filter(
     (line) => normalizeConfidence(line?.confidence) === "Low"
   );
+
+  const missingPriceLines = nonEmptyLines.filter((line) => {
+    return safeNumber(line?.unitCost) === null && safeNumber(line?.lineTotal) === null;
+  });
+
+  const arithmeticMismatchLines = fullyPricedLines.filter((line) => {
+    const quantity = safeNumber(line?.quantity);
+    const unitCost = safeNumber(line?.unitCost);
+    const lineTotal = safeNumber(line?.lineTotal);
+
+    if (quantity === null || unitCost === null || lineTotal === null) {
+      return false;
+    }
+
+    if (quantity <= 0) {
+      return false;
+    }
+
+    const expected = Number((quantity * unitCost).toFixed(2));
+    const difference = Math.abs(expected - lineTotal);
+    const tolerance = Math.max(0.05, Math.abs(expected) * 0.03);
+
+    return difference > tolerance;
+  });
 
   const rawTextLength = normalizeText(parsed.rawText || parsedText).length;
   const normalizedDate = normalizeReceiptDate(parsed.receiptDate, parsed.rawText || parsedText);
@@ -1331,21 +1424,32 @@ function scoreParsedReceipt(parsed, parsedText, imagePreflight) {
   const confidence = normalizeConfidence(parsed.confidence);
   const reviewReason = normalizeText(parsed.reviewReason).toLowerCase();
 
+  const vendorText = normalizeText(parsed.vendor).toLowerCase();
+  const combinedText = `${vendorText} ${normalizeText(parsed.rawText || parsedText).toLowerCase()}`;
+  const isSysco = combinedText.includes("sysco");
+
   let score = 0;
 
-  // Evidence score: reward real receipt structure, but do not let "more noisy lines"
-  // beat a cleaner candidate with better totals/confidence.
-  score += nonEmptyLines.length * 6;
-  score += pricedLines.length * 3;
+  // General receipt structure.
+  score += nonEmptyLines.length * 5;
   score += namedLines.length * 2;
+  score += quantityLines.length * 2;
+  score += packageSizeLines.length * 2;
+  score += pricedLines.length * 2;
+
+  // Stronger reward: both unit cost and line total on the same row.
+  score += fullyPricedLines.length * 9;
+
+  // Confidence should matter, but not enough to override row evidence alone.
   score += highConfidenceLines.length * 4;
   score += mediumConfidenceLines.length;
-  score -= lowConfidenceLines.length * 4;
+  score -= lowConfidenceLines.length * 5;
+
   score += Math.min(20, Math.floor(rawTextLength / 200));
 
   if (confidence === "High") score += 35;
   if (confidence === "Medium") score += 12;
-  if (confidence === "Low") score -= 15;
+  if (confidence === "Low") score -= 20;
 
   if (normalizeText(parsed.vendor)) score += 12;
   if (normalizedDate) score += 10;
@@ -1375,6 +1479,29 @@ function scoreParsedReceipt(parsed, parsedText, imagePreflight) {
       score += 25;
     } else if (percentDifference >= 0.12) {
       score -= 35;
+    }
+  }
+
+  if (isSysco) {
+    const fullPriceRatio =
+      nonEmptyLines.length > 0 ? fullyPricedLines.length / nonEmptyLines.length : 0;
+
+    // Sysco invoices are table-heavy. A winning candidate should usually capture
+    // quantity, package, unit cost, and extended price together.
+    if (nonEmptyLines.length >= 8 && fullPriceRatio >= 0.85) {
+      score += 45;
+    }
+
+    if (nonEmptyLines.length >= 8 && fullPriceRatio < 0.65) {
+      score -= 75;
+    }
+
+    if (missingPriceLines.length > 0) {
+      score -= missingPriceLines.length * 9;
+    }
+
+    if (arithmeticMismatchLines.length > 0) {
+      score -= arithmeticMismatchLines.length * 18;
     }
   }
 
