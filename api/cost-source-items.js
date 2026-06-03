@@ -648,9 +648,11 @@ function buildCostMovementByCostSourceItem(records, itemsById = new Map()) {
         Math.abs(Number(latestCost) - currentCost) <= 0.011;
 
       const existingMatchesCurrent =
-        Number.isFinite(currentCost) &&
-        existing?.latestReceiptCost !== null &&
-        Math.abs(Number(existing.latestReceiptCost) - currentCost) <= 0.011;
+  !!existing &&
+  Number.isFinite(currentCost) &&
+  existing.latestReceiptCost !== null &&
+  existing.latestReceiptCost !== undefined &&
+  Math.abs(Number(existing.latestReceiptCost) - currentCost) <= 0.011;
 
       if (!existing) {
         movementByCostSourceItem.set(costSourceItemId, movement);
