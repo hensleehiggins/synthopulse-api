@@ -705,13 +705,21 @@ export default async function handler(req, res) {
     let costMovementByCostSourceItem = new Map();
 
 try {
-  const costMovementRecords = await fetchAllRecords(COST_MOVEMENT_TABLE);
+  const costMovementRecords = await fetchAllRecords(COST_MOVEMENT_TABLE, {
+    returnFieldsByFieldId: true,
+  });
+
   const itemsById = new Map(items.map((item) => [item.id, item]));
 
-costMovementByCostSourceItem =
-  buildCostMovementByCostSourceItem(costMovementRecords, itemsById);
+  costMovementByCostSourceItem = buildCostMovementByCostSourceItem(
+    costMovementRecords,
+    itemsById
+  );
 } catch (movementError) {
-  console.error("Cost source ledger could not hydrate Cost Movement:", movementError);
+  console.error(
+    "Cost source ledger could not hydrate Cost Movement:",
+    movementError
+  );
   costMovementByCostSourceItem = new Map();
 }
 
