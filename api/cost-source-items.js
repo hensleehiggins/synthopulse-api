@@ -745,9 +745,13 @@ const movement = activeMovement || fallbackMovement;
         movementDirection: movement.movementDirection,
         movementLabel: movement.movementLabel,
         movement,
+        movementSource: movement.source || "Receipt Lines",
+        movementRecordId: movement.recordId || "",
+        movementLatestCost: movement.latestReceiptCost ?? null,
+        movementPreviousCost: movement.previousCost ?? null,
         lastSeenDate,
         lastSeenDaysAgo: daysAgo(lastSeenDate),
-      };
+              };
     });
 
     const sortedItems = sortItems(hydratedItems);
