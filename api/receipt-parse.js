@@ -1,7 +1,7 @@
 /********************************************************************
  * SynthoPulse / KitchenPulse API
  * Route: api/receipt-parse.js
- * Version: v3.2-physical-rotation-us-date-normalization-scoring
+ * Version: v3.5-preflight-weighted-candidate-selection
  *
  * Purpose:
  * - Parse approved Vendor Receipts into Vendor Receipt Lines.
@@ -37,7 +37,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
 const VENDOR_RECEIPT_LINES_TABLE = "Vendor Receipt Lines";
-const PARSER_VERSION = "receipt-parse-v3.4-physical-rotation-json-repair";
+const PARSER_VERSION = "receipt-parse-v3.5-preflight-weighted-candidate-selection";
 const MAX_PARSE_CANDIDATES = 4;
 const PARSED_LINE_LIMIT = 50;
 const AIRTABLE_BATCH_SIZE = 10;
@@ -710,6 +710,113 @@ function transformLabel(transformApplied) {
   return labels[transformApplied] || labels.unresolved;
 }
 
+function preferredTransformFromPreflight(imagePreflight) {
+  const normalized = normalizeImagePreflight(imagePreflight || {});
+
+  if (normalized.confidence !== "High") {
+    return "";
+  }
+
+  if (normalized.orientation === "upright") return "none";
+  if (normalized.orientation === "rotate_90_clockwise") return "rotate_90_clockwise";
+  if (normalized.orientation === "rotate_90_counterclockwise") return "rotate_90_counterclockwise";
+  if (normalized.orientation === "upside_down") return "rotate_180";
+
+  return "";
+}
+
+function isPreflightPreferredTransform(candidate, imagePreflight) {
+  const preferredTransform = preferredTransformFromPreflight(imagePreflight);
+
+  if (!preferredTransform) {
+    return false;
+  }
+
+  return normalizeTransformApplied(candidate?.transformApplied) === preferredTransform;
+}
+
+function applyPreflightPreferenceScore(baseScore, candidate, imagePreflight) {
+  const preferredTransform = preferredTransformFromPreflight(imagePreflight);
+
+  if (!preferredTransform) {
+    return baseScore;
+  }
+
+  const candidateTransform = normalizeTransformApplied(candidate?.transformApplied);
+
+  if (candidateTransform === preferredTransform) {
+    return baseScore + 180;
+  }
+
+  return baseScore - 50;
+}
+
+function suspiciousSyscoTextPenalty(parsed) {
+  const vendor = normalizeText(parsed?.vendor).toLowerCase();
+  const rawText = normalizeText(parsed?.rawText).toLowerCase();
+  const lines = Array.isArray(parsed?.lines) ? parsed.lines : [];
+  const itemText = lines
+    .map((line) => `${line?.lineItemName || ""} ${line?.rawLineText || ""}`)
+    .join(" ")
+    .toLowerCase();
+
+  if (!vendor.includes("sysco") && !rawText.includes("sysco")) {
+    return 0;
+  }
+
+  let penalty = 0;
+
+  const hardHallucinationTerms = [
+    "starbucks",
+    "chef's starbucks",
+    "chef’s starbucks",
+    "geneva, al",
+    "geneva al",
+  ];
+
+  for (const term of hardHallucinationTerms) {
+    if (rawText.includes(term) || itemText.includes(term)) {
+      penalty += 80;
+    }
+  }
+
+  const suspiciousItemTerms = [
+    "breaktime",
+    "udyki",
+    "sauce steak grass",
+    "maxonnaise",
+    "chesse",
+  ];
+
+  for (const term of suspiciousItemTerms) {
+    if (itemText.includes(term)) {
+      penalty += 20;
+    }
+  }
+
+  return Math.min(180, penalty);
+}
+
+function sumParsedLineTotals(parsed) {
+  const lines = Array.isArray(parsed?.lines) ? parsed.lines : [];
+  let sum = 0;
+  let count = 0;
+
+  for (const line of lines) {
+    const lineTotal = safeNumber(line?.lineTotal);
+
+    if (lineTotal !== null) {
+      sum += lineTotal;
+      count += 1;
+    }
+  }
+
+  return {
+    sum: Number(sum.toFixed(2)),
+    count,
+  };
+}
+
 function makeCandidatePreflight(basePreflight, candidate) {
   const normalizedBase = normalizeImagePreflight(basePreflight || {});
   const transformApplied = normalizeTransformApplied(candidate.transformApplied);
@@ -1096,6 +1203,7 @@ function scoreParsedReceipt(parsed, parsedText, imagePreflight) {
   const normalizedDate = normalizeReceiptDate(parsed.receiptDate, parsed.rawText || parsedText);
   const parsedTotal = safeNumber(parsed.totalAmount);
   const parsedSubtotal = safeNumber(parsed.subtotal);
+  const lineTotalSummary = sumParsedLineTotals(parsed);
   const confidence = normalizeConfidence(parsed.confidence);
   const reviewReason = normalizeText(parsed.reviewReason).toLowerCase();
 
@@ -1134,6 +1242,20 @@ function scoreParsedReceipt(parsed, parsedText, imagePreflight) {
     }
   }
 
+  if (parsedTotal !== null && lineTotalSummary.count >= 4) {
+    const difference = Math.abs(parsedTotal - lineTotalSummary.sum);
+    const denominator = Math.max(Math.abs(parsedTotal), Math.abs(lineTotalSummary.sum), 1);
+    const percentDifference = difference / denominator;
+
+    if (percentDifference <= 0.03) {
+      score += 25;
+    } else if (percentDifference >= 0.12) {
+      score -= 35;
+    }
+  }
+
+  score -= suspiciousSyscoTextPenalty(parsed);
+
   if (parsed?.needsReview === true) score -= 25;
 
   if (
@@ -1169,6 +1291,8 @@ function summarizeCandidate(candidateResult) {
     ok: Boolean(candidateResult.ok),
     status: candidateResult.status || null,
     score: candidateResult.score ?? null,
+    baseScore: candidateResult.baseScore ?? null,
+    preflightPreferred: Boolean(candidateResult.preflightPreferred),
     lineCount: lines.length,
     vendor: normalizeText(parsed.vendor),
     receiptDate: normalizeReceiptDate(parsed.receiptDate, parsed.rawText),
@@ -1208,10 +1332,15 @@ async function runReceiptParseCandidates(receipt, imagePreflight) {
         parseJsonFromModelText(parsedText),
         parsedText
       );
-      const score = scoreParsedReceipt(
+      const baseScore = scoreParsedReceipt(
         parsed,
         parsedText,
         candidate.imagePreflight
+      );
+      const score = applyPreflightPreferenceScore(
+        baseScore,
+        candidate,
+        imagePreflight
       );
 
       results.push({
@@ -1221,7 +1350,9 @@ async function runReceiptParseCandidates(receipt, imagePreflight) {
         data: openAiResult.data,
         parsedText,
         parsed,
+        baseScore,
         score,
+        preflightPreferred: isPreflightPreferredTransform(candidate, imagePreflight),
       });
     } catch (error) {
       results.push({
@@ -1261,7 +1392,7 @@ function buildOrientationDebugSummary({ bestCandidate, parsed, candidateSummary 
     ? candidateSummary
         .map(
           (candidate) =>
-            `${candidate.transformApplied}: score=${candidate.score}, lines=${candidate.lineCount}, confidence=${candidate.confidence || ""}`
+            `${candidate.transformApplied}: score=${candidate.score}, base=${candidate.baseScore ?? ""}, lines=${candidate.lineCount}, confidence=${candidate.confidence || ""}${candidate.preflightPreferred ? ", preflight-preferred" : ""}`
         )
         .join(" | ")
     : "";
@@ -1338,7 +1469,7 @@ function buildReceiptUpdateFields({
       ? `Physical rotation candidates: ${candidateSummary
           .map(
             (candidate) =>
-              `${candidate.transformApplied}: score=${candidate.score}, lines=${candidate.lineCount}`
+              `${candidate.transformApplied}: score=${candidate.score}, lines=${candidate.lineCount}${candidate.preflightPreferred ? ", preflight-preferred" : ""}`
           )
           .join(" | ")}`
       : "",
