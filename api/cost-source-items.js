@@ -819,11 +819,13 @@ export default async function handler(req, res) {
     let costMovementByCostSourceItem = new Map();
 
 try {
-  const costMovementRecords = await fetchAllRecords(COST_MOVEMENT_TABLE);
+  const costMovementRecords = await fetchAllRecords(COST_MOVEMENT_TABLE, {
+    returnFieldsByFieldId: true,
+  });
 
   const itemsById = new Map(items.map((item) => [item.id, item]));
 
-  costMovementByCostSourceItem = buildCostMovementByCostSourceItemByName(
+  costMovementByCostSourceItem = buildCostMovementByCostSourceItemFlexible(
     costMovementRecords,
     itemsById
   );
@@ -866,6 +868,203 @@ const movement = activeMovement || fallbackMovement;
               };
     });
 
+    const COST_MOVEMENT_FIELD_IDS = {
+  active: "fldwgCG4QqJsoc3l6",
+  status: "fldNi2qMbGFz042a9",
+  costSourceItem: "fldQm9oR7NCaDCjX2",
+  signalDate: "fldKpWYzCjZzIvIOw",
+  movementDate: "fldLC9rQlJ4VBHZbA",
+  previousCost: "fldI5qZmL4FCtGFRv",
+  latestCost: "fldYjqopqSgT82D70",
+  changePercent: "fldhLiA9HmOnKYkW2",
+  changeAmount: "fldzrAqTOZieB1Gmk",
+  direction: "fldpVAh3ihF7TirUV",
+  itemName: "fldR6ue6PnpWGErfR",
+  sourceLineName: "fldLaJEJVcXDYiRmL",
+  vendor: "fldp2mDXFUqAXkCyM",
+  movementName: "fldJEbKfznts1bZli",
+  summary: "fldNQkSbNBnyPfflr",
+};
+
+function pickField(fields, fieldId, names = []) {
+  if (!fields) return undefined;
+
+  if (fieldId && fields[fieldId] !== undefined) {
+    return fields[fieldId];
+  }
+
+  for (const name of names) {
+    if (fields[name] !== undefined) {
+      return fields[name];
+    }
+  }
+
+  return undefined;
+}
+
+function buildCostMovementByCostSourceItemFlexible(records, itemsById = new Map()) {
+  const movementByCostSourceItem = new Map();
+
+  records.forEach((record) => {
+    const fields = record.fields || {};
+
+    const costSourceItemIds = getLinkedIds(
+      pickField(fields, COST_MOVEMENT_FIELD_IDS.costSourceItem, [
+        "Cost Source Item",
+        "Cost Source Items",
+        "Cost Source Item Link",
+        "Matched Cost Source Item",
+      ])
+    );
+
+    if (!costSourceItemIds.length) return;
+
+    const statusValue = pickField(fields, COST_MOVEMENT_FIELD_IDS.status, [
+      "Status",
+    ]);
+
+    const status = selectName(statusValue).toLowerCase();
+
+    const activeValue = pickField(fields, COST_MOVEMENT_FIELD_IDS.active, [
+      "Active",
+    ]);
+
+    const isActive = activeValue === true || status === "active";
+
+    if (!isActive) return;
+
+    const movementDate =
+      toIsoDate(
+        pickField(fields, COST_MOVEMENT_FIELD_IDS.signalDate, ["Signal Date"])
+      ) ||
+      toIsoDate(
+        pickField(fields, COST_MOVEMENT_FIELD_IDS.movementDate, [
+          "Movement Date",
+        ])
+      ) ||
+      toIsoDate(record.createdTime);
+
+    const previousCost = roundMoney(
+      pickField(fields, COST_MOVEMENT_FIELD_IDS.previousCost, [
+        "Previous Cost",
+      ])
+    );
+
+    const latestCost = roundMoney(
+      pickField(fields, COST_MOVEMENT_FIELD_IDS.latestCost, ["Latest Cost"])
+    );
+
+    const changeAmount = roundMoney(
+      pickField(fields, COST_MOVEMENT_FIELD_IDS.changeAmount, [
+        "Change Amount",
+      ])
+    );
+
+    const changePercent = numberOrNull(
+      pickField(fields, COST_MOVEMENT_FIELD_IDS.changePercent, [
+        "Change Percent",
+      ])
+    );
+
+    const directionValue = pickField(
+      fields,
+      COST_MOVEMENT_FIELD_IDS.direction,
+      ["Direction"]
+    );
+
+    const movementDirection = movementDirectionFromValue(
+      directionValue,
+      changeAmount
+    );
+
+    const movement = {
+      source: "Cost Movement",
+      recordId: record.id,
+      createdTime: record.createdTime || "",
+      movementDate,
+      previousCost,
+      latestReceiptCost: latestCost,
+      changeAmount,
+      changePercent,
+      movementDirection,
+      movementLabel:
+        movementDirection === "up"
+          ? "Up"
+          : movementDirection === "down"
+            ? "Down"
+            : movementDirection === "flat"
+              ? "Flat"
+              : "No prior",
+      itemName: text(
+        pickField(fields, COST_MOVEMENT_FIELD_IDS.itemName, ["Item Name"])
+      ),
+      supplier: normalizeSupplierName(
+        pickField(fields, COST_MOVEMENT_FIELD_IDS.vendor, ["Vendor"])
+      ),
+      summary:
+        text(
+          pickField(fields, COST_MOVEMENT_FIELD_IDS.summary, ["Summary"])
+        ) ||
+        text(
+          pickField(fields, COST_MOVEMENT_FIELD_IDS.movementName, [
+            "Movement Name",
+          ])
+        ),
+      priceHistory: [],
+    };
+
+    costSourceItemIds.forEach((costSourceItemId) => {
+      const existing = movementByCostSourceItem.get(costSourceItemId);
+      const item = itemsById.get(costSourceItemId);
+
+      const currentCost =
+        item?.currentCost !== null && item?.currentCost !== undefined
+          ? Number(item.currentCost)
+          : null;
+
+      const movementMatchesCurrent =
+        Number.isFinite(currentCost) &&
+        latestCost !== null &&
+        Math.abs(Number(latestCost) - currentCost) <= 0.011;
+
+      const existingMatchesCurrent =
+        Number.isFinite(currentCost) &&
+        existing?.latestReceiptCost !== null &&
+        Math.abs(Number(existing.latestReceiptCost) - currentCost) <= 0.011;
+
+      if (!existing) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+        return;
+      }
+
+      if (movementMatchesCurrent !== existingMatchesCurrent) {
+        if (movementMatchesCurrent) {
+          movementByCostSourceItem.set(costSourceItemId, movement);
+        }
+
+        return;
+      }
+
+      const movementDateValue = String(movement.movementDate || "");
+      const existingDateValue = String(existing.movementDate || "");
+
+      if (movementDateValue > existingDateValue) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+        return;
+      }
+
+      if (movementDateValue < existingDateValue) {
+        return;
+      }
+
+      if (String(movement.createdTime || "") > String(existing.createdTime || "")) {
+        movementByCostSourceItem.set(costSourceItemId, movement);
+      }
+    });
+  });
+
+  return movementByCostSourceItem;
+}
     const sortedItems = sortItems(hydratedItems);
 
     const pricedItems = sortedItems.filter(
