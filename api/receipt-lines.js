@@ -128,12 +128,30 @@ function isNonItemChargeLine(value) {
 
   // Food products can legitimately contain words like Bowl/Bowls.
   // Do not treat Sysco sourdough bread bowls as disposable bowls.
-  if (
+   if (
     /\bBREAD\b/.test(upper) &&
     /\b(SOUR|DGH|DOUGH)\b/.test(upper) &&
     /\b(BOWL|BOWLS)\b/.test(upper)
   ) {
     return false;
+  }
+
+  if (
+    /\bREMOTE\s*-\s*STOCK\b/.test(upper) ||
+    /\bOUT\s+EA\b/.test(upper) ||
+    /\bOUT\s+CS\b/.test(upper)
+  ) {
+    return true;
+  }
+
+  if (
+    /\bCAMBRO\b/.test(upper) ||
+    (
+      /\b(COVER|COVERS)\b/.test(upper) &&
+      /\b(PLAS|PLASTIC|CAMWR|CAMBRO|CONTAINER|CNTNR)\b/.test(upper)
+    )
+  ) {
+    return true;
   }
 
   return (
@@ -161,7 +179,7 @@ function isNonItemChargeLine(value) {
     /\bCHGS?\b/.test(upper) && /\bFUEL\b/.test(upper)
   ) || (
     // Disposable / supply lines we do not want in food cost tracking right now
-    /\b(CONTAINER|CNTNR|CUP|CUPS|LID|LIDS|CUTLERY|FORK|FORKS|KNIFE|KNIVES|SPOON|SPOONS|NAPKIN|NAPKINS|STRAW|STRAWS|PLATE|PLATES|BOWL|BOWLS|TRAY|TRAYS|LINER|LINERS|GLOVE|GLOVES|NITRILE|PAD\s+SCOUR|SCOUR\s+PAD|BRUSH|TOWEL|TOWELS)\b/.test(upper)
+    /\b(CONTAINER|CNTNR|CUP|CUPS|LID|LIDS|COVER|COVERS|CUTLERY|FORK|FORKS|KNIFE|KNIVES|SPOON|SPOONS|NAPKIN|NAPKINS|STRAW|STRAWS|PLATE|PLATES|BOWL|BOWLS|TRAY|TRAYS|LINER|LINERS|GLOVE|GLOVES|NITRILE|PAD\s+SCOUR|SCOUR\s+PAD|SCOUR|BRUSH|TOWEL|TOWELS)\b/.test(upper)
   ) || (
     /\bPLAS\b/.test(upper) && /\b(CONTAINER|CUP|CLR|CLEAR|MICRO|BLACK|BLK)\b/.test(upper)
   ) || (
@@ -244,10 +262,38 @@ function hasAllSignals(text, signalGroups) {
 function conservativeSyscoFriendlyName(upper) {
   // These rules intentionally require multiple identifying signals.
   // Do not collapse multi-word prepared items into a generic family name.
+
+  if (hasAllSignals(upper, [["CREAM"], ["CHEESE"], ["LOAF"]])) {
+    return "Cream Cheese Loaf";
+  }
+
+  if (
+    hasAllSignals(upper, [
+      ["MOZZARELLA", "MOZZ"],
+      ["SHRD", "SHRED", "SHREDDED"],
+      ["WHL", "WHOLE"],
+    ])
+  ) {
+    return "Shredded Whole Milk Mozzarella";
+  }
+
+  if (hasAllSignals(upper, [["PARM", "PARMESAN"], ["SHAVED"]])) {
+    return "Shaved Parmesan";
+  }
+
+  if (hasAllSignals(upper, [["SOUR"], ["CREAM"], ["CULTRD", "CULTURED"]])) {
+    return "Sour Cream";
+  }
+
+  if (hasAllSignals(upper, [["ICE"], ["CREAM"], ["VAN", "VANILLA"]])) {
+    return "Vanilla Ice Cream";
+  }
+
   if (hasAllSignals(upper, [["ASIAGO"], ["CHEESE", "CHSE", "CHS"]])) {
     if (hasAnyToken(upper, ["SHRD", "SHRED", "SHREDDED", "SRPD"])) {
-      return "Asiago Cheese Shredded";
+      return "Shredded Asiago Cheese";
     }
+
     return "Asiago Cheese";
   }
 
@@ -255,12 +301,16 @@ function conservativeSyscoFriendlyName(upper) {
     return "Blue Cheese Crumbles";
   }
 
-  if (hasAllSignals(upper, [["PARM", "PARMESAN"], ["SHAVED"]])) {
-    return "Parmesan Shaved";
-  }
-
   if (hasAllSignals(upper, [["SOUR"], ["DGH", "DOUGH"], ["BOWL", "BOWLS", "SXL", "XL"]])) {
     return "Sourdough Bread Bowls";
+  }
+
+  if (hasAllSignals(upper, [["EMPANADA"], ["DISC", "DISCS"], ["DGH", "DOUGH"]])) {
+    return "Empanada Dough Discs";
+  }
+
+  if (hasAllSignals(upper, [["BROWNIE"], ["CHOC", "CHOCOLATE"], ["CHIP"]])) {
+    return "Chocolate Chip Brownies";
   }
 
   if (hasAnyToken(upper, ["TIRAMISU", "TRAMISU"])) {
@@ -275,12 +325,16 @@ function conservativeSyscoFriendlyName(upper) {
     return "Nonpareil Capers";
   }
 
+  if (hasAllSignals(upper, [["RANCH"], ["DRESSING"]])) {
+    return "Ranch Dressing";
+  }
+
   if (hasAllSignals(upper, [["MAYONNAISE", "MAYO", "MAXONNAISE"], ["HEAVY"], ["DUTY"]])) {
     return "Mayonnaise Heavy Duty";
   }
 
-  if (hasAllSignals(upper, [["RANCH"], ["DRESSING"]])) {
-    return "Ranch Dressing";
+  if (hasAllSignals(upper, [["OLIVE"], ["OIL"], ["BLEND"], ["80", "8020"]])) {
+    return "Olive Oil Blend 80/20";
   }
 
   if (hasAllSignals(upper, [["OLIVE", "EVOO", "EYVO"], ["OIL", "TIN", "ROBUS"]])) {
@@ -301,6 +355,32 @@ function conservativeSyscoFriendlyName(upper) {
 
   if (hasAllSignals(upper, [["SHORTENING", "SHORTINING"], ["FRY"], ["CANOLA"]])) {
     return "Canola Fry Shortening";
+  }
+
+  if (hasAllSignals(upper, [["POTATO", "POTATOES", "POT"], ["FRY", "FRIES"], ["STEAK"]])) {
+    if (hasAnyToken(upper, ["SYS", "REL", "RELIANCE"])) {
+      return "Sysco Reliance Steak Fries";
+    }
+
+    return "Steak Fries";
+  }
+
+  if (hasAllSignals(upper, [["APPLE"], ["JUICE"], ["BTL", "BOTTLE", "BOTTLES"]])) {
+    return "Apple Juice Bottles";
+  }
+
+  if (hasAllSignals(upper, [["BASE"], ["BEEF", "BF"]])) {
+    return "Beef Base";
+  }
+
+  if (
+    hasAllSignals(upper, [
+      ["COCACOL", "COCACOLA", "COCA", "COKE"],
+      ["SYRUP"],
+      ["CLASSIC", "CLSC"],
+    ])
+  ) {
+    return "Coca-Cola Classic Syrup";
   }
 
   return "";
@@ -365,6 +445,57 @@ const upper = raw.toUpperCase();
 
     // Royal / general produce and prep cleanup.
   // Keep this outside the Sysco-only block so Royal Food Service lines can use it.
+    if (
+    /\bBERRIES\b/.test(upper) &&
+    (/\bSTRAWBERRY\b/.test(upper) || /\bSTRAWBERRIES\b/.test(upper))
+  ) {
+    if (/\bDRISCOLL\b/.test(upper)) return "Driscoll Strawberries";
+    return "Strawberries";
+  }
+
+  if (/\bSTRAWBERRY\b/.test(upper) || /\bSTRAWBERRIES\b/.test(upper)) {
+    if (/\bDRISCOLL\b/.test(upper)) return "Driscoll Strawberries";
+    return "Strawberries";
+  }
+
+  if (/\bBUTTER\b/.test(upper) && /\bUNSALTED\b/.test(upper)) {
+    return "Unsalted Butter";
+  }
+
+  if (/\bHERB\b/.test(upper) && /\bMINT\b/.test(upper)) {
+    return "Mint";
+  }
+
+  if (/\bMINT\b/.test(upper)) {
+    return "Mint";
+  }
+
+  if (/\bLEMON\b/.test(upper) || /\bLEMONS\b/.test(upper)) {
+    return "Lemons";
+  }
+
+  if (
+    /\bTOMATO\b/.test(upper) &&
+    /\bCHERRY\b/.test(upper) &&
+    /\bHEIRLOOM\b/.test(upper)
+  ) {
+    return "Heirloom Cherry Tomatoes";
+  }
+
+  if (
+    /\bBEAN\b/.test(upper) &&
+    /\bGREEN\b/.test(upper)
+  ) {
+    return "Green Beans";
+  }
+
+  if (/\bRASPBERRY\b/.test(upper) || /\bRASPBERRIES\b/.test(upper)) {
+    return "Raspberries";
+  }
+
+  if (/\bPARSLEY\b/.test(upper) && /\bITALIAN\b/.test(upper)) {
+    return "Italian Parsley";
+  }
   if (
     /\bBERRIES\b/.test(upper) &&
     (/\bBLACKBERRY\b/.test(upper) || /\bBLACKBERRIES\b/.test(upper))
