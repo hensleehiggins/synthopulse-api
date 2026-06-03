@@ -1,7 +1,8 @@
 {
   "dependencies": {
-    "airtable": "^0.12.2",
     "@vercel/blob": "latest",
-    "formidable": "latest"
+    "airtable": "^0.12.2",
+    "formidable": "latest",
+    "sharp": "^0.34.5"
   }
 }
