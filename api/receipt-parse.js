@@ -1755,6 +1755,43 @@ function shouldStopAfterStrongUprightCandidate(candidateResult, imagePreflight) 
   return true;
 }
 
+function shouldStopAfterStrongAnyCandidate(candidateResult) {
+  if (!candidateResult?.ok || !candidateResult?.parsed || isUnsupportedDocument(candidateResult.parsed)) {
+    return false;
+  }
+
+  const score = Number.isFinite(candidateResult.score) ? candidateResult.score : -1000;
+  const stats = getCandidateQualityStats(candidateResult);
+
+  // Higher threshold than the upright fast path because this can trigger even
+  // when preflight guessed orientation wrong.
+  if (score < 420) {
+    return false;
+  }
+
+  if (!stats.hasVendor || !stats.hasReceiptDate) {
+    return false;
+  }
+
+  if (stats.lineCount < 8) {
+    return false;
+  }
+
+  if (stats.fullyPricedRatio < 0.85) {
+    return false;
+  }
+
+  if (stats.lowConfidenceLines > 0) {
+    return false;
+  }
+
+  if (stats.missingPriceLines > 1) {
+    return false;
+  }
+
+  return true;
+}
+
 async function runReceiptParseCandidates(receipt, imagePreflight) {
   const candidates = orderCandidatesForPreflight(
     await buildPhysicalRotationCandidates(receipt, imagePreflight),
@@ -1815,7 +1852,10 @@ async function runReceiptParseCandidates(receipt, imagePreflight) {
 
       results.push(candidateResult);
 
-      if (shouldStopAfterStrongUprightCandidate(candidateResult, imagePreflight)) {
+           if (
+        shouldStopAfterStrongUprightCandidate(candidateResult, imagePreflight) ||
+        shouldStopAfterStrongAnyCandidate(candidateResult)
+      ) {
         break;
       }
     } catch (error) {
