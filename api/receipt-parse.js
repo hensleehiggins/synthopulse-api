@@ -1,7 +1,7 @@
 /********************************************************************
  * SynthoPulse / KitchenPulse API
  * Route: api/receipt-parse.js
- * Version: v3.0-physical-rotation
+ * Version: v3.1-physical-rotation-us-date-normalization
  *
  * Purpose:
  * - Parse approved Vendor Receipts into Vendor Receipt Lines.
@@ -37,7 +37,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
 const VENDOR_RECEIPT_LINES_TABLE = "Vendor Receipt Lines";
-const PARSER_VERSION = "receipt-parse-v3.0-physical-rotation";
+const PARSER_VERSION = "receipt-parse-v3.1-physical-rotation-us-date-normalization";
 const MAX_PARSE_CANDIDATES = 4;
 const PARSED_LINE_LIMIT = 50;
 const AIRTABLE_BATCH_SIZE = 10;
@@ -123,6 +123,20 @@ function safeDate(value) {
     return "";
   }
 
+  const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (isoMatch) {
+    const year = Number(isoMatch[1]);
+    const month = Number(isoMatch[2]);
+    const day = Number(isoMatch[3]);
+
+    if (isValidDateParts(year, month, day)) {
+      return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+    }
+
+    return "";
+  }
+
   const date = new Date(text);
 
   if (Number.isNaN(date.getTime())) {
@@ -130,6 +144,110 @@ function safeDate(value) {
   }
 
   return date.toISOString().slice(0, 10);
+}
+
+function isValidDateParts(year, month, day) {
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+    return false;
+  }
+
+  if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
+    return false;
+  }
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+}
+
+function formatDateParts(year, month, day) {
+  if (!isValidDateParts(year, month, day)) {
+    return "";
+  }
+
+  return [
+    String(year).padStart(4, "0"),
+    String(month).padStart(2, "0"),
+    String(day).padStart(2, "0"),
+  ].join("-");
+}
+
+function normalizeUsSlashDate(value) {
+  const text = normalizeText(value);
+  const match = text.match(/\b(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2}|\d{4})\b/);
+
+  if (!match) {
+    return "";
+  }
+
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  let year = Number(match[3]);
+
+  if (year < 100) {
+    year += year >= 70 ? 1900 : 2000;
+  }
+
+  return formatDateParts(year, month, day);
+}
+
+function extractLikelyUsReceiptDateFromText(value) {
+  const text = normalizeText(value);
+
+  if (!text) {
+    return "";
+  }
+
+  const matches = [...text.matchAll(/\b(\d{1,2})[\/](\d{1,2})[\/](\d{2}|\d{4})\b/g)];
+
+  for (const match of matches) {
+    const normalized = normalizeUsSlashDate(match[0]);
+
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  return "";
+}
+
+function normalizeReceiptDate(value, sourceText = "") {
+  const fromVisibleText = extractLikelyUsReceiptDateFromText(sourceText);
+
+  if (fromVisibleText) {
+    return fromVisibleText;
+  }
+
+  const fromValueSlash = normalizeUsSlashDate(value);
+
+  if (fromValueSlash) {
+    return fromValueSlash;
+  }
+
+  return safeDate(value);
+}
+
+function normalizeParsedReceiptDates(parsed, parsedText = "") {
+  if (!parsed || typeof parsed !== "object") {
+    return parsed;
+  }
+
+  const sourceText = [parsed.rawText, parsedText].filter(Boolean).join("
+");
+  const normalizedDate = normalizeReceiptDate(parsed.receiptDate, sourceText);
+
+  if (!normalizedDate) {
+    return parsed;
+  }
+
+  return {
+    ...parsed,
+    receiptDate: normalizedDate,
+  };
 }
 
 function chunkArray(items, size) {
@@ -663,6 +781,7 @@ ${imageInstruction ? `${imageInstruction}\n` : ""}
 
 Core rules:
 - Parse only vendor receipts, invoices, or purchase documents showing items actually bought.
+- For U.S. vendor invoices, slash dates like 06/02/26 mean MM/DD/YY, so 06/02/26 must be returned as 2026-06-02, not 2026-07-02.
 - Do not parse catalogs, product lists, price sheets, order guides, menus, marketing sheets, or sales flyers as receipts.
 - Do not invent values.
 - Do not copy numeric values from these instructions into the output.
@@ -960,7 +1079,7 @@ function scoreParsedReceipt(parsed, parsedText, imagePreflight) {
   score += confidenceScore(parsed.confidence);
 
   if (normalizeText(parsed.vendor)) score += 12;
-  if (safeDate(parsed.receiptDate)) score += 10;
+  if (normalizeReceiptDate(parsed.receiptDate, parsed.rawText || parsedText)) score += 10;
   if (safeNumber(parsed.totalAmount) !== null) score += 8;
   if (safeNumber(parsed.subtotal) !== null) score += 4;
   if (safeNumber(parsed.tax) !== null) score += 2;
@@ -990,7 +1109,7 @@ function summarizeCandidate(candidateResult) {
     score: candidateResult.score ?? null,
     lineCount: lines.length,
     vendor: normalizeText(parsed.vendor),
-    receiptDate: normalizeText(parsed.receiptDate),
+    receiptDate: normalizeReceiptDate(parsed.receiptDate, parsed.rawText),
     totalAmount: safeNumber(parsed.totalAmount),
     confidence: normalizeText(parsed.confidence),
     unsupported: candidateResult.parsed ? isUnsupportedDocument(parsed) : false,
@@ -1023,7 +1142,10 @@ async function runReceiptParseCandidates(receipt, imagePreflight) {
       }
 
       const parsedText = extractOpenAIText(openAiResult.data);
-      const parsed = parseJsonFromModelText(parsedText);
+      const parsed = normalizeParsedReceiptDates(
+        parseJsonFromModelText(parsedText),
+        parsedText
+      );
       const score = scoreParsedReceipt(
         parsed,
         parsedText,
@@ -1101,7 +1223,7 @@ function buildReceiptUpdateFields({
   bestCandidate,
 }) {
   const parsedVendor = normalizeText(parsed.vendor);
-  const parsedDate = safeDate(parsed.receiptDate);
+  const parsedDate = normalizeReceiptDate(parsed.receiptDate, parsed.rawText || parsedText);
   const parsedTotal = safeNumber(parsed.totalAmount);
 
   const lineCount = Array.isArray(parsed.lines) ? parsed.lines.length : 0;
@@ -1667,7 +1789,7 @@ export default async function handler(req, res) {
       recordId: receipt.id,
       receiptName: receipt.receiptName,
       parsedVendor: parsed.vendor || "",
-      parsedReceiptDate: parsed.receiptDate || "",
+      parsedReceiptDate: normalizeReceiptDate(parsed.receiptDate, parsed.rawText || parsedText) || "",
       parsedTotalAmount: safeNumber(parsed.totalAmount),
       lineCount: lineFields.length,
       originalPreflight,
