@@ -1,5 +1,4 @@
 const AIRTABLE_TOKEN = process.env.AIRTABLE_PAT;
-
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 
 if (!AIRTABLE_TOKEN) {
@@ -23,6 +22,42 @@ const COST_FIELDS = [
   "Final Price",
   "Vendor Receipt Lines",
   "Receipt Cost Proposals",
+];
+
+const RECEIPT_LINE_DATE_FIELDS = [
+  "Receipt Date",
+  "Invoice Date",
+  "Line Date",
+  "Parsed Receipt Date",
+  "Vendor Receipt Date",
+  "Created",
+  "Created Time",
+];
+
+const RECEIPT_LINE_UNIT_COST_FIELDS = [
+  "Unit Cost",
+  "Unit Price",
+  "Final Unit Cost",
+  "Final Unit Price",
+  "Receipt Unit Cost",
+  "Proposed Cost",
+  "Price",
+];
+
+const RECEIPT_LINE_TOTAL_FIELDS = [
+  "Line Total",
+  "Extended Price",
+  "Extended Amount",
+  "Final Line Total",
+  "Total",
+];
+
+const RECEIPT_LINE_QUANTITY_FIELDS = [
+  "Quantity",
+  "Qty",
+  "Shipped Quantity",
+  "Quantity Shipped",
+  "Pack Qty",
 ];
 
 function setCors(res) {
@@ -61,12 +96,12 @@ function airtableUrl(tableName, params = {}) {
 
 async function fetchAirtablePage(tableName, params = {}) {
   if (!AIRTABLE_TOKEN) {
-  throw new Error("Missing AIRTABLE_PAT environment variable.");
-}
+    throw new Error("Missing AIRTABLE_PAT environment variable.");
+  }
 
-if (!AIRTABLE_BASE_ID) {
-  throw new Error("Missing AIRTABLE_BASE_ID environment variable.");
-}
+  if (!AIRTABLE_BASE_ID) {
+    throw new Error("Missing AIRTABLE_BASE_ID environment variable.");
+  }
 
   const response = await fetch(airtableUrl(tableName, params), {
     headers: {
@@ -132,15 +167,31 @@ function text(value) {
 function numberOrNull(value) {
   if (value === null || value === undefined || value === "") return null;
 
-  const numberValue = Number(value);
+  if (Array.isArray(value)) {
+    return numberOrNull(value[0]);
+  }
+
+  const cleaned =
+    typeof value === "string"
+      ? value.replace(/[$,%]/g, "").trim()
+      : value;
+
+  const numberValue = Number(cleaned);
   return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function roundMoney(value) {
+  const numberValue = numberOrNull(value);
+  if (numberValue === null) return null;
+
+  return Number(numberValue.toFixed(2));
 }
 
 function pickCurrentCost(fields) {
   return (
-    numberOrNull(fields["Unit Price"]) ??
-    numberOrNull(fields["Final Price"]) ??
-    numberOrNull(fields.Price) ??
+    roundMoney(fields["Unit Price"]) ??
+    roundMoney(fields["Final Price"]) ??
+    roundMoney(fields.Price) ??
     null
   );
 }
@@ -185,30 +236,61 @@ function newestIsoDate(values) {
   return dates.length ? dates[dates.length - 1] : null;
 }
 
-function newestReceiptDateFromLinkedLines(linkedLines) {
+function pickFirstNumber(fields, fieldNames) {
+  for (const fieldName of fieldNames) {
+    const value = roundMoney(fields[fieldName]);
+
+    if (value !== null) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function getReceiptLineDate(record) {
+  const fields = record.fields || {};
   const possibleDates = [];
 
-  linkedLines.forEach((line) => {
-    const fields = line.fields || {};
-
-    [
-      "Receipt Date",
-      "Invoice Date",
-      "Line Date",
-      "Parsed Receipt Date",
-      "Vendor Receipt Date",
-      "Created",
-      "Created Time",
-    ].forEach((fieldName) => {
-      const iso = toIsoDate(fields[fieldName]);
-      if (iso) possibleDates.push(iso);
-    });
-
-    Object.values(fields).forEach((value) => {
-      const iso = parseIsoDateFromText(value);
-      if (iso) possibleDates.push(iso);
-    });
+  RECEIPT_LINE_DATE_FIELDS.forEach((fieldName) => {
+    const iso = toIsoDate(fields[fieldName]);
+    if (iso) possibleDates.push(iso);
   });
+
+  Object.values(fields).forEach((value) => {
+    const iso = parseIsoDateFromText(value);
+    if (iso) possibleDates.push(iso);
+  });
+
+  const createdTimeDate = toIsoDate(record.createdTime);
+  if (createdTimeDate) possibleDates.push(createdTimeDate);
+
+  return newestIsoDate(possibleDates);
+}
+
+function getReceiptLineUnitCost(record) {
+  const fields = record.fields || {};
+
+  const directUnitCost = pickFirstNumber(fields, RECEIPT_LINE_UNIT_COST_FIELDS);
+
+  if (directUnitCost !== null) {
+    return directUnitCost;
+  }
+
+  const lineTotal = pickFirstNumber(fields, RECEIPT_LINE_TOTAL_FIELDS);
+  const quantity = pickFirstNumber(fields, RECEIPT_LINE_QUANTITY_FIELDS);
+
+  if (lineTotal !== null && quantity !== null && quantity > 0) {
+    return roundMoney(lineTotal / quantity);
+  }
+
+  return null;
+}
+
+function newestReceiptDateFromLinkedLines(linkedLines) {
+  const possibleDates = linkedLines
+    .map((line) => getReceiptLineDate(line))
+    .filter(Boolean);
 
   return newestIsoDate(possibleDates);
 }
@@ -228,6 +310,145 @@ function daysAgo(isoDate) {
 
   const diffMs = todayUtc - date.getTime();
   return Math.floor(diffMs / 86400000);
+}
+
+function buildReceiptPriceHistory(linkedLines, currentCost) {
+  const entries = linkedLines
+    .map((line) => {
+      const date = getReceiptLineDate(line);
+      const cost = getReceiptLineUnitCost(line);
+      const fields = line.fields || {};
+
+      return {
+        recordId: line.id,
+        date,
+        cost,
+        lineName:
+          text(fields["Line Name"]) ||
+          text(fields["Line Item Name"]) ||
+          text(fields["Item Name"]) ||
+          "",
+      };
+    })
+    .filter((entry) => entry.date && entry.cost !== null)
+    .sort((a, b) => {
+      if (a.date !== b.date) return b.date.localeCompare(a.date);
+      return String(b.recordId).localeCompare(String(a.recordId));
+    });
+
+  if (!entries.length) {
+    return {
+      latestEntry: null,
+      previousEntry: null,
+      history: [],
+    };
+  }
+
+  const entriesByDate = new Map();
+
+  entries.forEach((entry) => {
+    if (!entriesByDate.has(entry.date)) {
+      entriesByDate.set(entry.date, []);
+    }
+
+    entriesByDate.get(entry.date).push(entry);
+  });
+
+  const sortedDates = [...entriesByDate.keys()].sort((a, b) =>
+    b.localeCompare(a)
+  );
+
+  const latestDate = sortedDates[0];
+  const latestDateEntries = entriesByDate.get(latestDate) || [];
+
+  let latestEntry = latestDateEntries[0] || null;
+
+  if (currentCost !== null) {
+    const matchingCurrentCost = latestDateEntries.find(
+      (entry) => Math.abs(Number(entry.cost) - Number(currentCost)) <= 0.01
+    );
+
+    if (matchingCurrentCost) {
+      latestEntry = matchingCurrentCost;
+    }
+  }
+
+  let previousEntry = null;
+
+  for (const date of sortedDates.slice(1)) {
+    const dateEntries = entriesByDate.get(date) || [];
+    const firstCostEntry = dateEntries.find((entry) => entry.cost !== null);
+
+    if (firstCostEntry) {
+      previousEntry = firstCostEntry;
+      break;
+    }
+  }
+
+  return {
+    latestEntry,
+    previousEntry,
+    history: entries.slice(0, 8),
+  };
+}
+
+function buildMovement(item, linkedLines) {
+  const currentCost = item.currentCost;
+  const priceHistory = buildReceiptPriceHistory(linkedLines, currentCost);
+  const latestReceiptCost = priceHistory.latestEntry?.cost ?? null;
+  const previousCost = priceHistory.previousEntry?.cost ?? null;
+  const movementCurrentCost = currentCost ?? latestReceiptCost;
+
+  if (movementCurrentCost === null) {
+    return {
+      previousCost: null,
+      latestReceiptCost,
+      changeAmount: null,
+      changePercent: null,
+      movementDirection: "missing",
+      movementLabel: "Needs price",
+      priceHistory: priceHistory.history,
+    };
+  }
+
+  if (previousCost === null) {
+    return {
+      previousCost: null,
+      latestReceiptCost,
+      changeAmount: null,
+      changePercent: null,
+      movementDirection: "baseline",
+      movementLabel: "No prior",
+      priceHistory: priceHistory.history,
+    };
+  }
+
+  const changeAmount = roundMoney(movementCurrentCost - previousCost);
+  const changePercent =
+    previousCost === 0 || changeAmount === null
+      ? null
+      : Number((changeAmount / previousCost).toFixed(4));
+
+  let movementDirection = "flat";
+
+  if (changeAmount !== null && Math.abs(changeAmount) >= 0.01) {
+    movementDirection = changeAmount > 0 ? "up" : "down";
+  }
+
+  return {
+    previousCost,
+    latestReceiptCost,
+    changeAmount,
+    changePercent,
+    movementDirection,
+    movementLabel:
+      movementDirection === "up"
+        ? "Up"
+        : movementDirection === "down"
+          ? "Down"
+          : "Flat",
+    priceHistory: priceHistory.history,
+  };
 }
 
 function sortItems(items) {
@@ -268,6 +489,7 @@ export default async function handler(req, res) {
     const items = costRecords.map((record) => {
       const fields = record.fields || {};
       const linkedReceiptLineIds = getLinkedIds(fields["Vendor Receipt Lines"]);
+      const linkedProposalIds = getLinkedIds(fields["Receipt Cost Proposals"]);
       const currentCost = pickCurrentCost(fields);
 
       return {
@@ -279,7 +501,9 @@ export default async function handler(req, res) {
         unit: text(fields.Unit),
         currentCost,
         linkedReceiptLineIds,
+        linkedProposalIds,
         sourceLineCount: linkedReceiptLineIds.length,
+        proposalCount: linkedProposalIds.length,
         lastSeenDate: null,
         lastSeenDaysAgo: null,
       };
@@ -312,6 +536,7 @@ export default async function handler(req, res) {
           receiptLineRecords.map((record) => [record.id, record])
         );
       } catch (lineError) {
+        console.error("Cost source ledger could not hydrate receipt lines:", lineError);
         receiptLinesById = new Map();
       }
     }
@@ -321,10 +546,21 @@ export default async function handler(req, res) {
         .map((id) => receiptLinesById.get(id))
         .filter(Boolean);
 
-      const lastSeenDate = newestReceiptDateFromLinkedLines(linkedLines);
+      const movement = buildMovement(item, linkedLines);
+      const lastSeenDate =
+        newestReceiptDateFromLinkedLines(linkedLines) ||
+        movement.priceHistory?.[0]?.date ||
+        null;
 
       return {
         ...item,
+        previousCost: movement.previousCost,
+        latestReceiptCost: movement.latestReceiptCost,
+        changeAmount: movement.changeAmount,
+        changePercent: movement.changePercent,
+        movementDirection: movement.movementDirection,
+        movementLabel: movement.movementLabel,
+        movement,
         lastSeenDate,
         lastSeenDaysAgo: daysAgo(lastSeenDate),
       };
@@ -340,12 +576,37 @@ export default async function handler(req, res) {
       sortedItems.map((item) => item.supplier).filter(Boolean)
     );
 
+    const movementCounts = sortedItems.reduce(
+      (acc, item) => {
+        const direction = item.movementDirection || "baseline";
+
+        if (direction === "up") acc.up += 1;
+        else if (direction === "down") acc.down += 1;
+        else if (direction === "flat") acc.flat += 1;
+        else if (direction === "missing") acc.missing += 1;
+        else acc.baseline += 1;
+
+        return acc;
+      },
+      {
+        up: 0,
+        down: 0,
+        flat: 0,
+        baseline: 0,
+        missing: 0,
+      }
+    );
+
     const highestCostItem = pricedItems.reduce((winner, item) => {
       if (!winner) return item;
       return Number(item.currentCost || 0) > Number(winner.currentCost || 0)
         ? item
         : winner;
     }, null);
+
+    const freshestMovementItem = sortedItems.find((item) =>
+      ["up", "down"].includes(item.movementDirection)
+    );
 
     const freshlySeenItems = sortedItems.filter(
       (item) =>
@@ -362,12 +623,30 @@ export default async function handler(req, res) {
         vendors: vendors.size,
         needsPrice: sortedItems.length - pricedItems.length,
         freshlySeenItems,
+        movementUp: movementCounts.up,
+        movementDown: movementCounts.down,
+        movementFlat: movementCounts.flat,
+        movementBaseline: movementCounts.baseline,
+        movementMissing: movementCounts.missing,
         highestCostItem: highestCostItem
           ? {
               id: highestCostItem.id,
               itemName: highestCostItem.itemName,
               supplier: highestCostItem.supplier,
               currentCost: highestCostItem.currentCost,
+            }
+          : null,
+        freshestMovementItem: freshestMovementItem
+          ? {
+              id: freshestMovementItem.id,
+              itemName: freshestMovementItem.itemName,
+              supplier: freshestMovementItem.supplier,
+              currentCost: freshestMovementItem.currentCost,
+              previousCost: freshestMovementItem.previousCost,
+              changeAmount: freshestMovementItem.changeAmount,
+              changePercent: freshestMovementItem.changePercent,
+              movementDirection: freshestMovementItem.movementDirection,
+              lastSeenDate: freshestMovementItem.lastSeenDate,
             }
           : null,
       },
