@@ -818,10 +818,48 @@ export default async function handler(req, res) {
 
     let costMovementByCostSourceItem = new Map();
 
+let movementDebug = {
+  attempted: true,
+  recordCount: 0,
+  matchedCostSourceItems: 0,
+  firstRecordId: "",
+  firstRecordFieldKeys: [],
+  asparagusMovementSeen: false,
+  asparagusLinkedCostSourceIds: [],
+  error: "",
+};
+
 try {
   const costMovementRecords = await fetchAllRecords(COST_MOVEMENT_TABLE, {
     returnFieldsByFieldId: true,
   });
+
+  movementDebug.recordCount = costMovementRecords.length;
+
+  const firstRecord = costMovementRecords[0] || null;
+  movementDebug.firstRecordId = firstRecord?.id || "";
+  movementDebug.firstRecordFieldKeys = Object.keys(firstRecord?.fields || {}).slice(
+    0,
+    40
+  );
+
+  const asparagusMovement = costMovementRecords.find((record) => {
+    const fields = record.fields || {};
+    const fieldText = JSON.stringify(fields).toLowerCase();
+    return fieldText.includes("asparagus");
+  });
+
+  if (asparagusMovement) {
+    movementDebug.asparagusMovementSeen = true;
+
+    const asparagusFields = asparagusMovement.fields || {};
+    const linkedValue =
+      asparagusFields["fldQm9oR7NCaDCjX2"] ||
+      asparagusFields["Cost Source Item"] ||
+      asparagusFields["Cost Source Items"];
+
+    movementDebug.asparagusLinkedCostSourceIds = getLinkedIds(linkedValue);
+  }
 
   const itemsById = new Map(items.map((item) => [item.id, item]));
 
@@ -829,11 +867,19 @@ try {
     costMovementRecords,
     itemsById
   );
+
+  movementDebug.matchedCostSourceItems = costMovementByCostSourceItem.size;
 } catch (movementError) {
   console.error(
     "Cost source ledger could not hydrate Cost Movement:",
     movementError
   );
+
+  movementDebug.error =
+    movementError?.stack ||
+    movementError?.message ||
+    String(movementError || "Unknown Cost Movement hydration error");
+
   costMovementByCostSourceItem = new Map();
 }
 
@@ -1115,8 +1161,9 @@ function buildCostMovementByCostSourceItemFlexible(records, itemsById = new Map(
     ).length;
 
     return res.status(200).json({
-      ok: true,
-      counts: {
+  ok: true,
+  movementDebug,
+  counts: {
         totalItems: sortedItems.length,
         pricedItems: pricedItems.length,
         vendors: vendors.size,
