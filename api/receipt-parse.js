@@ -37,7 +37,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const VENDOR_RECEIPTS_TABLE = "Vendor Receipts";
 const VENDOR_RECEIPT_LINES_TABLE = "Vendor Receipt Lines";
-const PARSER_VERSION = "receipt-parse-v3.2-physical-rotation-us-date-normalization-scoring";
+const PARSER_VERSION = "receipt-parse-v3.3-physical-rotation-us-date-sync";
 const MAX_PARSE_CANDIDATES = 4;
 const PARSED_LINE_LIMIT = 50;
 const AIRTABLE_BATCH_SIZE = 10;
@@ -1344,7 +1344,7 @@ function buildReceiptUpdateFields({
     fields.Vendor = parsedVendor;
   }
 
-  if (parsedDate && !receipt.receiptDate) {
+  if (parsedDate) {
     fields["Receipt Date"] = parsedDate;
   }
 
