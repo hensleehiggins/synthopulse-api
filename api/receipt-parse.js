@@ -1835,7 +1835,7 @@ async function runReceiptParseCandidates(receipt, imagePreflight) {
   const supported = viable.filter((result) => !isUnsupportedDocument(result.parsed));
   const pool = supported.length ? supported : viable;
 
-  const best = pool.sort((a, b) => b.score - a.score)[0] || null;
+  const best = chooseBestCandidate(pool, imagePreflight);
 
   return {
     best,
