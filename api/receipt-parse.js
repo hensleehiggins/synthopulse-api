@@ -2263,14 +2263,46 @@ export default async function handler(req, res) {
 
     const force = Boolean(req.body?.force);
 
-    if (existingLineCount > 0 && !force) {
-      return sendJson(res, 409, {
-        ok: false,
-        error:
-          "This receipt already has parsed line records. Use force=true only if you intentionally want to parse it again.",
-        existingLineCount,
-      });
-    }
+   if (existingLineCount > 0 && !force) {
+  const repairedAt = new Date().toISOString();
+
+  const statusRepairResult = await updateReceipt(receipt.id, {
+    "Processing Status": "Parsed",
+    Approved: true,
+    "Processed At": repairedAt,
+    "Error Message": "",
+    "Parser Version": PARSER_VERSION,
+    "Orientation Line Count": existingLineCount,
+    Notes: [
+      receipt.notes || "",
+      `PARSING STATUS REPAIR ${repairedAt}: Receipt already had ${existingLineCount} parsed line record${
+        existingLineCount === 1 ? "" : "s"
+      }, so KitchenPulse marked the receipt Parsed without creating duplicate lines.`,
+    ]
+      .filter(Boolean)
+      .join("\n\n"),
+  });
+
+  if (!statusRepairResult.ok) {
+    return sendJson(res, statusRepairResult.status, {
+      ok: false,
+      error:
+        "This receipt already has parsed line records, but KitchenPulse could not repair the receipt status.",
+      existingLineCount,
+      details: statusRepairResult.data,
+    });
+  }
+
+  return sendJson(res, 200, {
+    ok: true,
+    alreadyParsed: true,
+    existingLineCount,
+    lineCount: existingLineCount,
+    message: `Receipt already had ${existingLineCount} parsed line record${
+      existingLineCount === 1 ? "" : "s"
+    }. Status repaired to Parsed.`,
+  });
+}
 
     await updateReceipt(receipt.id, {
       "Processing Status": "Parsing",
