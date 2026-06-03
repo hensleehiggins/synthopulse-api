@@ -236,8 +236,7 @@ function normalizeParsedReceiptDates(parsed, parsedText = "") {
     return parsed;
   }
 
-  const sourceText = [parsed.rawText, parsedText].filter(Boolean).join("
-");
+  const sourceText = [parsed.rawText, parsedText].filter(Boolean).join("\n");
   const normalizedDate = normalizeReceiptDate(parsed.receiptDate, sourceText);
 
   if (!normalizedDate) {
