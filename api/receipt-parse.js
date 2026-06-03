@@ -1829,18 +1829,7 @@ async function runReceiptParseCandidates(receipt, imagePreflight) {
     }
   }
 
-  const viable = results.filter((result) => result.ok && result.parsed);
-  const supported = viable.filter((result) => !isUnsupportedDocument(result.parsed));
-  const pool = supported.length ? supported : viable;
-
-  const best = chooseBestCandidate(pool, imagePreflight);
-
-  return {
-    best,
-    results,
-    summary: results.map(summarizeCandidate),
-  };
-}
+ 
 
   const viable = results.filter((result) => result.ok && result.parsed);
   const supported = viable.filter((result) => !isUnsupportedDocument(result.parsed));
