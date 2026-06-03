@@ -1554,8 +1554,213 @@ function summarizeCandidate(candidateResult) {
   };
 }
 
+const BEST_CANDIDATE_TIE_MARGIN = 15;
+const UPRIGHT_FAST_PATH_SCORE = 360;
+
+function getCandidateQualityStats(candidateResult) {
+  const parsed = candidateResult?.parsed || {};
+  const parsedText = candidateResult?.parsedText || "";
+  const lines = Array.isArray(parsed.lines) ? parsed.lines : [];
+
+  const nonEmptyLines = lines.filter((line) => {
+    return (
+      normalizeText(line?.lineItemName) ||
+      normalizeText(line?.rawLineText) ||
+      safeNumber(line?.lineTotal) !== null
+    );
+  });
+
+  const fullyPricedLines = nonEmptyLines.filter((line) => {
+    return safeNumber(line?.unitCost) !== null && safeNumber(line?.lineTotal) !== null;
+  });
+
+  const missingPriceLines = nonEmptyLines.filter((line) => {
+    return safeNumber(line?.unitCost) === null && safeNumber(line?.lineTotal) === null;
+  });
+
+  const lowConfidenceLines = nonEmptyLines.filter((line) => {
+    return normalizeConfidence(line?.confidence) === "Low";
+  });
+
+  const parsedTotal = safeNumber(parsed.totalAmount);
+  const parsedSubtotal = safeNumber(parsed.subtotal);
+  const lineTotalSummary = sumParsedLineTotals(parsed);
+
+  function reconcilesWithLineSum(value) {
+    if (value === null || lineTotalSummary.count < 2) {
+      return false;
+    }
+
+    const difference = Math.abs(value - lineTotalSummary.sum);
+    const denominator = Math.max(Math.abs(value), Math.abs(lineTotalSummary.sum), 1);
+    const percentDifference = difference / denominator;
+
+    return difference <= 5 || percentDifference <= 0.03;
+  }
+
+  const lineCount = nonEmptyLines.length;
+  const fullyPricedRatio = lineCount > 0 ? fullyPricedLines.length / lineCount : 0;
+
+  return {
+    lineCount,
+    fullyPricedLines: fullyPricedLines.length,
+    fullyPricedRatio,
+    missingPriceLines: missingPriceLines.length,
+    lowConfidenceLines: lowConfidenceLines.length,
+    hasVendor: Boolean(normalizeText(parsed.vendor)),
+    hasReceiptDate: Boolean(
+      normalizeReceiptDate(parsed.receiptDate, parsed.rawText || parsedText)
+    ),
+    totalReconciles:
+      reconcilesWithLineSum(parsedTotal) || reconcilesWithLineSum(parsedSubtotal),
+  };
+}
+
+function candidateOrderRank(candidate, imagePreflight) {
+  const transformApplied = normalizeTransformApplied(candidate?.transformApplied);
+  const preferredTransform = preferredTransformFromPreflight(imagePreflight);
+
+  if (preferredTransform) {
+    if (transformApplied === preferredTransform) return 0;
+    if (transformApplied === "none") return preferredTransform === "none" ? 0 : 1;
+    if (transformApplied === "rotate_180") return 3;
+    return 2;
+  }
+
+  if (transformApplied === "none") return 0;
+  if (transformApplied === "rotate_90_clockwise") return 1;
+  if (transformApplied === "rotate_90_counterclockwise") return 2;
+  if (transformApplied === "rotate_180") return 3;
+
+  return 99;
+}
+
+function orderCandidatesForPreflight(candidates, imagePreflight) {
+  return [...candidates].sort((a, b) => {
+    const rankDifference =
+      candidateOrderRank(a, imagePreflight) - candidateOrderRank(b, imagePreflight);
+
+    if (rankDifference !== 0) {
+      return rankDifference;
+    }
+
+    return (a.index ?? 0) - (b.index ?? 0);
+  });
+}
+
+function candidateTieBreakRank(candidate, imagePreflight) {
+  const normalizedPreflight = normalizeImagePreflight(imagePreflight || {});
+  const transformApplied = normalizeTransformApplied(candidate?.transformApplied);
+  const preferredTransform = preferredTransformFromPreflight(imagePreflight);
+
+  let rank = 0;
+
+  if (preferredTransform && transformApplied === preferredTransform) {
+    rank += 40;
+  }
+
+  if (
+    normalizedPreflight.confidence === "High" &&
+    normalizedPreflight.orientation === "upright" &&
+    transformApplied === "none"
+  ) {
+    rank += 60;
+  }
+
+  if (transformApplied === "none") {
+    rank += 5;
+  }
+
+  return rank;
+}
+
+function compareCandidatesForBest(a, b, imagePreflight) {
+  const aScore = Number.isFinite(a?.score) ? a.score : -1000;
+  const bScore = Number.isFinite(b?.score) ? b.score : -1000;
+  const scoreDifference = bScore - aScore;
+
+  if (Math.abs(scoreDifference) > BEST_CANDIDATE_TIE_MARGIN) {
+    return scoreDifference;
+  }
+
+  const tieBreakDifference =
+    candidateTieBreakRank(b, imagePreflight) -
+    candidateTieBreakRank(a, imagePreflight);
+
+  if (tieBreakDifference !== 0) {
+    return tieBreakDifference;
+  }
+
+  const aStats = getCandidateQualityStats(a);
+  const bStats = getCandidateQualityStats(b);
+
+  if (bStats.fullyPricedLines !== aStats.fullyPricedLines) {
+    return bStats.fullyPricedLines - aStats.fullyPricedLines;
+  }
+
+  if (bStats.lineCount !== aStats.lineCount) {
+    return bStats.lineCount - aStats.lineCount;
+  }
+
+  return (a.index ?? 0) - (b.index ?? 0);
+}
+
+function chooseBestCandidate(pool, imagePreflight) {
+  return [...pool].sort((a, b) => compareCandidatesForBest(a, b, imagePreflight))[0] || null;
+}
+
+function shouldStopAfterStrongUprightCandidate(candidateResult, imagePreflight) {
+  const normalizedPreflight = normalizeImagePreflight(imagePreflight || {});
+  const transformApplied = normalizeTransformApplied(candidateResult?.transformApplied);
+
+  if (
+    normalizedPreflight.confidence !== "High" ||
+    normalizedPreflight.orientation !== "upright" ||
+    transformApplied !== "none"
+  ) {
+    return false;
+  }
+
+  if (!candidateResult?.ok || !candidateResult?.parsed || isUnsupportedDocument(candidateResult.parsed)) {
+    return false;
+  }
+
+  const score = Number.isFinite(candidateResult.score) ? candidateResult.score : -1000;
+  const stats = getCandidateQualityStats(candidateResult);
+
+  if (score < UPRIGHT_FAST_PATH_SCORE) {
+    return false;
+  }
+
+  if (!stats.hasVendor || !stats.hasReceiptDate) {
+    return false;
+  }
+
+  if (stats.lineCount < 8) {
+    return false;
+  }
+
+  if (stats.fullyPricedRatio < 0.85) {
+    return false;
+  }
+
+  if (stats.lowConfidenceLines > 0) {
+    return false;
+  }
+
+  if (stats.missingPriceLines > 1) {
+    return false;
+  }
+
+  return true;
+}
+
 async function runReceiptParseCandidates(receipt, imagePreflight) {
-  const candidates = await buildPhysicalRotationCandidates(receipt, imagePreflight);
+  const candidates = orderCandidatesForPreflight(
+    await buildPhysicalRotationCandidates(receipt, imagePreflight),
+    imagePreflight
+  );
+
   const results = [];
 
   for (const candidate of candidates) {
@@ -1583,18 +1788,20 @@ async function runReceiptParseCandidates(receipt, imagePreflight) {
         parseJsonFromModelText(parsedText),
         parsedText
       );
+
       const baseScore = scoreParsedReceipt(
         parsed,
         parsedText,
         candidate.imagePreflight
       );
+
       const score = applyPreflightPreferenceScore(
         baseScore,
         candidate,
         imagePreflight
       );
 
-      results.push({
+      const candidateResult = {
         ...candidate,
         ok: true,
         status: 200,
@@ -1604,7 +1811,13 @@ async function runReceiptParseCandidates(receipt, imagePreflight) {
         baseScore,
         score,
         preflightPreferred: isPreflightPreferredTransform(candidate, imagePreflight),
-      });
+      };
+
+      results.push(candidateResult);
+
+      if (shouldStopAfterStrongUprightCandidate(candidateResult, imagePreflight)) {
+        break;
+      }
     } catch (error) {
       results.push({
         ...candidate,
@@ -1615,6 +1828,19 @@ async function runReceiptParseCandidates(receipt, imagePreflight) {
       });
     }
   }
+
+  const viable = results.filter((result) => result.ok && result.parsed);
+  const supported = viable.filter((result) => !isUnsupportedDocument(result.parsed));
+  const pool = supported.length ? supported : viable;
+
+  const best = chooseBestCandidate(pool, imagePreflight);
+
+  return {
+    best,
+    results,
+    summary: results.map(summarizeCandidate),
+  };
+}
 
   const viable = results.filter((result) => result.ok && result.parsed);
   const supported = viable.filter((result) => !isUnsupportedDocument(result.parsed));
