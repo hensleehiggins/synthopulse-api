@@ -275,33 +275,35 @@ function buildCostMovementByCostSourceItem(records, itemsById = new Map()) {
     costSourceItemIds.forEach((costSourceItemId) => {
       const existing = movementByCostSourceItem.get(costSourceItemId);
       const item = itemsById.get(costSourceItemId);
-      const currentCost = item?.currentCost ?? null;
+      const currentCost =
+  item?.currentCost !== null && item?.currentCost !== undefined
+    ? Number(item.currentCost)
+    : null;
 
       const movementMatchesCurrent =
-        currentCost !== null &&
-        latestCost !== null &&
-        Math.abs(Number(latestCost) - Number(currentCost)) <= 0.01;
+  Number.isFinite(currentCost) &&
+  latestCost !== null &&
+  Math.abs(Number(latestCost) - currentCost) <= 0.011;
 
-      const existingMatchesCurrent =
-        currentCost !== null &&
-        existing?.latestReceiptCost !== null &&
-        Math.abs(Number(existing.latestReceiptCost) - Number(currentCost)) <= 0.01;
+const existingMatchesCurrent =
+  Number.isFinite(currentCost) &&
+  existing?.latestReceiptCost !== null &&
+  Math.abs(Number(existing.latestReceiptCost) - currentCost) <= 0.011;
 
       if (!existing) {
-        movementByCostSourceItem.set(costSourceItemId, movement);
-        return;
-      }
+  movementByCostSourceItem.set(costSourceItemId, movement);
+  return;
+}
 
-      // Prefer the movement that matches the current Cost Source Item price.
-      // This handles cases like Asparagus where an older inverse movement is still active.
-      if (movementMatchesCurrent && !existingMatchesCurrent) {
-        movementByCostSourceItem.set(costSourceItemId, movement);
-        return;
-      }
+// Hard rule: if exactly one movement matches the current Cost Source Item price,
+// use that movement. This prevents inverse duplicate movements from winning.
+if (movementMatchesCurrent !== existingMatchesCurrent) {
+  if (movementMatchesCurrent) {
+    movementByCostSourceItem.set(costSourceItemId, movement);
+  }
 
-      if (!movementMatchesCurrent && existingMatchesCurrent) {
-        return;
-      }
+  return;
+}
 
       // If both match or neither matches, prefer newest movement date, then newest created time.
       const movementDateValue = String(movement.movementDate || "");
