@@ -126,6 +126,16 @@ function titleCaseItemName(value) {
 function isNonItemChargeLine(value) {
   const upper = String(value || "").toUpperCase();
 
+  // Food products can legitimately contain words like Bowl/Bowls.
+  // Do not treat Sysco sourdough bread bowls as disposable bowls.
+  if (
+    /\bBREAD\b/.test(upper) &&
+    /\b(SOUR|DGH|DOUGH)\b/.test(upper) &&
+    /\b(BOWL|BOWLS)\b/.test(upper)
+  ) {
+    return false;
+  }
+
   return (
     // Sysco category / group totals
     /\bTOTAL\b/.test(upper) &&
@@ -175,6 +185,21 @@ function removeVendorNoiseFromItemName(value) {
     .replace(/\bDRISCOLL['’]?S?\b/gi, " ")
     .replace(/\bDAR\b/gi, " ")
     .replace(/\bSTANDARD\b/gi, " ")
+    // Common Sysco/OCR brand or column noise that should not lead the human-readable item name.
+    .replace(/\bBRIEZIME\b/gi, " ")
+    .replace(/\bAREAZIMP\b/gi, " ")
+    .replace(/\bAREZZIO\b/gi, " ")
+    .replace(/\bPREZIME\b/gi, " ")
+    .replace(/\bBRRLTMP\b/gi, " ")
+    .replace(/\bCRYBURKLN\b/gi, " ")
+    .replace(/\bDOMITE\b/gi, " ")
+    .replace(/\bFLOWED\b/gi, " ")
+    .replace(/\bFULLRED\b/gi, " ")
+    .replace(/\bSYS\s+REFI\b/gi, " ")
+    .replace(/\bSYK\b/gi, " ")
+    .replace(/\bONY\d+\b/gi, " ")
+    .replace(/\bONX[A-Z0-9]*\b/gi, " ")
+    .replace(/\bCH?I\b/gi, " ")
     .replace(/\(\s*\)/g, " ")
     .replace(/\s+\)/g, " ")
     .replace(/\(\s+/g, " ")
@@ -197,6 +222,130 @@ function removePackageSizeFromItemName(value) {
     .trim();
 }
 
+
+function compactMatchText(value) {
+  return String(value || "")
+    .toUpperCase()
+    .replace(/&/g, " AND ")
+    .replace(/[^A-Z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasAnyToken(text, tokens) {
+  const upper = compactMatchText(text);
+  return tokens.some((token) => new RegExp(`\\b${token}\\b`).test(upper));
+}
+
+function hasAllSignals(text, signalGroups) {
+  return signalGroups.every((group) => hasAnyToken(text, group));
+}
+
+function conservativeSyscoFriendlyName(upper) {
+  // These rules intentionally require multiple identifying signals.
+  // Do not collapse multi-word prepared items into a generic family name.
+  if (hasAllSignals(upper, [["ASIAGO"], ["CHEESE", "CHSE", "CHS"]])) {
+    if (hasAnyToken(upper, ["SHRD", "SHRED", "SHREDDED", "SRPD"])) {
+      return "Asiago Cheese Shredded";
+    }
+    return "Asiago Cheese";
+  }
+
+  if (hasAllSignals(upper, [["BLUE"], ["CRUMBLES", "CRUMBLED", "CRUMBLE"]])) {
+    return "Blue Cheese Crumbles";
+  }
+
+  if (hasAllSignals(upper, [["PARM", "PARMESAN"], ["SHAVED"]])) {
+    return "Parmesan Shaved";
+  }
+
+  if (hasAllSignals(upper, [["SOUR"], ["DGH", "DOUGH"], ["BOWL", "BOWLS", "SXL", "XL"]])) {
+    return "Sourdough Bread Bowls";
+  }
+
+  if (hasAnyToken(upper, ["TIRAMISU", "TRAMISU"])) {
+    return "Tiramisu";
+  }
+
+  if (hasAllSignals(upper, [["ANCHOVY"], ["FILET", "FILETS", "FILLET", "FILLETS"]])) {
+    return "Anchovy Filets";
+  }
+
+  if (hasAllSignals(upper, [["CAPER", "CAPPER", "CAREER"], ["NONPAREIL", "NONAREIL", "NORMARELL", "NONARELL"]])) {
+    return "Nonpareil Capers";
+  }
+
+  if (hasAllSignals(upper, [["MAYONNAISE", "MAYO", "MAXONNAISE"], ["HEAVY"], ["DUTY"]])) {
+    return "Mayonnaise Heavy Duty";
+  }
+
+  if (hasAllSignals(upper, [["RANCH"], ["DRESSING"]])) {
+    return "Ranch Dressing";
+  }
+
+  if (hasAllSignals(upper, [["OLIVE", "EVOO", "EYVO"], ["OIL", "TIN", "ROBUS"]])) {
+    return "Extra Virgin Olive Oil";
+  }
+
+  if (hasAllSignals(upper, [["JASMINE"], ["RICE", "THAI", "GRAD", "GRADE"]])) {
+    return "Jasmine Rice";
+  }
+
+  if (hasAnyToken(upper, ["MARINARA", "MARRINARA"])) {
+    return "Marinara Sauce";
+  }
+
+  if (hasAllSignals(upper, [["SAUCE"], ["STEAK"]])) {
+    return "Steak Sauce";
+  }
+
+  if (hasAllSignals(upper, [["SHORTENING", "SHORTINING"], ["FRY"], ["CANOLA"]])) {
+    return "Canola Fry Shortening";
+  }
+
+  return "";
+}
+
+function buildDisplayQuantityTextFromLine(line) {
+  const parts = [];
+
+  if (line.quantity !== null && typeof line.quantity !== "undefined") {
+    parts.push(String(line.quantity));
+  }
+
+  if (line.unit) {
+    parts.push(line.unit);
+  }
+
+  const quantityText = parts.join(" ").trim();
+  const packageText = line.packageSize ? String(line.packageSize).trim() : "";
+
+  if (quantityText && packageText) return `${quantityText} · ${packageText}`;
+  if (quantityText) return quantityText;
+  if (packageText) return packageText;
+  return "Quantity not parsed";
+}
+
+function buildLineReviewHint({ originalLineItemName, cleanedLineName, rawLineText, confidence }) {
+  const reasons = [];
+  const sourceText = compactMatchText([originalLineItemName, rawLineText].filter(Boolean).join(" "));
+  const confidenceText = String(confidence || "").toLowerCase();
+
+  if (confidenceText.includes("low")) {
+    reasons.push("Low parser confidence");
+  }
+
+  if (/\b(BRIEZIME|CRYBURKLN|DOMITE|FLOWED|EYVO|SXL|NONARELL|SHORTINING|MAXONNAISE)\b/.test(sourceText)) {
+    reasons.push("OCR spelling looks noisy");
+  }
+
+  if (cleanedLineName && originalLineItemName && cleanedLineName !== originalLineItemName) {
+    reasons.push("Display name cleaned from vendor/OCR text");
+  }
+
+  return reasons.join(" · ");
+}
+
 function friendlyVendorItemName(value, category = "") {
  const rawOriginal = String(value || "").trim();
 if (!rawOriginal) return "";
@@ -210,6 +359,9 @@ if (!raw) return "";
 const upper = raw.toUpperCase();
 
   if (isNonItemChargeLine(upper)) return "";
+
+  const conservativeSyscoName = conservativeSyscoFriendlyName(upper);
+  if (conservativeSyscoName) return conservativeSyscoName;
 
     // Royal / general produce and prep cleanup.
   // Keep this outside the Sysco-only block so Royal Food Service lines can use it.
@@ -692,11 +844,29 @@ function asNumberOrNull(value) {
 function normalizeLineRecord(record) {
   const fields = record.fields || {};
 
-const rawLineName = fields[FIELD.lineItemName] || "";
-const rawLineText = fields[FIELD.rawLineText] || "";
-const cleanedLineName =
-  friendlyVendorItemName(rawLineName || rawLineText, fields[FIELD.category]) ||
-  rawLineName;
+  const rawLineName = fields[FIELD.lineItemName] || "";
+  const rawLineText = fields[FIELD.rawLineText] || "";
+  const category = fields[FIELD.category] || "";
+  const confidence = fields[FIELD.confidence] || "";
+  const cleanedLineName =
+    friendlyVendorItemName(rawLineName || rawLineText, category) || rawLineName;
+
+  const quantity =
+    typeof fields[FIELD.quantity] === "number" ? fields[FIELD.quantity] : null;
+  const unit = fields[FIELD.unit] || "";
+  const packageSize = fields[FIELD.packageSize] || "";
+  const unitCost =
+    typeof fields[FIELD.unitCost] === "number" ? fields[FIELD.unitCost] : null;
+  const lineTotal =
+    typeof fields[FIELD.lineTotal] === "number"
+      ? fields[FIELD.lineTotal]
+      : null;
+
+  const previewLine = {
+    quantity,
+    unit,
+    packageSize,
+  };
 
 return {
     id: record.id,
@@ -713,23 +883,29 @@ return {
     matchedInventoryItemIds: linkedIds(fields[FIELD.matchedInventoryItem]),
     matchedCostSourceItemIds: linkedIds(fields[FIELD.matchedCostSourceItem]),
 
-    category: fields[FIELD.category] || "",
-    quantity:
-      typeof fields[FIELD.quantity] === "number" ? fields[FIELD.quantity] : null,
-    unit: fields[FIELD.unit] || "",
-    packageSize: fields[FIELD.packageSize] || "",
-    unitCost:
-      typeof fields[FIELD.unitCost] === "number" ? fields[FIELD.unitCost] : null,
-    lineTotal:
-      typeof fields[FIELD.lineTotal] === "number"
-        ? fields[FIELD.lineTotal]
-        : null,
+    category,
+    quantity,
+    unit,
+    packageSize,
+    unitCost,
+    lineTotal,
 
-    confidence: fields[FIELD.confidence] || "",
+    confidence,
     needsReview: Boolean(fields[FIELD.needsReview]),
     approved: Boolean(fields[FIELD.approved]),
-    rawLineText: fields[FIELD.rawLineText] || "",
+    rawLineText,
     notes: fields[FIELD.notes] || "",
+
+    // Display-only helpers for Softr/human review. These do not overwrite Airtable
+    // unless the operator edits/saves or approves the cleaned line.
+    displayLineItemName: cleanedLineName,
+    displayQuantityText: buildDisplayQuantityTextFromLine(previewLine),
+    displayReviewHint: buildLineReviewHint({
+      originalLineItemName: rawLineName,
+      cleanedLineName,
+      rawLineText,
+      confidence,
+    }),
   };
 }
 
