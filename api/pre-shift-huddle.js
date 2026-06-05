@@ -437,6 +437,228 @@ module.exports = async function handler(req, res) {
       "": 0,
     };
 
+    function movementImpactScore(row = {}) {
+  const impactRank = {
+    High: 3,
+    Medium: 2,
+    Low: 1,
+    "": 0,
+  };
+
+  const qtyDelta = Math.abs(safeNumber(row.currentQty) - safeNumber(row.previousQty));
+  const revenue = safeNumber(row.currentRevenue);
+
+  return (
+    (impactRank[row.impactLevel] || 0) * 100 +
+    qtyDelta * 10 +
+    Math.min(Math.round(revenue / 25), 25)
+  );
+}
+
+function isPositiveMovementRow(row = {}) {
+  const text = normalizeForSearch(
+    `${row.movementType} ${row.listType} ${row.notes}`
+  );
+
+  const qtyDelta = safeNumber(row.currentQty) - safeNumber(row.previousQty);
+  const revenueDelta =
+    safeNumber(row.currentRevenue) - safeNumber(row.previousRevenue);
+
+  return (
+    text.includes("new top") ||
+    text.includes("rising") ||
+    text.includes("recovered") ||
+    text.includes("opportunity") ||
+    qtyDelta > 0 ||
+    revenueDelta > 0
+  );
+}
+
+function isWatchMovementRow(row = {}) {
+  const text = normalizeForSearch(
+    `${row.movementType} ${row.listType} ${row.notes}`
+  );
+
+  const qtyDelta = safeNumber(row.currentQty) - safeNumber(row.previousQty);
+  const revenueDelta =
+    safeNumber(row.currentRevenue) - safeNumber(row.previousRevenue);
+
+  return (
+    text.includes("dropped") ||
+    text.includes("new low") ||
+    text.includes("low seller") ||
+    text.includes("declin") ||
+    text.includes("risk") ||
+    qtyDelta < 0 ||
+    revenueDelta < 0
+  );
+}
+
+function movementAnchorLine(row) {
+  if (!row || !row.item) return "None";
+
+  const qtyDelta = safeNumber(row.currentQty) - safeNumber(row.previousQty);
+  const revenueDelta =
+    safeNumber(row.currentRevenue) - safeNumber(row.previousRevenue);
+
+  return [
+    row.item,
+    row.movementType || row.listType || "movement signal",
+    `qty ${row.previousQty} to ${row.currentQty} (${qtyDelta >= 0 ? "+" : ""}${qtyDelta})`,
+    `revenue ${revenueDelta >= 0 ? "+" : ""}$${Math.round(revenueDelta)}`,
+    row.impactLevel && `impact ${row.impactLevel}`,
+    row.notes,
+  ]
+    .filter(Boolean)
+    .join(" • ");
+}
+
+function pickMovementAnchors(rows = []) {
+  const sorted = [...rows]
+    .filter((row) => row && row.item)
+    .sort((a, b) => movementImpactScore(b) - movementImpactScore(a));
+
+  const support =
+    sorted.find((row) => isPositiveMovementRow(row)) ||
+    sorted[0] ||
+    null;
+
+  const watch =
+    sorted.find((row) => isWatchMovementRow(row)) ||
+    sorted.find((row) => row !== support) ||
+    null;
+
+  return {
+    primary: sorted[0] || null,
+    support,
+    watch,
+  };
+}
+
+function warningLine(warning) {
+  if (!warning) return "";
+
+  if (typeof warning === "string") return warning;
+
+  return [
+    safeText(warning.department || warning.role || warning.area),
+    safeText(warning.message || warning.note || warning.warning),
+    safeText(warning.severity),
+  ]
+    .filter(Boolean)
+    .join(" • ");
+}
+
+function shiftSearchText(shift) {
+  if (!shift) return "";
+
+  if (typeof shift === "string") return normalizeForSearch(shift);
+
+  return normalizeForSearch(
+    [
+      shift.employeeName,
+      shift.employee,
+      shift.name,
+      shift.role,
+      shift.department,
+      shift.startTime,
+      shift.start,
+      shift.startDateTime,
+      shift.status,
+    ]
+      .filter(Boolean)
+      .join(" ")
+  );
+}
+
+function staffingAnchorLine(staffingSummary) {
+  if (!staffingSummary || staffingSummary.status !== "ready") {
+    return "Staffing feed is unavailable. Manager should verify floor, bar, and kitchen coverage before service.";
+  }
+
+  const warnings = Array.isArray(staffingSummary.coverageWarnings)
+    ? staffingSummary.coverageWarnings
+    : [];
+
+  const shifts = Array.isArray(staffingSummary.todayShifts)
+    ? staffingSummary.todayShifts
+    : [];
+
+  if (warnings.length) {
+    return `Coverage warning present: ${warningLine(warnings[0]) || "review staffing coverage before service"}.`;
+  }
+
+  if (!shifts.length) {
+    return "No shifts are loaded yet. Manager should verify FOH, bar, and BOH coverage before service.";
+  }
+
+  const hasBohCoverage = shifts.some((shift) => {
+    const text = shiftSearchText(shift);
+
+    return (
+      text.includes("boh") ||
+      text.includes("kitchen") ||
+      text.includes("line cook") ||
+      text.includes("cook") ||
+      text.includes("expo") ||
+      text.includes("chef")
+    );
+  });
+
+  if (!hasBohCoverage) {
+    return `${shifts.length} shifts are loaded, but BOH coverage is not fully visible in the shift feed. Manager should verify kitchen/expo readiness before leaning into high-volume or high-margin items.`;
+  }
+
+  return `${shifts.length} shifts are loaded with BOH coverage visible and no coverage warnings flagged.`;
+}
+
+function buildHuddleAnchors({
+  eventRows = [],
+  staffingSummary,
+  movementRows = [],
+  recommendation,
+  actionCallout,
+  weatherRows = [],
+}) {
+  const movementAnchors = pickMovementAnchors(movementRows);
+
+  const eventAnchor = eventRows.length
+    ? eventRows
+        .slice(0, 3)
+        .map((event) =>
+          [
+            event.name,
+            event.booked ? "private/booked" : "local/public",
+            event.pressure,
+            event.time && `time ${event.time}`,
+            event.venueArea && `area ${event.venueArea}`,
+          ]
+            .filter(Boolean)
+            .join(" • ")
+        )
+        .join("\n")
+    : "No live event pressure is currently flagged.";
+
+  const primaryCall =
+    recommendation ||
+    actionCallout ||
+    "No current KitchenPulse recommendation text is loaded.";
+
+  const weatherAnchor = weatherRows.length
+    ? weatherRows[0]
+    : "No active weather/patio pressure is loaded.";
+
+  return [
+    `Live pressure anchor: ${eventAnchor}`,
+    `Primary KitchenPulse call: ${primaryCall}`,
+    `Primary movement anchor: ${movementAnchorLine(movementAnchors.primary)}`,
+    `Support item anchor: ${movementAnchorLine(movementAnchors.support)}`,
+    `Watch item anchor: ${movementAnchorLine(movementAnchors.watch)}`,
+    `Staffing anchor: ${staffingAnchorLine(staffingSummary)}`,
+    `Weather / patio anchor: ${weatherAnchor}`,
+  ].join("\n");
+}
+
     const sorted = [...rows].sort((a, b) => {
       const impactDelta =
         (impactRank[b.impactLevel] || 0) - (impactRank[a.impactLevel] || 0);
@@ -785,7 +1007,16 @@ module.exports = async function handler(req, res) {
 
     const staffingSummary = summarizeStaffing(staffingResult.ok ? staffingResult.data : null);
 
-    const tone = classifyTone({
+const huddleAnchors = buildHuddleAnchors({
+  eventRows,
+  staffingSummary,
+  movementRows,
+  recommendation,
+  actionCallout,
+  weatherRows,
+});
+
+const tone = classifyTone({
       events: eventRows,
       staffingSummary,
       movementRows,
@@ -817,6 +1048,9 @@ ${summary || "None"}
 
 Latest Brief Text:
 ${summary || actionCallout || recommendation || "None"}
+
+Required Huddle Anchors:
+${huddleAnchors}
 
 Important event freshness rule:
 Only the events listed under "Tonight / Today Event Pressure" are live service-pressure events. Do not mention event names, private events, local events, or "looming" demand from Latest Brief Text, Decision Payload, or older brief language unless that same event also appears under "Tonight / Today Event Pressure".
@@ -878,6 +1112,16 @@ If that section says no major active event pressure, say there is no live event 
 
 Goal:
 Give the GM something worth reading at lineup. It should feel alive, specific, and service-minded.
+
+Anchor rules:
+Use the Required Huddle Anchors section as the working read.
+When item names are available, mention at least one support item and one watch item.
+If there is no live event pressure, mention that briefly once, then move on. Do not let the whole read become about no events.
+If the staffing anchor says BOH coverage is not fully visible, include a calm manager caveat to verify kitchen/expo readiness before pushing high-volume or high-margin items.
+Do not turn missing staffing data into panic. Frame it as manager verification.
+Do not write vague filler like "clean execution, table awareness, and communication" unless it is tied to a specific item, coverage gap, event, weather, or manager action.
+Do not say "the useful read is coming from..." because that sounds canned.
+Give the GM a practical opinion.
 
 Write in plain English.
 No Markdown.
@@ -1013,25 +1257,45 @@ let finalWatchPoints = watchPoints;
 let finalSignalsUsed = signalsUsed;
 
 if (eventRows.length === 0) {
-  const staleEventLanguage =
-    /\b(event traffic|live event|live events|private event|private events|booked event|booked demand|looming private|bar crawl|downtown crawl|local surge)\b/i;
+  const positiveStaleEventLanguage =
+    /\b(event traffic|booked demand|looming private|bar crawl|downtown crawl|local surge)\b/i;
 
-    if (
-    staleEventLanguage.test(finalManagerRead) ||
-    staleEventLanguage.test(finalLineupScript) ||
-    finalWatchPoints.some((point) => staleEventLanguage.test(point))
-  ) {
-    finalManagerRead =
-      "We are not carrying any live event pressure right now. The useful read is coming from item movement, weather, staffing, and the latest KitchenPulse recommendation. Keep the push focused, watch the weaker item, and manage the shift through normal service pacing.";
+  const privateEventLanguage =
+    /\b(private event|private events|booked event|booked events)\b/i;
 
-    finalLineupScript =
-      "Team, today looks steady from an event-pressure standpoint. We do not have a live local or private-event signal driving the shift right now, so keep the focus on clean execution, table awareness, and the current KitchenPulse recommendation. Push the winning item clearly, keep an eye on the weaker item, and call out problems before they stack up.";
+  function hasNegatedEventLanguage(text) {
+    const raw = safeText(text);
 
-    finalWatchPoints = [
-      "Host/floor: keep the floor read tight and adjust before normal service pressure stacks up.",
-      "Kitchen/bar: protect timing, handoffs, and quality around the current item movement signal.",
-      "Menu/service: keep the recommended item visible while watching the item KitchenPulse flagged as weaker.",
-    ];
+    return /\b(no|not|without|do not have|don't have|does not have|is not|isn't|are not|aren't|not carrying)\b.{0,90}\b(event|events|private|booked|demand|pressure|surge)\b/i.test(
+      raw
+    );
+  }
+
+  function hasPositiveStaleEventMention(text) {
+    const raw = safeText(text);
+    if (!raw) return false;
+
+    if (hasNegatedEventLanguage(raw)) return false;
+
+    return positiveStaleEventLanguage.test(raw) || privateEventLanguage.test(raw);
+  }
+
+  const staleEventMentioned =
+    hasPositiveStaleEventMention(finalManagerRead) ||
+    hasPositiveStaleEventMention(finalLineupScript) ||
+    finalWatchPoints.some((point) => hasPositiveStaleEventMention(point));
+
+  if (staleEventMentioned) {
+    const corrected = fallbackHuddle({
+      tone,
+      events: eventRows,
+      staffingSummary,
+      movementSummary,
+    });
+
+    finalManagerRead = corrected.managerRead;
+    finalLineupScript = corrected.lineupScript;
+    finalWatchPoints = corrected.watchPoints;
   }
 
   finalSignalsUsed = finalSignalsUsed.filter((signal) => {
@@ -1040,7 +1304,14 @@ if (eventRows.length === 0) {
   });
 
   if (!finalSignalsUsed.length) {
-    finalSignalsUsed = ["Latest brief", "Weather", "Staffing", "Movement", "Sales"];
+    finalSignalsUsed = [
+      "Latest brief",
+      "Weather",
+      "Staffing",
+      "Movement",
+      "Sales",
+      "Menu economics",
+    ];
   }
 }
 
