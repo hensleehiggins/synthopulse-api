@@ -427,17 +427,9 @@ module.exports = async function handler(req, res) {
     };
   }
 
-  function summarizeMovement(rows = []) {
-    if (!rows.length) return "No current-run movement evidence available.";
+function summarizeMovement(rows = []) {
+  if (!rows.length) return "No current-run movement evidence available.";
 
-    const impactRank = {
-      High: 3,
-      Medium: 2,
-      Low: 1,
-      "": 0,
-    };
-
-    function movementImpactScore(row = {}) {
   const impactRank = {
     High: 3,
     Medium: 2,
@@ -445,7 +437,49 @@ module.exports = async function handler(req, res) {
     "": 0,
   };
 
-  const qtyDelta = Math.abs(safeNumber(row.currentQty) - safeNumber(row.previousQty));
+  const sorted = [...rows].sort((a, b) => {
+    const impactDelta =
+      (impactRank[b.impactLevel] || 0) - (impactRank[a.impactLevel] || 0);
+
+    if (impactDelta !== 0) return impactDelta;
+
+    const aDelta = Math.abs(a.currentQty - a.previousQty);
+    const bDelta = Math.abs(b.currentQty - b.previousQty);
+
+    return bDelta - aDelta;
+  });
+
+  return sorted
+    .slice(0, 12)
+    .map((row) => {
+      const delta = row.currentQty - row.previousQty;
+
+      return [
+        row.item,
+        row.movementType,
+        row.listType,
+        row.impactLevel,
+        `qty ${row.previousQty} → ${row.currentQty}`,
+        `delta ${delta >= 0 ? "+" : ""}${delta}`,
+        row.notes,
+      ]
+        .filter(Boolean)
+        .join(" • ");
+    })
+    .join("\n");
+}
+
+function movementImpactScore(row = {}) {
+  const impactRank = {
+    High: 3,
+    Medium: 2,
+    Low: 1,
+    "": 0,
+  };
+
+  const qtyDelta = Math.abs(
+    safeNumber(row.currentQty) - safeNumber(row.previousQty)
+  );
   const revenue = safeNumber(row.currentRevenue);
 
   return (
@@ -585,7 +619,9 @@ function staffingAnchorLine(staffingSummary) {
     : [];
 
   if (warnings.length) {
-    return `Coverage warning present: ${warningLine(warnings[0]) || "review staffing coverage before service"}.`;
+    return `Coverage warning present: ${
+      warningLine(warnings[0]) || "review staffing coverage before service"
+    }.`;
   }
 
   if (!shifts.length) {
@@ -658,38 +694,6 @@ function buildHuddleAnchors({
     `Weather / patio anchor: ${weatherAnchor}`,
   ].join("\n");
 }
-
-    const sorted = [...rows].sort((a, b) => {
-      const impactDelta =
-        (impactRank[b.impactLevel] || 0) - (impactRank[a.impactLevel] || 0);
-
-      if (impactDelta !== 0) return impactDelta;
-
-      const aDelta = Math.abs(a.currentQty - a.previousQty);
-      const bDelta = Math.abs(b.currentQty - b.previousQty);
-
-      return bDelta - aDelta;
-    });
-
-    return sorted
-      .slice(0, 12)
-      .map((row) => {
-        const delta = row.currentQty - row.previousQty;
-
-        return [
-          row.item,
-          row.movementType,
-          row.listType,
-          row.impactLevel,
-          `qty ${row.previousQty} → ${row.currentQty}`,
-          `delta ${delta >= 0 ? "+" : ""}${delta}`,
-          row.notes,
-        ]
-          .filter(Boolean)
-          .join(" • ");
-      })
-      .join("\n");
-  }
 
   function summarizeRecentSales(rows = []) {
     if (!rows.length) return "No recent sales sample available.";
