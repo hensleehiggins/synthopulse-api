@@ -1,4 +1,5 @@
 const AIRTABLE_API_KEY =
+  process.env.AIRTABLE_PAT ||
   process.env.AIRTABLE_API_KEY ||
   process.env.AIRTABLE_TOKEN ||
   process.env.KITCHENPULSE_AIRTABLE_API_KEY;
