@@ -19,6 +19,28 @@ const TABLES = {
 
 const FIELD_SETS = {
   parLevels: [
+    // New Order Intelligence fields
+    "Order Item Name",
+    "Restaurant",
+    "Preferred Vendor",
+    "Vendor Item Name",
+    "Order Vendor SKU",
+    "Storage Area",
+    "Count Unit",
+    "Vendor Order Unit",
+    "OI Pack Size",
+    "OI Unit Conversion Notes",
+    "OI Target Stock",
+    "OI Safety Stock",
+    "OI Lead Time Days",
+    "OI Order Days",
+    "OI Delivery Days",
+    "OI Vendor Cutoff Time",
+    "OI Critical Item",
+    "OI Emergency Run Risk",
+    "OI Event Sensitive",
+
+    // Existing PAR/test fields kept as fallbacks
     "Ingredient",
     "Inventory Items",
     "Current Stock",
@@ -71,6 +93,37 @@ function getField(record, name) {
   return record?.fields?.[name];
 }
 
+function getFirstField(record, names = []) {
+  for (const name of names) {
+    const value = getField(record, name);
+
+    if (value !== null && value !== undefined && value !== "") {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+function getFirstText(record, names = []) {
+  const value = getFirstField(record, names);
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item?.name) return item.name;
+        return "";
+      })
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  if (typeof value === "object" && value?.name) return value.name;
+
+  return String(value || "").trim();
+}
+
 function selectName(value) {
   if (!value) return "";
   if (typeof value === "string") return value;
@@ -105,13 +158,6 @@ function normalizeText(value) {
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function titleCase(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
 }
 
 function normalizeVendor(value) {
@@ -207,6 +253,40 @@ function airtableUrl(tableName, fields = []) {
   return url;
 }
 
+async function fetchAirtablePage(tableName, fields = [], offset = "") {
+  const url = airtableUrl(tableName, fields);
+  if (offset) url.searchParams.set("offset", offset);
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+    },
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message =
+      payload?.error?.message ||
+      payload?.error ||
+      `Airtable request failed for ${tableName}.`;
+
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
+function looksLikeMissingFieldError(error) {
+  const message = String(error?.message || "").toLowerCase();
+
+  return (
+    message.includes("unknown field") ||
+    message.includes("invalid field") ||
+    message.includes("field") && message.includes("does not exist")
+  );
+}
+
 async function fetchAirtableTable(tableName, fields = []) {
   if (!AIRTABLE_API_KEY) {
     throw new Error("Missing Airtable API key.");
@@ -214,29 +294,28 @@ async function fetchAirtableTable(tableName, fields = []) {
 
   const records = [];
   let offset = "";
+  let fieldList = fields;
 
   do {
-    const url = airtableUrl(tableName, fields);
-    if (offset) url.searchParams.set("offset", offset);
+    try {
+      const payload = await fetchAirtablePage(tableName, fieldList, offset);
 
-    const response = await fetch(url.toString(), {
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-      },
-    });
+      records.push(...(payload.records || []));
+      offset = payload.offset || "";
+    } catch (error) {
+      if (fieldList.length && looksLikeMissingFieldError(error)) {
+        console.warn(
+          `Field-filtered fetch failed for ${tableName}. Retrying without field whitelist.`
+        );
 
-    const payload = await response.json();
+        records.length = 0;
+        offset = "";
+        fieldList = [];
+        continue;
+      }
 
-    if (!response.ok) {
-      throw new Error(
-        payload?.error?.message ||
-          payload?.error ||
-          `Airtable request failed for ${tableName}.`
-      );
+      throw error;
     }
-
-    records.push(...(payload.records || []));
-    offset = payload.offset || "";
   } while (offset);
 
   return records;
@@ -343,6 +422,8 @@ function classifyParItem({
   reorderPoint,
   reorderNeededText,
   estimatedDailyUsage,
+  criticalItem,
+  emergencyRunRisk,
 }) {
   const reorderFlag = String(reorderNeededText || "").toLowerCase();
   const hasCurrentStock = currentStock !== null;
@@ -350,14 +431,17 @@ function classifyParItem({
   const hasReorderPoint = reorderPoint !== null;
 
   if (!hasCurrentStock) return "needs_count";
-  if (!hasParTarget && !hasReorderPoint) return "needs_setup";
 
   if (
+    criticalItem === true ||
+    emergencyRunRisk === true ||
     reorderFlag.includes("yes") ||
     (hasReorderPoint && currentStock <= reorderPoint)
   ) {
     return "critical";
   }
+
+  if (!hasParTarget && !hasReorderPoint) return "needs_setup";
 
   if (hasParTarget && currentStock < parTarget) {
     return "order_soon";
@@ -392,9 +476,9 @@ function priorityForStatus(status) {
   return 10;
 }
 
-function recommendationType(status, trendMatch) {
+function recommendationType(status, trendMatch, orderRules) {
   if (status === "critical") return "Critical Need";
-  if (trendMatch?.trend) return "Pressure Adjusted";
+  if (trendMatch?.trend || orderRules.eventSensitive) return "Pressure Adjusted";
   if (status === "order_soon") return "Normal PAR";
   if (status === "watch") return "Usage Watch";
   if (status === "needs_count") return "Needs Count";
@@ -402,8 +486,34 @@ function recommendationType(status, trendMatch) {
   return "Stable";
 }
 
+function formatOrderRules(orderRules) {
+  const parts = [];
+
+  if (orderRules.preferredVendor) {
+    parts.push(`preferred vendor ${orderRules.preferredVendor}`);
+  }
+
+  if (orderRules.vendorItemName) {
+    parts.push(`vendor item ${orderRules.vendorItemName}`);
+  }
+
+  if (orderRules.orderVendorSku) {
+    parts.push(`SKU ${orderRules.orderVendorSku}`);
+  }
+
+  if (orderRules.vendorOrderUnit) {
+    parts.push(`order unit ${orderRules.vendorOrderUnit}`);
+  }
+
+  if (orderRules.packSize) {
+    parts.push(`pack ${orderRules.packSize}`);
+  }
+
+  return parts.join(", ");
+}
+
 function buildReason({
-  ingredient,
+  itemName,
   currentStock,
   parTarget,
   reorderPoint,
@@ -411,29 +521,47 @@ function buildReason({
   suggestedOrderQty,
   receiptMatch,
   trendMatch,
+  orderRules,
 }) {
   const parts = [];
 
   if (status === "critical") {
     parts.push(
-      `${ingredient} is at or below reorder pressure. Current stock is ${
+      `${itemName} is at or below reorder pressure. Current stock is ${
         currentStock ?? "unknown"
       }${reorderPoint !== null ? ` against a reorder point of ${reorderPoint}` : ""}.`
     );
   } else if (status === "order_soon") {
     parts.push(
-      `${ingredient} is below target PAR. Suggested order quantity is ${suggestedOrderQty}.`
+      `${itemName} is below target stock. Suggested order quantity is ${suggestedOrderQty}.`
     );
   } else if (status === "needs_count") {
     parts.push(
-      `${ingredient} needs a fresh count before KitchenPulse should trust an order recommendation.`
+      `${itemName} needs a fresh count before KitchenPulse should trust an order recommendation.`
     );
   } else if (status === "needs_setup") {
     parts.push(
-      `${ingredient} needs PAR setup before KitchenPulse can calculate reorder pressure.`
+      `${itemName} needs order-rule setup before KitchenPulse can calculate reorder pressure.`
     );
   } else {
-    parts.push(`${ingredient} is currently above reorder pressure based on available PAR data.`);
+    parts.push(`${itemName} is currently above reorder pressure based on available stock rules.`);
+  }
+
+  if (orderRules.emergencyRunRisk) {
+    parts.push("Emergency run risk is flagged, so this item should stay visible even before perfect usage data exists.");
+  }
+
+  if (orderRules.criticalItem) {
+    parts.push("Critical item is flagged, so KitchenPulse treats this as higher priority.");
+  }
+
+  if (orderRules.eventSensitive) {
+    parts.push("Event sensitivity is flagged, so upcoming events should be allowed to lift the order recommendation.");
+  }
+
+  const orderRuleText = formatOrderRules(orderRules);
+  if (orderRuleText) {
+    parts.push(`Order rule context: ${orderRuleText}.`);
   }
 
   if (receiptMatch?.line) {
@@ -483,29 +611,76 @@ function buildOwnerRead(counts) {
   if (counts.orderSoonItems > 0) {
     return `${counts.orderSoonItems} item${
       counts.orderSoonItems === 1 ? "" : "s"
-    } are below target PAR but not yet critical. Receipt-backed vendor lines are helping fill in package and cost context while manual PAR data is still incomplete.`;
+    } are below target stock but not yet critical. Receipt-backed vendor lines are helping fill in package and cost context while manual ordering rules are still incomplete.`;
   }
 
-  return `No critical PAR pressure is visible from current records. Data quality is still the main watch item: ${counts.needsCountItems} item${
+  return `No critical reorder pressure is visible from current records. Data quality is still the main watch item: ${counts.needsCountItems} item${
     counts.needsCountItems === 1 ? "" : "s"
-  } need counts and ${counts.blankParRows} PAR row${
+  } need counts and ${counts.blankParRows} order rule row${
     counts.blankParRows === 1 ? "" : "s"
   } appear blank or incomplete.`;
 }
 
-function buildParItem(parRecord, receiptLines, trends) {
-  const ingredient = String(getField(parRecord, "Ingredient") || "").trim();
+function getLinkedFallbackName(parRecord) {
   const linkedInventoryItems = getField(parRecord, "Inventory Items") || [];
-  const fallbackName = Array.isArray(linkedInventoryItems)
-    ? linkedInventoryItems.map((item) => item.name).filter(Boolean).join(", ")
-    : "";
 
-  const itemName = ingredient || fallbackName || "Unnamed PAR item";
+  if (!Array.isArray(linkedInventoryItems)) return "";
+
+  return linkedInventoryItems
+    .map((item) => {
+      if (typeof item === "string") return "";
+      if (item?.name) return item.name;
+      return "";
+    })
+    .filter(Boolean)
+    .join(", ");
+}
+
+function buildOrderRules(parRecord) {
+  return {
+    preferredVendor: normalizeVendor(getFirstText(parRecord, ["Preferred Vendor"])),
+    vendorItemName: getFirstText(parRecord, ["Vendor Item Name"]),
+    orderVendorSku: getFirstText(parRecord, ["Order Vendor SKU"]),
+    storageArea: getFirstText(parRecord, ["Storage Area"]),
+    countUnit: getFirstText(parRecord, ["Count Unit"]),
+    vendorOrderUnit: getFirstText(parRecord, ["Vendor Order Unit"]),
+    packSize: getFirstText(parRecord, ["OI Pack Size"]),
+    unitConversionNotes: getFirstText(parRecord, ["OI Unit Conversion Notes"]),
+    safetyStock: numberOrNull(getField(parRecord, "OI Safety Stock")),
+    leadTimeDays: numberOrNull(getField(parRecord, "OI Lead Time Days")),
+    orderDays: getFirstText(parRecord, ["OI Order Days"]),
+    deliveryDays: getFirstText(parRecord, ["OI Delivery Days"]),
+    vendorCutoffTime: getFirstText(parRecord, ["OI Vendor Cutoff Time"]),
+    criticalItem: boolValue(getField(parRecord, "OI Critical Item")),
+    emergencyRunRisk: boolValue(getField(parRecord, "OI Emergency Run Risk")),
+    eventSensitive: boolValue(getField(parRecord, "OI Event Sensitive")),
+  };
+}
+
+function parRecordHasIdentity(record) {
+  const itemName = getFirstText(record, ["Order Item Name", "Ingredient"]);
+  const linked = getField(record, "Inventory Items") || [];
+
+  return Boolean(itemName || (Array.isArray(linked) && linked.length > 0));
+}
+
+function buildParItem(parRecord, receiptLines, trends) {
+  const itemName =
+    getFirstText(parRecord, ["Order Item Name", "Ingredient"]) ||
+    getLinkedFallbackName(parRecord) ||
+    "Unnamed order item";
+
+  const orderRules = buildOrderRules(parRecord);
 
   const currentStock = numberOrNull(getField(parRecord, "Current Stock"));
-  const parTarget = numberOrNull(getField(parRecord, "Par Target"));
+
+  const parTarget = numberOrNull(
+    getFirstField(parRecord, ["OI Target Stock", "Par Target"])
+  );
+
   const reorderPoint = numberOrNull(getField(parRecord, "Reorder Point"));
   const estimatedDailyUsage = numberOrNull(getField(parRecord, "Estimated Daily Usage"));
+
   const daysOfStockLeft =
     numberOrNull(getField(parRecord, "Days of Stock Left")) ||
     (currentStock !== null && estimatedDailyUsage
@@ -514,16 +689,21 @@ function buildParItem(parRecord, receiptLines, trends) {
 
   const suggestedPar = numberOrNull(getField(parRecord, "Suggested Par"));
   const reorderNeededText = getField(parRecord, "Reorder Needed?") || "";
+
   const status = classifyParItem({
     currentStock,
     parTarget,
     reorderPoint,
     reorderNeededText,
     estimatedDailyUsage,
+    criticalItem: orderRules.criticalItem,
+    emergencyRunRisk: orderRules.emergencyRunRisk,
   });
 
   const rawSuggestedOrder =
-    parTarget !== null && currentStock !== null ? Math.max(0, parTarget - currentStock) : null;
+    parTarget !== null && currentStock !== null
+      ? Math.max(0, parTarget - currentStock)
+      : null;
 
   const suggestedOrderQty =
     rawSuggestedOrder !== null ? Math.ceil(rawSuggestedOrder) : null;
@@ -535,14 +715,21 @@ function buildParItem(parRecord, receiptLines, trends) {
     priorityForStatus(status) +
     (receiptMatch ? 6 : 0) +
     (trendMatch ? 10 : 0) +
+    (orderRules.criticalItem ? 12 : 0) +
+    (orderRules.emergencyRunRisk ? 10 : 0) +
+    (orderRules.eventSensitive ? 5 : 0) +
     (daysOfStockLeft !== null && daysOfStockLeft <= 2 ? 8 : 0);
 
   const signals = [
-    "PAR",
+    "Order Rules",
     receiptMatch ? "Receipt-backed" : "",
     trendMatch ? "Demand pressure" : "",
+    orderRules.criticalItem ? "Critical item" : "",
+    orderRules.emergencyRunRisk ? "Emergency risk" : "",
+    orderRules.eventSensitive ? "Event sensitive" : "",
     currentStock === null ? "Needs count" : "",
     parTarget === null ? "Needs target" : "",
+    orderRules.preferredVendor ? "Vendor rule" : "",
   ].filter(Boolean);
 
   const confidence =
@@ -566,17 +753,18 @@ function buildParItem(parRecord, receiptLines, trends) {
     reorderNeeded: String(reorderNeededText || "").toLowerCase().includes("yes"),
     status,
     statusLabel: statusLabel(status),
-    recommendationType: recommendationType(status, trendMatch),
+    recommendationType: recommendationType(status, trendMatch, orderRules),
     priority,
     confidence,
     signals,
     lastChecked: getField(parRecord, "Last Checked") || "",
+    orderRules,
     receipt: receiptMatch?.line || null,
     receiptMatchScore: receiptMatch?.score || 0,
     trend: trendMatch?.trend || null,
     trendMatchScore: trendMatch?.score || 0,
     reason: buildReason({
-      ingredient: itemName,
+      itemName,
       currentStock,
       parTarget,
       reorderPoint,
@@ -584,6 +772,7 @@ function buildParItem(parRecord, receiptLines, trends) {
       suggestedOrderQty,
       receiptMatch,
       trendMatch,
+      orderRules,
     }),
   };
 }
@@ -606,13 +795,31 @@ function buildReceiptOnlyItem(line) {
     recommendationType: "Receipt Seed",
     priority: 35,
     confidence: line.approved && !line.needsReview ? "Medium" : "Low",
-    signals: ["Receipt-backed", "Needs PAR"],
+    signals: ["Receipt-backed", "Needs order rules"],
     lastChecked: "",
+    orderRules: {
+      preferredVendor: line.vendor || "",
+      vendorItemName: line.itemName || "",
+      orderVendorSku: "",
+      storageArea: "",
+      countUnit: "",
+      vendorOrderUnit: line.unit || "",
+      packSize: line.packageSize || "",
+      unitConversionNotes: "",
+      safetyStock: null,
+      leadTimeDays: null,
+      orderDays: "",
+      deliveryDays: "",
+      vendorCutoffTime: "",
+      criticalItem: false,
+      emergencyRunRisk: false,
+      eventSensitive: false,
+    },
     receipt: line,
     receiptMatchScore: 1,
     trend: null,
     trendMatchScore: 0,
-    reason: `${line.itemName} exists in approved receipt history but does not yet have a usable PAR record. Add count unit, target PAR, reorder point, and vendor order rules before trusting reorder guidance.`,
+    reason: `${line.itemName} exists in approved receipt history but does not yet have a usable order-rule record. Add count unit, target stock, reorder point, vendor order unit, and vendor order rules before trusting reorder guidance.`,
   };
 }
 
@@ -649,17 +856,11 @@ export default async function handler(req, res) {
     const trends = rawTrends.map(buildTrend).filter((trend) => trend.itemName);
 
     const blankParRows = parRecords.filter((record) => {
-      const ingredient = String(getField(record, "Ingredient") || "").trim();
-      const linked = getField(record, "Inventory Items") || [];
-      return !ingredient && (!Array.isArray(linked) || linked.length === 0);
+      return !parRecordHasIdentity(record);
     }).length;
 
     const parItems = parRecords
-      .filter((record) => {
-        const ingredient = String(getField(record, "Ingredient") || "").trim();
-        const linked = getField(record, "Inventory Items") || [];
-        return ingredient || (Array.isArray(linked) && linked.length > 0);
-      })
+      .filter(parRecordHasIdentity)
       .map((record) => buildParItem(record, trustedReceiptLines, trends));
 
     const parNames = parItems.map((item) => item.normalizedItemName);
@@ -697,6 +898,9 @@ export default async function handler(req, res) {
       needsCountItems: items.filter((item) => item.status === "needs_count").length,
       needsSetupItems: items.filter((item) => item.status === "needs_setup").length,
       demandPressureItems: items.filter((item) => item.trend).length,
+      criticalRuleItems: items.filter((item) => item.orderRules?.criticalItem).length,
+      emergencyRiskItems: items.filter((item) => item.orderRules?.emergencyRunRisk).length,
+      eventSensitiveItems: items.filter((item) => item.orderRules?.eventSensitive).length,
     };
 
     return sendJson(res, 200, {
