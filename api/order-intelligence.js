@@ -15,6 +15,7 @@ const TABLES = {
   parLevels: "Par Levels",
   vendorReceiptLines: "Vendor Receipt Lines",
   weeklyItemTrends: "Weekly Item Trends",
+  stockCountLines: "Stock Count Lines",
 };
 
 const FIELD_SETS = {
@@ -79,6 +80,20 @@ const FIELD_SETS = {
     "Prior Qty",
     "Qty Change",
     "Qty Change Percent",
+  ],
+  stockCountLines: [
+    "Count Line Name",
+    "Stock Count Session",
+    "Count Item Name",
+    "Storage Area",
+    "Count Quantity",
+    "Count Unit",
+    "Count Notes",
+    "Photo",
+    "Count Review State",
+    "Approved For Ordering",
+    "Counter Name",
+    "Count Time Text",
   ],
 };
 
@@ -377,6 +392,73 @@ function buildTrend(trend) {
   };
 }
 
+function photoInfo(value) {
+  const files = Array.isArray(value) ? value : [];
+  const first = files[0];
+
+  return {
+    hasPhoto: Boolean(first?.url),
+    photoUrl: first?.url || "",
+    photoName: first?.filename || "",
+  };
+}
+
+function buildStockCountLine(record) {
+  const itemName =
+    getField(record, "Count Item Name") ||
+    getField(record, "Count Line Name") ||
+    "";
+
+  const photo = photoInfo(getField(record, "Photo"));
+  const reviewState = getField(record, "Count Review State") || "";
+  const approvedForOrdering = boolValue(getField(record, "Approved For Ordering"));
+
+  return {
+    id: record.id,
+    createdTime: record.createdTime,
+    itemName,
+    normalizedItemName: normalizeText(itemName),
+    storageArea: selectName(getField(record, "Storage Area")) || getField(record, "Storage Area") || "",
+    quantity: numberOrNull(getField(record, "Count Quantity")),
+    unit: getField(record, "Count Unit") || "",
+    notes: getField(record, "Count Notes") || "",
+    reviewState,
+    approvedForOrdering,
+    counterName: getField(record, "Counter Name") || "",
+    countTimeText: getField(record, "Count Time Text") || "",
+    hasPhoto: photo.hasPhoto,
+    photoUrl: photo.photoUrl,
+    photoName: photo.photoName,
+    lastSeenDate: dateOnly(record.createdTime),
+    lastSeenDaysAgo: daysAgoFromIso(record.createdTime),
+  };
+}
+
+function findBestStockCountMatch(itemName, stockCountLines) {
+  let best = null;
+
+  for (const line of stockCountLines) {
+    if (!line.approvedForOrdering) continue;
+    if (!line.itemName) continue;
+    if (line.quantity === null) continue;
+
+    const score = matchScore(itemName, line.itemName);
+
+    if (score < 0.5) continue;
+
+    if (
+      !best ||
+      score > best.score ||
+      (score === best.score &&
+        String(line.createdTime || "") > String(best.line.createdTime || ""))
+    ) {
+      best = { score, line };
+    }
+  }
+
+  return best;
+}
+
 function findBestReceiptMatch(itemName, receiptLines) {
   let best = null;
 
@@ -521,6 +603,7 @@ function buildReason({
   suggestedOrderQty,
   receiptMatch,
   trendMatch,
+  stockCountMatch,
   orderRules,
 }) {
   const parts = [];
@@ -562,6 +645,18 @@ function buildReason({
   const orderRuleText = formatOrderRules(orderRules);
   if (orderRuleText) {
     parts.push(`Order rule context: ${orderRuleText}.`);
+  }
+
+  if (stockCountMatch?.line) {
+    const countLine = stockCountMatch.line;
+
+    parts.push(
+      `Latest approved stock count: ${countLine.quantity}${
+        countLine.unit ? ` ${countLine.unit}` : ""
+      }${countLine.storageArea ? ` in ${countLine.storageArea}` : ""}${
+        countLine.counterName ? ` by ${countLine.counterName}` : ""
+      }.`
+    );
   }
 
   if (receiptMatch?.line) {
@@ -664,7 +759,7 @@ function parRecordHasIdentity(record) {
   return Boolean(itemName || (Array.isArray(linked) && linked.length > 0));
 }
 
-function buildParItem(parRecord, receiptLines, trends) {
+function buildParItem(parRecord, receiptLines, trends, stockCountLines) {
   const itemName =
     getFirstText(parRecord, ["Order Item Name", "Ingredient"]) ||
     getLinkedFallbackName(parRecord) ||
@@ -681,19 +776,27 @@ function buildParItem(parRecord, receiptLines, trends) {
 
   const receiptMatch = findBestReceiptMatch(itemName, receiptLines);
   const trendMatch = findBestTrendMatch(itemName, trends);
+  const stockCountMatch = findBestStockCountMatch(itemName, stockCountLines);
 
+  const approvedStockCount = numberOrNull(stockCountMatch?.line?.quantity);
   const manualCurrentStock = numberOrNull(getField(parRecord, "Current Stock"));
   const receiptQuantity = numberOrNull(receiptMatch?.line?.quantity);
 
   const currentStock =
-    manualCurrentStock !== null ? manualCurrentStock : receiptQuantity;
+    approvedStockCount !== null
+      ? approvedStockCount
+      : manualCurrentStock !== null
+        ? manualCurrentStock
+        : receiptQuantity;
 
   const stockSource =
-    manualCurrentStock !== null
-      ? "Manual count"
-      : receiptQuantity !== null
-        ? "Last approved receipt quantity"
-        : "Missing";
+    approvedStockCount !== null
+      ? "Approved stock count"
+      : manualCurrentStock !== null
+        ? "Manual count"
+        : receiptQuantity !== null
+          ? "Last approved receipt quantity"
+          : "Missing";
 
   const daysOfStockLeft =
     numberOrNull(getField(parRecord, "Days of Stock Left")) ||
@@ -729,11 +832,13 @@ function buildParItem(parRecord, receiptLines, trends) {
     (orderRules.criticalItem ? 12 : 0) +
     (orderRules.emergencyRunRisk ? 10 : 0) +
     (orderRules.eventSensitive ? 5 : 0) +
+    (stockSource === "Approved stock count" ? 12 : 0) +
     (stockSource === "Last approved receipt quantity" ? 3 : 0) +
     (daysOfStockLeft !== null && daysOfStockLeft <= 2 ? 8 : 0);
 
   const signals = [
     "Order Rules",
+    stockSource === "Approved stock count" ? "Approved count" : "",
     receiptMatch ? "Receipt-backed" : "",
     stockSource === "Last approved receipt quantity" ? "Receipt quantity" : "",
     trendMatch ? "Demand pressure" : "",
@@ -746,13 +851,15 @@ function buildParItem(parRecord, receiptLines, trends) {
   ].filter(Boolean);
 
   const confidence =
-    manualCurrentStock !== null && parTarget !== null && receiptMatch
+    approvedStockCount !== null && parTarget !== null
       ? "High"
-      : currentStock !== null && parTarget !== null
-        ? "Medium"
-        : currentStock !== null
+      : manualCurrentStock !== null && parTarget !== null && receiptMatch
+        ? "High"
+        : currentStock !== null && parTarget !== null
           ? "Medium"
-          : "Low";
+          : currentStock !== null
+            ? "Medium"
+            : "Low";
 
   return {
     id: parRecord.id,
@@ -777,6 +884,8 @@ function buildParItem(parRecord, receiptLines, trends) {
     orderRules,
     receipt: receiptMatch?.line || null,
     receiptMatchScore: receiptMatch?.score || 0,
+    stockCount: stockCountMatch?.line || null,
+    stockCountMatchScore: stockCountMatch?.score || 0,
     trend: trendMatch?.trend || null,
     trendMatchScore: trendMatch?.score || 0,
     reason: buildReason({
@@ -788,21 +897,33 @@ function buildParItem(parRecord, receiptLines, trends) {
       suggestedOrderQty,
       receiptMatch,
       trendMatch,
+      stockCountMatch,
       orderRules,
     }),
   };
 }
 
-function buildReceiptOnlyItem(line) {
+function buildReceiptOnlyItem(line, stockCountLines) {
+  const stockCountMatch = findBestStockCountMatch(line.itemName, stockCountLines);
+  const approvedStockCount = numberOrNull(stockCountMatch?.line?.quantity);
   const receiptQuantity = numberOrNull(line.quantity);
+
+  const currentStock =
+    approvedStockCount !== null ? approvedStockCount : receiptQuantity;
+
+  const stockSource =
+    approvedStockCount !== null
+      ? "Approved stock count"
+      : receiptQuantity !== null
+        ? "Last approved receipt quantity"
+        : "Missing";
 
   return {
     id: `receipt-${line.id}`,
     itemName: line.itemName || "Receipt-backed item",
     normalizedItemName: line.normalizedItemName,
-    currentStock: receiptQuantity,
-    stockSource:
-      receiptQuantity !== null ? "Last approved receipt quantity" : "Missing",
+    currentStock,
+    stockSource,
     parTarget: null,
     reorderPoint: null,
     estimatedDailyUsage: null,
@@ -812,21 +933,22 @@ function buildReceiptOnlyItem(line) {
     reorderNeeded: false,
     status: "needs_setup",
     statusLabel: "Needs setup",
-    recommendationType: "Receipt Seed",
-    priority: receiptQuantity !== null ? 38 : 35,
-    confidence: line.approved && !line.needsReview ? "Medium" : "Low",
+    recommendationType: approvedStockCount !== null ? "Count Seed" : "Receipt Seed",
+    priority: approvedStockCount !== null ? 48 : receiptQuantity !== null ? 38 : 35,
+    confidence: approvedStockCount !== null ? "Medium" : line.approved && !line.needsReview ? "Medium" : "Low",
     signals: [
       "Receipt-backed",
+      approvedStockCount !== null ? "Approved count" : "",
       receiptQuantity !== null ? "Receipt quantity" : "",
       "Needs order rules",
     ].filter(Boolean),
-    lastChecked: "",
+    lastChecked: stockCountMatch?.line?.countTimeText || "",
     orderRules: {
       preferredVendor: line.vendor || "",
       vendorItemName: line.itemName || "",
       orderVendorSku: "",
-      storageArea: "",
-      countUnit: "",
+      storageArea: stockCountMatch?.line?.storageArea || "",
+      countUnit: stockCountMatch?.line?.unit || "",
       vendorOrderUnit: line.unit || "",
       packSize: line.packageSize || "",
       unitConversionNotes: "",
@@ -841,11 +963,69 @@ function buildReceiptOnlyItem(line) {
     },
     receipt: line,
     receiptMatchScore: 1,
+    stockCount: stockCountMatch?.line || null,
+    stockCountMatchScore: stockCountMatch?.score || 0,
     trend: null,
     trendMatchScore: 0,
-    reason: `${line.itemName} exists in approved receipt history. Latest approved receipt quantity is ${
-      receiptQuantity !== null ? receiptQuantity : "unknown"
-    }${line.unit ? ` ${line.unit}` : ""}. Add count unit, target stock, reorder point, vendor order unit, and vendor order rules before trusting reorder guidance.`,
+    reason:
+      approvedStockCount !== null
+        ? `${line.itemName} exists in approved receipt history and now has an approved stock count of ${approvedStockCount}${
+            stockCountMatch?.line?.unit ? ` ${stockCountMatch.line.unit}` : ""
+          }. Add target stock, reorder point, vendor order unit, and vendor order rules before trusting reorder guidance.`
+        : `${line.itemName} exists in approved receipt history. Latest approved receipt quantity is ${
+            receiptQuantity !== null ? receiptQuantity : "unknown"
+          }${line.unit ? ` ${line.unit}` : ""}. Add count unit, target stock, reorder point, vendor order unit, and vendor order rules before trusting reorder guidance.`,
+  };
+}
+
+function buildStockCountOnlyItem(line) {
+  return {
+    id: `stock-count-${line.id}`,
+    itemName: line.itemName || "Counted item",
+    normalizedItemName: line.normalizedItemName,
+    currentStock: line.quantity,
+    stockSource: "Approved stock count",
+    parTarget: null,
+    reorderPoint: null,
+    estimatedDailyUsage: null,
+    daysOfStockLeft: null,
+    suggestedPar: null,
+    suggestedOrderQty: null,
+    reorderNeeded: false,
+    status: "needs_setup",
+    statusLabel: "Needs setup",
+    recommendationType: "Count Seed",
+    priority: 50,
+    confidence: "Medium",
+    signals: ["Approved count", "Needs order rules"],
+    lastChecked: line.countTimeText || "",
+    orderRules: {
+      preferredVendor: "",
+      vendorItemName: "",
+      orderVendorSku: "",
+      storageArea: line.storageArea || "",
+      countUnit: line.unit || "",
+      vendorOrderUnit: "",
+      packSize: "",
+      unitConversionNotes: "",
+      safetyStock: null,
+      leadTimeDays: null,
+      orderDays: "",
+      deliveryDays: "",
+      vendorCutoffTime: "",
+      criticalItem: false,
+      emergencyRunRisk: false,
+      eventSensitive: false,
+    },
+    receipt: null,
+    receiptMatchScore: 0,
+    stockCount: line,
+    stockCountMatchScore: 1,
+    trend: null,
+    trendMatchScore: 0,
+    reason: `${line.itemName} has an approved stock count of ${line.quantity}${
+      line.unit ? ` ${line.unit}` : ""
+    }${line.storageArea ? ` in ${line.storageArea}` : ""}. Add an order-rule record with target stock and reorder point before KitchenPulse can calculate reorder pressure.`,
   };
 }
 
@@ -862,10 +1042,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    const [parRecords, rawReceiptLines, rawTrends] = await Promise.all([
+        const [parRecords, rawReceiptLines, rawTrends, rawStockCountLines] = await Promise.all([
       fetchAirtableTable(TABLES.parLevels, FIELD_SETS.parLevels),
       fetchAirtableTable(TABLES.vendorReceiptLines, FIELD_SETS.vendorReceiptLines),
       fetchAirtableTable(TABLES.weeklyItemTrends, FIELD_SETS.weeklyItemTrends).catch(
+        () => []
+      ),
+      fetchAirtableTable(TABLES.stockCountLines, FIELD_SETS.stockCountLines).catch(
         () => []
       ),
     ]);
@@ -880,14 +1063,27 @@ export default async function handler(req, res) {
     );
 
     const trends = rawTrends.map(buildTrend).filter((trend) => trend.itemName);
+        const approvedStockCountLines = rawStockCountLines
+      .map(buildStockCountLine)
+      .filter((line) => {
+        return (
+          line.itemName &&
+          line.quantity !== null &&
+          line.approvedForOrdering === true &&
+          String(line.reviewState || "").toLowerCase() !== "rejected"
+        );
+      })
+      .sort((a, b) => String(b.createdTime || "").localeCompare(String(a.createdTime || "")));
 
     const blankParRows = parRecords.filter((record) => {
       return !parRecordHasIdentity(record);
     }).length;
 
-    const parItems = parRecords
+       const parItems = parRecords
       .filter(parRecordHasIdentity)
-      .map((record) => buildParItem(record, trustedReceiptLines, trends));
+      .map((record) =>
+        buildParItem(record, trustedReceiptLines, trends, approvedStockCountLines)
+      );
 
     const parNames = parItems.map((item) => item.normalizedItemName);
 
@@ -902,9 +1098,26 @@ export default async function handler(req, res) {
         return !alreadyCovered;
       })
       .slice(0, 40)
-      .map(buildReceiptOnlyItem);
+      .map((line) => buildReceiptOnlyItem(line, approvedStockCountLines));
 
-    const items = [...parItems, ...receiptOnlyItems]
+    const coveredNames = [...parItems, ...receiptOnlyItems].map(
+      (item) => item.normalizedItemName
+    );
+
+    const stockCountOnlyItems = approvedStockCountLines
+      .filter((line) => {
+        if (!line.itemName) return false;
+
+        const alreadyCovered = coveredNames.some((name) => {
+          return matchScore(name, line.itemName) >= 0.5;
+        });
+
+        return !alreadyCovered;
+      })
+      .slice(0, 40)
+      .map(buildStockCountOnlyItem);
+
+    const items = [...parItems, ...receiptOnlyItems, ...stockCountOnlyItems]
       .sort((a, b) => {
         if (b.priority !== a.priority) return b.priority - a.priority;
         return String(a.itemName || "").localeCompare(String(b.itemName || ""));
@@ -917,6 +1130,8 @@ export default async function handler(req, res) {
       activeParItems: parItems.length,
       receiptBackedItems: items.filter((item) => item.receipt).length,
       approvedReceiptLines: trustedReceiptLines.length,
+      approvedStockCountLines: approvedStockCountLines.length,
+      stockCountBackedItems: items.filter((item) => item.stockCount).length,
       criticalItems: items.filter((item) => item.status === "critical").length,
       orderSoonItems: items.filter((item) => item.status === "order_soon").length,
       watchItems: items.filter((item) => item.status === "watch").length,
