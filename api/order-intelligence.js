@@ -20,7 +20,6 @@ const TABLES = {
 
 const FIELD_SETS = {
   parLevels: [
-    // New Order Intelligence fields
     "Order Item Name",
     "Restaurant",
     "Preferred Vendor",
@@ -41,7 +40,6 @@ const FIELD_SETS = {
     "OI Emergency Run Risk",
     "OI Event Sensitive",
 
-    // Existing PAR/test fields kept as fallbacks
     "Ingredient",
     "Inventory Items",
     "Current Stock",
@@ -98,6 +96,7 @@ const FIELD_SETS = {
 };
 
 const STOCK_COUNT_MATCH_THRESHOLD = 0.75;
+const RECEIPT_MATCH_THRESHOLD = 0.75;
 
 const MATCH_STOP_WORDS = new Set([
   "the",
@@ -355,11 +354,22 @@ function matchScore(left, right) {
   return hits / Math.max(1, Math.min(leftTokens.length, rightTokens.size));
 }
 
-function getStockCountMatchDetails(targetItemName, countItemName) {
+function getSafeItemMatchDetails({
+  targetItemName,
+  sourceItemName,
+  sourceLabel,
+  genericBlockNotes,
+  noMeaningfulOverlapNotes,
+  weakOverlapNotes,
+  exactNotes,
+  sameTokensNotes,
+  containmentNotes,
+  tokenOverlapNotes,
+}) {
   const targetText = normalizeText(targetItemName);
-  const countText = normalizeText(countItemName);
+  const sourceText = normalizeText(sourceItemName);
 
-  if (!targetText || !countText) {
+  if (!targetText || !sourceText) {
     return {
       score: 0,
       confidence: "None",
@@ -369,47 +379,48 @@ function getStockCountMatchDetails(targetItemName, countItemName) {
     };
   }
 
-  if (targetText === countText) {
+  if (targetText === sourceText) {
     return {
       score: 1,
       confidence: "Exact",
       type: "exact_name",
-      notes: "Exact approved count match.",
+      notes: exactNotes || `Exact ${sourceLabel} match.`,
       blocked: false,
     };
   }
 
   const targetTokens = uniqueTokens(tokensForMatch(targetText));
-  const countTokens = uniqueTokens(tokensForMatch(countText));
+  const sourceTokens = uniqueTokens(tokensForMatch(sourceText));
 
-  if (!targetTokens.length || !countTokens.length) {
+  if (!targetTokens.length || !sourceTokens.length) {
     return {
       score: 0,
       confidence: "None",
       type: "no_tokens",
-      notes: "Not enough usable words to safely match this approved count.",
+      notes: `Not enough usable words to safely match this ${sourceLabel}.`,
       blocked: true,
     };
   }
 
   const targetGenericOnly = isGenericOnlyName(targetText);
-  const countGenericOnly = isGenericOnlyName(countText);
+  const sourceGenericOnly = isGenericOnlyName(sourceText);
 
-  if (targetGenericOnly || countGenericOnly) {
+  if (targetGenericOnly || sourceGenericOnly) {
     return {
       score: 0,
       confidence: "Blocked",
       type: "generic_name_blocked",
       notes:
-        "Generic stock count names require an exact match or a manual order-rule link before they can affect another item.",
+        genericBlockNotes ||
+        `Generic names require an exact match or a manual order-rule link before this ${sourceLabel} can affect another item.`,
       blocked: true,
     };
   }
 
   const targetTokenSet = new Set(targetTokens);
-  const countTokenSet = new Set(countTokens);
+  const sourceTokenSet = new Set(sourceTokens);
 
-  const sharedTokens = countTokens.filter((token) => targetTokenSet.has(token));
+  const sharedTokens = sourceTokens.filter((token) => targetTokenSet.has(token));
   const sharedMeaningfulTokens = sharedTokens.filter(
     (token) => !GENERIC_STOCK_TOKENS.has(token)
   );
@@ -420,60 +431,61 @@ function getStockCountMatchDetails(targetItemName, countItemName) {
       confidence: "None",
       type: "no_meaningful_overlap",
       notes:
-        "The approved count did not share a specific enough item word with this target.",
+        noMeaningfulOverlapNotes ||
+        `The ${sourceLabel} did not share a specific enough item word with this target.`,
       blocked: true,
     };
   }
 
   const sameTokenSet =
-    targetTokens.length === countTokens.length &&
-    allTokensInSet(targetTokens, countTokenSet) &&
-    allTokensInSet(countTokens, targetTokenSet);
+    targetTokens.length === sourceTokens.length &&
+    allTokensInSet(targetTokens, sourceTokenSet) &&
+    allTokensInSet(sourceTokens, targetTokenSet);
 
   if (sameTokenSet) {
     return {
       score: 0.95,
       confidence: "High",
       type: "same_tokens",
-      notes: "Approved count uses the same item words in a different order.",
+      notes: sameTokensNotes || `${sourceLabel} uses the same item words in a different order.`,
       blocked: false,
     };
   }
 
-  const countContainedInTarget = allTokensInSet(countTokens, targetTokenSet);
-  const targetContainedInCount = allTokensInSet(targetTokens, countTokenSet);
-  const textContainment = targetText.includes(countText) || countText.includes(targetText);
+  const sourceContainedInTarget = allTokensInSet(sourceTokens, targetTokenSet);
+  const targetContainedInSource = allTokensInSet(targetTokens, sourceTokenSet);
+  const textContainment = targetText.includes(sourceText) || sourceText.includes(targetText);
 
-  if (countContainedInTarget || targetContainedInCount || textContainment) {
-    const shorterLength = Math.min(targetTokens.length, countTokens.length);
+  if (sourceContainedInTarget || targetContainedInSource || textContainment) {
+    const shorterLength = Math.min(targetTokens.length, sourceTokens.length);
 
-    if (shorterLength >= 2 || sharedMeaningfulTokens.length >= 1) {
+    if (shorterLength >= 2 && sharedMeaningfulTokens.length >= 1) {
       return {
         score: 0.86,
         confidence: "High",
         type: "strong_containment",
-        notes: "Approved count is a strong specific name match.",
+        notes: containmentNotes || `${sourceLabel} is a strong specific name match.`,
         blocked: false,
       };
     }
   }
 
   const overlapScore =
-    sharedTokens.length / Math.max(1, Math.max(targetTokens.length, countTokens.length));
+    sharedTokens.length / Math.max(1, Math.max(targetTokens.length, sourceTokens.length));
 
   const targetMeaningfulTokens = meaningfulTokensForMatch(targetText);
-  const countMeaningfulTokens = meaningfulTokensForMatch(countText);
+  const sourceMeaningfulTokens = meaningfulTokensForMatch(sourceText);
 
   const meaningfulOverlapScore =
     sharedMeaningfulTokens.length /
-    Math.max(1, Math.min(targetMeaningfulTokens.length, countMeaningfulTokens.length));
+    Math.max(1, Math.min(targetMeaningfulTokens.length, sourceMeaningfulTokens.length));
 
-  if (overlapScore >= STOCK_COUNT_MATCH_THRESHOLD && meaningfulOverlapScore >= 0.67) {
+  if (overlapScore >= RECEIPT_MATCH_THRESHOLD && meaningfulOverlapScore >= 0.67) {
     return {
       score: overlapScore,
       confidence: overlapScore >= 0.9 ? "High" : "Medium",
       type: "token_overlap",
-      notes: "Approved count shares enough specific item words to match.",
+      notes: tokenOverlapNotes || `${sourceLabel} shares enough specific item words to match.`,
       blocked: false,
     };
   }
@@ -483,9 +495,46 @@ function getStockCountMatchDetails(targetItemName, countItemName) {
     confidence: "Low",
     type: "weak_overlap",
     notes:
-      "Approved count was not specific enough to safely attach to this item. It should appear as a separate Count Seed instead.",
+      weakOverlapNotes ||
+      `${sourceLabel} was not specific enough to safely attach to this item.`,
     blocked: true,
   };
+}
+
+function getStockCountMatchDetails(targetItemName, countItemName) {
+  return getSafeItemMatchDetails({
+    targetItemName,
+    sourceItemName: countItemName,
+    sourceLabel: "approved count",
+    exactNotes: "Exact approved count match.",
+    sameTokensNotes: "Approved count uses the same item words in a different order.",
+    containmentNotes: "Approved count is a strong specific name match.",
+    tokenOverlapNotes: "Approved count shares enough specific item words to match.",
+    genericBlockNotes:
+      "Generic stock count names require an exact match or a manual order-rule link before they can affect another item.",
+    noMeaningfulOverlapNotes:
+      "The approved count did not share a specific enough item word with this target.",
+    weakOverlapNotes:
+      "Approved count was not specific enough to safely attach to this item. It should appear as a separate Count Seed instead.",
+  });
+}
+
+function getReceiptMatchDetails(targetItemName, receiptItemName) {
+  return getSafeItemMatchDetails({
+    targetItemName,
+    sourceItemName: receiptItemName,
+    sourceLabel: "receipt line",
+    exactNotes: "Exact receipt line match.",
+    sameTokensNotes: "Receipt line uses the same item words in a different order.",
+    containmentNotes: "Receipt line is a strong specific vendor/item match.",
+    tokenOverlapNotes: "Receipt line shares enough specific item words to match.",
+    genericBlockNotes:
+      "Generic order item names require an exact receipt match or a manual order-rule link before vendor/package context can attach.",
+    noMeaningfulOverlapNotes:
+      "The receipt line did not share a specific enough item word with this order item.",
+    weakOverlapNotes:
+      "Receipt line was not specific enough to safely attach. Keep vendor/package context separate until the item is manually linked.",
+  });
 }
 
 function dateOnly(value) {
@@ -724,25 +773,55 @@ function stockCountLineIsSafelyCovered(line, itemNames = []) {
   });
 }
 
-function findBestReceiptMatch(itemName, receiptLines) {
+function getReceiptCandidateNames(itemName, orderRules = {}) {
+  return uniqueSorted([
+    itemName,
+    orderRules.vendorItemName,
+  ]).filter(Boolean);
+}
+
+function findBestReceiptMatch(itemName, receiptLines, orderRules = {}) {
   let best = null;
+  const candidateNames = getReceiptCandidateNames(itemName, orderRules);
 
   for (const line of receiptLines) {
-    const score = matchScore(itemName, line.itemName);
+    for (const candidateName of candidateNames) {
+      const details = getReceiptMatchDetails(candidateName, line.itemName);
 
-    if (score < 0.34) continue;
+      if (details.blocked) continue;
+      if (details.score < RECEIPT_MATCH_THRESHOLD) continue;
 
-    if (
-      !best ||
-      score > best.score ||
-      (score === best.score &&
-        String(line.createdTime || "") > String(best.line.createdTime || ""))
-    ) {
-      best = { score, line };
+      if (
+        !best ||
+        details.score > best.score ||
+        (details.score === best.score &&
+          String(line.createdTime || "") > String(best.line.createdTime || ""))
+      ) {
+        best = {
+          ...details,
+          line,
+          matchedOn: candidateName,
+        };
+      }
     }
   }
 
   return best;
+}
+
+function receiptLineIsSafelyCovered(line, itemNames = [], parItems = []) {
+  const names = [...itemNames];
+
+  parItems.forEach((item) => {
+    if (item?.orderRules?.vendorItemName) {
+      names.push(item.orderRules.vendorItemName);
+    }
+  });
+
+  return names.some((itemName) => {
+    const details = getReceiptMatchDetails(itemName, line.itemName);
+    return !details.blocked && details.score >= RECEIPT_MATCH_THRESHOLD;
+  });
 }
 
 function findBestTrendMatch(itemName, trends) {
@@ -940,10 +1019,16 @@ function buildReason({
           ? `$${line.lineTotal.toFixed(2)} line total`
           : "";
 
+    const scoreText = receiptMatch.score
+      ? ` Match confidence ${Math.round(receiptMatch.score * 100)}%.`
+      : "";
+
     parts.push(
       `Last receipt signal: ${line.vendor || "unknown vendor"}${
         costText ? ` at ${costText}` : ""
-      }${line.packageSize ? `, package ${line.packageSize}` : ""}.`
+      }${line.packageSize ? `, package ${line.packageSize}` : ""}. ${
+        receiptMatch.notes || ""
+      }${scoreText}`.trim()
     );
   }
 
@@ -1054,7 +1139,7 @@ function buildParItem(parRecord, receiptLines, trends, stockCountLines) {
   const reorderPoint = numberOrNull(getField(parRecord, "Reorder Point"));
   const estimatedDailyUsage = numberOrNull(getField(parRecord, "Estimated Daily Usage"));
 
-  const receiptMatch = findBestReceiptMatch(itemName, receiptLines);
+  const receiptMatch = findBestReceiptMatch(itemName, receiptLines, orderRules);
   const trendMatch = findBestTrendMatch(itemName, trends);
   const stockCountMatch = findBestStockCountMatch(itemName, stockCountLines);
 
@@ -1125,6 +1210,8 @@ function buildParItem(parRecord, receiptLines, trends, stockCountLines) {
     stockCountMatch?.confidence === "Exact" ? "Exact count match" : "",
     stockCountMatch?.confidence === "High" ? "Strong count match" : "",
     receiptMatch ? "Receipt-backed" : "",
+    receiptMatch?.confidence === "Exact" ? "Exact receipt match" : "",
+    receiptMatch?.confidence === "High" ? "Strong receipt match" : "",
     stockSource === "Last approved receipt quantity" ? "Receipt quantity" : "",
     trendMatch ? "Demand pressure" : "",
     orderRules.criticalItem ? "Critical item" : "",
@@ -1169,6 +1256,10 @@ function buildParItem(parRecord, receiptLines, trends, stockCountLines) {
     orderRules,
     receipt: receiptMatch?.line || null,
     receiptMatchScore: receiptMatch?.score || 0,
+    receiptMatchConfidence: receiptMatch?.confidence || "",
+    receiptMatchType: receiptMatch?.type || "",
+    receiptMatchNotes: receiptMatch?.notes || "",
+    receiptMatchedOn: receiptMatch?.matchedOn || "",
     stockCount: stockCountMatch?.line || null,
     stockCountMatchScore: stockCountMatch?.score || 0,
     stockCountMatchConfidence: stockCountMatch?.confidence || "",
@@ -1258,6 +1349,10 @@ function buildReceiptOnlyItem(line, stockCountLines) {
     },
     receipt: line,
     receiptMatchScore: 1,
+    receiptMatchConfidence: "Exact",
+    receiptMatchType: "receipt_seed",
+    receiptMatchNotes: "Receipt seed is its own source item and has not been attached to another order rule.",
+    receiptMatchedOn: line.itemName,
     stockCount: stockCountMatch?.line || null,
     stockCountMatchScore: stockCountMatch?.score || 0,
     stockCountMatchConfidence: stockCountMatch?.confidence || "",
@@ -1317,6 +1412,10 @@ function buildStockCountOnlyItem(line) {
     },
     receipt: null,
     receiptMatchScore: 0,
+    receiptMatchConfidence: "",
+    receiptMatchType: "",
+    receiptMatchNotes: "",
+    receiptMatchedOn: "",
     stockCount: line,
     stockCountMatchScore: 1,
     stockCountMatchConfidence: "Count Seed",
@@ -1398,12 +1497,7 @@ export default async function handler(req, res) {
     const receiptOnlyItems = trustedReceiptLines
       .filter((line) => {
         if (!line.itemName) return false;
-
-        const alreadyCovered = parNames.some((name) => {
-          return matchScore(name, line.itemName) >= 0.5;
-        });
-
-        return !alreadyCovered;
+        return !receiptLineIsSafelyCovered(line, parNames, parItems);
       })
       .slice(0, 40)
       .map((line) => buildReceiptOnlyItem(line, approvedStockCountLines));
@@ -1442,6 +1536,10 @@ export default async function handler(req, res) {
       stockCountGenericSeedItems: stockCountOnlyItems.filter((item) => {
         return isGenericOnlyName(item.itemName);
       }).length,
+      receiptAutoMatchedItems: items.filter((item) => {
+        return item.receipt && item.receiptMatchType !== "receipt_seed";
+      }).length,
+      receiptSeedItems: receiptOnlyItems.length,
       criticalItems: items.filter((item) => item.status === "critical").length,
       orderSoonItems: items.filter((item) => item.status === "order_soon").length,
       watchItems: items.filter((item) => item.status === "watch").length,
