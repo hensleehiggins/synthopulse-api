@@ -324,6 +324,11 @@ function meaningfulTokensForMatch(value) {
 function uniqueTokens(tokens = []) {
   return [...new Set(tokens)];
 }
+function uniqueSorted(values = []) {
+  return [...new Set(values.filter(Boolean))].sort((a, b) =>
+    String(a).localeCompare(String(b))
+  );
+}
 
 function allTokensInSet(tokens = [], tokenSet = new Set()) {
   return tokens.every((token) => tokenSet.has(token));
