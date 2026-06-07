@@ -444,7 +444,7 @@ function findBestStockCountMatch(itemName, stockCountLines) {
 
     const score = matchScore(itemName, line.itemName);
 
-    if (score < 0.5) continue;
+   if (score < 0.67) continue;
 
     if (
       !best ||
