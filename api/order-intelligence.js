@@ -97,6 +97,127 @@ const FIELD_SETS = {
   ],
 };
 
+const STOCK_COUNT_MATCH_THRESHOLD = 0.75;
+
+const MATCH_STOP_WORDS = new Set([
+  "the",
+  "and",
+  "with",
+  "for",
+  "from",
+  "item",
+  "items",
+  "test",
+  "case",
+  "cases",
+  "pack",
+  "packs",
+  "package",
+  "packages",
+  "box",
+  "boxes",
+  "bag",
+  "bags",
+  "can",
+  "cans",
+  "bottle",
+  "bottles",
+  "sleeve",
+  "sleeves",
+  "loaf",
+  "loaves",
+  "tray",
+  "trays",
+  "tub",
+  "tubs",
+  "jar",
+  "jars",
+  "each",
+  "ea",
+  "ct",
+  "count",
+  "dozen",
+  "dz",
+  "lb",
+  "lbs",
+  "pound",
+  "pounds",
+  "oz",
+  "ounce",
+  "ounces",
+  "gal",
+  "gallon",
+  "gallons",
+  "qt",
+  "quart",
+  "quarts",
+  "pt",
+  "pint",
+  "pints",
+  "cs",
+  "sys",
+  "cls",
+  "food",
+  "foods",
+  "service",
+  "atlanta",
+  "llc",
+]);
+
+const GENERIC_STOCK_TOKENS = new Set([
+  "bread",
+  "bacon",
+  "cheese",
+  "beef",
+  "chicken",
+  "pork",
+  "fish",
+  "seafood",
+  "shrimp",
+  "lettuce",
+  "tomato",
+  "tomatoes",
+  "onion",
+  "onions",
+  "sauce",
+  "milk",
+  "cream",
+  "butter",
+  "flour",
+  "oil",
+  "wine",
+  "beer",
+  "liquor",
+  "vodka",
+  "rum",
+  "gin",
+  "bourbon",
+  "whiskey",
+  "tequila",
+  "produce",
+  "dairy",
+  "meat",
+  "steak",
+  "vegetable",
+  "vegetables",
+  "fruit",
+  "egg",
+  "eggs",
+  "rice",
+  "pasta",
+  "potato",
+  "potatoes",
+  "mushroom",
+  "mushrooms",
+  "greens",
+  "herbs",
+  "spice",
+  "spices",
+  "seasoning",
+  "stock",
+  "broth",
+]);
+
 function sendJson(res, status, payload) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
@@ -192,31 +313,28 @@ function normalizeVendor(value) {
 }
 
 function tokensForMatch(value) {
-  const stopWords = new Set([
-    "the",
-    "and",
-    "with",
-    "case",
-    "pack",
-    "lb",
-    "lbs",
-    "ct",
-    "each",
-    "ea",
-    "oz",
-    "gal",
-    "cs",
-    "sys",
-    "cls",
-    "food",
-    "service",
-    "atlanta",
-    "llc",
-  ]);
-
   return normalizeText(value)
     .split(" ")
-    .filter((token) => token.length >= 3 && !stopWords.has(token));
+    .filter((token) => token.length >= 3 && !MATCH_STOP_WORDS.has(token));
+}
+
+function meaningfulTokensForMatch(value) {
+  return tokensForMatch(value).filter((token) => !GENERIC_STOCK_TOKENS.has(token));
+}
+
+function uniqueTokens(tokens = []) {
+  return [...new Set(tokens)];
+}
+
+function allTokensInSet(tokens = [], tokenSet = new Set()) {
+  return tokens.every((token) => tokenSet.has(token));
+}
+
+function isGenericOnlyName(value) {
+  const tokens = tokensForMatch(value);
+  if (!tokens.length) return false;
+
+  return tokens.every((token) => GENERIC_STOCK_TOKENS.has(token));
 }
 
 function matchScore(left, right) {
@@ -235,6 +353,139 @@ function matchScore(left, right) {
 
   const hits = leftTokens.filter((token) => rightTokens.has(token)).length;
   return hits / Math.max(1, Math.min(leftTokens.length, rightTokens.size));
+}
+
+function getStockCountMatchDetails(targetItemName, countItemName) {
+  const targetText = normalizeText(targetItemName);
+  const countText = normalizeText(countItemName);
+
+  if (!targetText || !countText) {
+    return {
+      score: 0,
+      confidence: "None",
+      type: "no_match",
+      notes: "Missing item name.",
+      blocked: true,
+    };
+  }
+
+  if (targetText === countText) {
+    return {
+      score: 1,
+      confidence: "Exact",
+      type: "exact_name",
+      notes: "Exact approved count match.",
+      blocked: false,
+    };
+  }
+
+  const targetTokens = uniqueTokens(tokensForMatch(targetText));
+  const countTokens = uniqueTokens(tokensForMatch(countText));
+
+  if (!targetTokens.length || !countTokens.length) {
+    return {
+      score: 0,
+      confidence: "None",
+      type: "no_tokens",
+      notes: "Not enough usable words to safely match this approved count.",
+      blocked: true,
+    };
+  }
+
+  const targetGenericOnly = isGenericOnlyName(targetText);
+  const countGenericOnly = isGenericOnlyName(countText);
+
+  if (targetGenericOnly || countGenericOnly) {
+    return {
+      score: 0,
+      confidence: "Blocked",
+      type: "generic_name_blocked",
+      notes:
+        "Generic stock count names require an exact match or a manual order-rule link before they can affect another item.",
+      blocked: true,
+    };
+  }
+
+  const targetTokenSet = new Set(targetTokens);
+  const countTokenSet = new Set(countTokens);
+
+  const sharedTokens = countTokens.filter((token) => targetTokenSet.has(token));
+  const sharedMeaningfulTokens = sharedTokens.filter(
+    (token) => !GENERIC_STOCK_TOKENS.has(token)
+  );
+
+  if (!sharedTokens.length || !sharedMeaningfulTokens.length) {
+    return {
+      score: 0,
+      confidence: "None",
+      type: "no_meaningful_overlap",
+      notes:
+        "The approved count did not share a specific enough item word with this target.",
+      blocked: true,
+    };
+  }
+
+  const sameTokenSet =
+    targetTokens.length === countTokens.length &&
+    allTokensInSet(targetTokens, countTokenSet) &&
+    allTokensInSet(countTokens, targetTokenSet);
+
+  if (sameTokenSet) {
+    return {
+      score: 0.95,
+      confidence: "High",
+      type: "same_tokens",
+      notes: "Approved count uses the same item words in a different order.",
+      blocked: false,
+    };
+  }
+
+  const countContainedInTarget = allTokensInSet(countTokens, targetTokenSet);
+  const targetContainedInCount = allTokensInSet(targetTokens, countTokenSet);
+  const textContainment = targetText.includes(countText) || countText.includes(targetText);
+
+  if (countContainedInTarget || targetContainedInCount || textContainment) {
+    const shorterLength = Math.min(targetTokens.length, countTokens.length);
+
+    if (shorterLength >= 2 || sharedMeaningfulTokens.length >= 1) {
+      return {
+        score: 0.86,
+        confidence: "High",
+        type: "strong_containment",
+        notes: "Approved count is a strong specific name match.",
+        blocked: false,
+      };
+    }
+  }
+
+  const overlapScore =
+    sharedTokens.length / Math.max(1, Math.max(targetTokens.length, countTokens.length));
+
+  const targetMeaningfulTokens = meaningfulTokensForMatch(targetText);
+  const countMeaningfulTokens = meaningfulTokensForMatch(countText);
+
+  const meaningfulOverlapScore =
+    sharedMeaningfulTokens.length /
+    Math.max(1, Math.min(targetMeaningfulTokens.length, countMeaningfulTokens.length));
+
+  if (overlapScore >= STOCK_COUNT_MATCH_THRESHOLD && meaningfulOverlapScore >= 0.67) {
+    return {
+      score: overlapScore,
+      confidence: overlapScore >= 0.9 ? "High" : "Medium",
+      type: "token_overlap",
+      notes: "Approved count shares enough specific item words to match.",
+      blocked: false,
+    };
+  }
+
+  return {
+    score: overlapScore,
+    confidence: "Low",
+    type: "weak_overlap",
+    notes:
+      "Approved count was not specific enough to safely attach to this item. It should appear as a separate Count Seed instead.",
+    blocked: true,
+  };
 }
 
 function dateOnly(value) {
@@ -298,7 +549,7 @@ function looksLikeMissingFieldError(error) {
   return (
     message.includes("unknown field") ||
     message.includes("invalid field") ||
-    message.includes("field") && message.includes("does not exist")
+    (message.includes("field") && message.includes("does not exist"))
   );
 }
 
@@ -418,7 +669,10 @@ function buildStockCountLine(record) {
     createdTime: record.createdTime,
     itemName,
     normalizedItemName: normalizeText(itemName),
-    storageArea: selectName(getField(record, "Storage Area")) || getField(record, "Storage Area") || "",
+    storageArea:
+      selectName(getField(record, "Storage Area")) ||
+      getField(record, "Storage Area") ||
+      "",
     quantity: numberOrNull(getField(record, "Count Quantity")),
     unit: getField(record, "Count Unit") || "",
     notes: getField(record, "Count Notes") || "",
@@ -442,21 +696,32 @@ function findBestStockCountMatch(itemName, stockCountLines) {
     if (!line.itemName) continue;
     if (line.quantity === null) continue;
 
-    const score = matchScore(itemName, line.itemName);
+    const details = getStockCountMatchDetails(itemName, line.itemName);
 
-   if (score < 0.67) continue;
+    if (details.blocked) continue;
+    if (details.score < STOCK_COUNT_MATCH_THRESHOLD) continue;
 
     if (
       !best ||
-      score > best.score ||
-      (score === best.score &&
+      details.score > best.score ||
+      (details.score === best.score &&
         String(line.createdTime || "") > String(best.line.createdTime || ""))
     ) {
-      best = { score, line };
+      best = {
+        ...details,
+        line,
+      };
     }
   }
 
   return best;
+}
+
+function stockCountLineIsSafelyCovered(line, itemNames = []) {
+  return itemNames.some((itemName) => {
+    const details = getStockCountMatchDetails(itemName, line.itemName);
+    return !details.blocked && details.score >= STOCK_COUNT_MATCH_THRESHOLD;
+  });
 }
 
 function findBestReceiptMatch(itemName, receiptLines) {
@@ -631,7 +896,9 @@ function buildReason({
   }
 
   if (orderRules.emergencyRunRisk) {
-    parts.push("Emergency run risk is flagged, so this item should stay visible even before perfect usage data exists.");
+    parts.push(
+      "Emergency run risk is flagged, so this item should stay visible even before perfect usage data exists."
+    );
   }
 
   if (orderRules.criticalItem) {
@@ -639,7 +906,9 @@ function buildReason({
   }
 
   if (orderRules.eventSensitive) {
-    parts.push("Event sensitivity is flagged, so upcoming events should be allowed to lift the order recommendation.");
+    parts.push(
+      "Event sensitivity is flagged, so upcoming events should be allowed to lift the order recommendation."
+    );
   }
 
   const orderRuleText = formatOrderRules(orderRules);
@@ -649,13 +918,16 @@ function buildReason({
 
   if (stockCountMatch?.line) {
     const countLine = stockCountMatch.line;
+    const scoreText = stockCountMatch.score
+      ? ` Match confidence ${Math.round(stockCountMatch.score * 100)}%.`
+      : "";
 
     parts.push(
       `Latest approved stock count: ${countLine.quantity}${
         countLine.unit ? ` ${countLine.unit}` : ""
       }${countLine.storageArea ? ` in ${countLine.storageArea}` : ""}${
         countLine.counterName ? ` by ${countLine.counterName}` : ""
-      }.`
+      }. ${stockCountMatch.notes || ""}${scoreText}`.trim()
     );
   }
 
@@ -691,8 +963,8 @@ function buildReason({
 }
 
 function buildOwnerRead(counts) {
-  if (!counts.activeParItems && !counts.receiptBackedItems) {
-    return "Order Intelligence needs live item data before it can make useful reorder calls. Receipt intake should continue because it is currently the strongest source of vendor/package truth.";
+  if (!counts.activeParItems && !counts.receiptBackedItems && !counts.approvedStockCountLines) {
+    return "Order Intelligence needs live item data before it can make useful reorder calls. Receipt intake and stock counts should continue because they are currently the strongest sources of vendor, package, and on-hand truth.";
   }
 
   if (counts.criticalItems > 0) {
@@ -700,13 +972,21 @@ function buildOwnerRead(counts) {
       counts.criticalItems === 1 ? "" : "s"
     } currently show critical reorder pressure. ${counts.receiptBackedItems} tracked item${
       counts.receiptBackedItems === 1 ? "" : "s"
-    } have receipt-backed vendor context.`;
+    } have receipt-backed vendor context, and ${counts.stockCountBackedItems} item${
+      counts.stockCountBackedItems === 1 ? "" : "s"
+    } have approved count context.`;
   }
 
   if (counts.orderSoonItems > 0) {
     return `${counts.orderSoonItems} item${
       counts.orderSoonItems === 1 ? "" : "s"
-    } are below target stock but not yet critical. Receipt-backed vendor lines are helping fill in package and cost context while manual ordering rules are still incomplete.`;
+    } are below target stock but not yet critical. Approved stock counts and receipt-backed vendor lines are helping fill in the ordering picture while setup is still incomplete.`;
+  }
+
+  if (counts.stockCountSeedItems > 0) {
+    return `${counts.stockCountSeedItems} approved count item${
+      counts.stockCountSeedItems === 1 ? "" : "s"
+    } did not safely match an existing order rule or receipt-backed item. Those should be reviewed as Count Seeds instead of being forced onto a fuzzy match.`;
   }
 
   return `No critical reorder pressure is visible from current records. Data quality is still the main watch item: ${counts.needsCountItems} item${
@@ -798,11 +1078,14 @@ function buildParItem(parRecord, receiptLines, trends, stockCountLines) {
           ? "Last approved receipt quantity"
           : "Missing";
 
+  const fieldDaysOfStockLeft = numberOrNull(getField(parRecord, "Days of Stock Left"));
+
   const daysOfStockLeft =
-    numberOrNull(getField(parRecord, "Days of Stock Left")) ||
-    (currentStock !== null && estimatedDailyUsage
-      ? currentStock / estimatedDailyUsage
-      : null);
+    fieldDaysOfStockLeft !== null
+      ? fieldDaysOfStockLeft
+      : currentStock !== null && estimatedDailyUsage
+        ? currentStock / estimatedDailyUsage
+        : null;
 
   const suggestedPar = numberOrNull(getField(parRecord, "Suggested Par"));
   const reorderNeededText = getField(parRecord, "Reorder Needed?") || "";
@@ -839,6 +1122,8 @@ function buildParItem(parRecord, receiptLines, trends, stockCountLines) {
   const signals = [
     "Order Rules",
     stockSource === "Approved stock count" ? "Approved count" : "",
+    stockCountMatch?.confidence === "Exact" ? "Exact count match" : "",
+    stockCountMatch?.confidence === "High" ? "Strong count match" : "",
     receiptMatch ? "Receipt-backed" : "",
     stockSource === "Last approved receipt quantity" ? "Receipt quantity" : "",
     trendMatch ? "Demand pressure" : "",
@@ -886,6 +1171,9 @@ function buildParItem(parRecord, receiptLines, trends, stockCountLines) {
     receiptMatchScore: receiptMatch?.score || 0,
     stockCount: stockCountMatch?.line || null,
     stockCountMatchScore: stockCountMatch?.score || 0,
+    stockCountMatchConfidence: stockCountMatch?.confidence || "",
+    stockCountMatchType: stockCountMatch?.type || "",
+    stockCountMatchNotes: stockCountMatch?.notes || "",
     trend: trendMatch?.trend || null,
     trendMatchScore: trendMatch?.score || 0,
     reason: buildReason({
@@ -935,10 +1223,17 @@ function buildReceiptOnlyItem(line, stockCountLines) {
     statusLabel: "Needs setup",
     recommendationType: approvedStockCount !== null ? "Count Seed" : "Receipt Seed",
     priority: approvedStockCount !== null ? 48 : receiptQuantity !== null ? 38 : 35,
-    confidence: approvedStockCount !== null ? "Medium" : line.approved && !line.needsReview ? "Medium" : "Low",
+    confidence:
+      approvedStockCount !== null
+        ? "Medium"
+        : line.approved && !line.needsReview
+          ? "Medium"
+          : "Low",
     signals: [
       "Receipt-backed",
       approvedStockCount !== null ? "Approved count" : "",
+      stockCountMatch?.confidence === "Exact" ? "Exact count match" : "",
+      stockCountMatch?.confidence === "High" ? "Strong count match" : "",
       receiptQuantity !== null ? "Receipt quantity" : "",
       "Needs order rules",
     ].filter(Boolean),
@@ -965,13 +1260,16 @@ function buildReceiptOnlyItem(line, stockCountLines) {
     receiptMatchScore: 1,
     stockCount: stockCountMatch?.line || null,
     stockCountMatchScore: stockCountMatch?.score || 0,
+    stockCountMatchConfidence: stockCountMatch?.confidence || "",
+    stockCountMatchType: stockCountMatch?.type || "",
+    stockCountMatchNotes: stockCountMatch?.notes || "",
     trend: null,
     trendMatchScore: 0,
     reason:
       approvedStockCount !== null
         ? `${line.itemName} exists in approved receipt history and now has an approved stock count of ${approvedStockCount}${
             stockCountMatch?.line?.unit ? ` ${stockCountMatch.line.unit}` : ""
-          }. Add target stock, reorder point, vendor order unit, and vendor order rules before trusting reorder guidance.`
+          }. ${stockCountMatch?.notes || ""} Add target stock, reorder point, vendor order unit, and vendor order rules before trusting reorder guidance.`
         : `${line.itemName} exists in approved receipt history. Latest approved receipt quantity is ${
             receiptQuantity !== null ? receiptQuantity : "unknown"
           }${line.unit ? ` ${line.unit}` : ""}. Add count unit, target stock, reorder point, vendor order unit, and vendor order rules before trusting reorder guidance.`,
@@ -997,7 +1295,7 @@ function buildStockCountOnlyItem(line) {
     recommendationType: "Count Seed",
     priority: 50,
     confidence: "Medium",
-    signals: ["Approved count", "Needs order rules"],
+    signals: ["Approved count", "Count Seed", "Needs order rules"],
     lastChecked: line.countTimeText || "",
     orderRules: {
       preferredVendor: "",
@@ -1021,11 +1319,15 @@ function buildStockCountOnlyItem(line) {
     receiptMatchScore: 0,
     stockCount: line,
     stockCountMatchScore: 1,
+    stockCountMatchConfidence: "Count Seed",
+    stockCountMatchType: "count_seed",
+    stockCountMatchNotes:
+      "Approved count did not safely match an existing order rule or receipt-backed item. Create or link an order rule before using it for reorder math.",
     trend: null,
     trendMatchScore: 0,
     reason: `${line.itemName} has an approved stock count of ${line.quantity}${
       line.unit ? ` ${line.unit}` : ""
-    }${line.storageArea ? ` in ${line.storageArea}` : ""}. Add an order-rule record with target stock and reorder point before KitchenPulse can calculate reorder pressure.`,
+    }${line.storageArea ? ` in ${line.storageArea}` : ""}. This approved count was not forced onto a fuzzy item match. Add or link an order-rule record with target stock and reorder point before KitchenPulse can calculate reorder pressure.`,
   };
 }
 
@@ -1042,28 +1344,32 @@ export default async function handler(req, res) {
   }
 
   try {
-        const [parRecords, rawReceiptLines, rawTrends, rawStockCountLines] = await Promise.all([
-      fetchAirtableTable(TABLES.parLevels, FIELD_SETS.parLevels),
-      fetchAirtableTable(TABLES.vendorReceiptLines, FIELD_SETS.vendorReceiptLines),
-      fetchAirtableTable(TABLES.weeklyItemTrends, FIELD_SETS.weeklyItemTrends).catch(
-        () => []
-      ),
-      fetchAirtableTable(TABLES.stockCountLines, FIELD_SETS.stockCountLines).catch(
-        () => []
-      ),
-    ]);
+    const [parRecords, rawReceiptLines, rawTrends, rawStockCountLines] =
+      await Promise.all([
+        fetchAirtableTable(TABLES.parLevels, FIELD_SETS.parLevels),
+        fetchAirtableTable(TABLES.vendorReceiptLines, FIELD_SETS.vendorReceiptLines),
+        fetchAirtableTable(TABLES.weeklyItemTrends, FIELD_SETS.weeklyItemTrends).catch(
+          () => []
+        ),
+        fetchAirtableTable(TABLES.stockCountLines, FIELD_SETS.stockCountLines).catch(
+          () => []
+        ),
+      ]);
 
     const receiptLines = rawReceiptLines
       .map(buildReceiptLine)
       .filter((line) => line.itemName)
-      .sort((a, b) => String(b.createdTime || "").localeCompare(String(a.createdTime || "")));
+      .sort((a, b) =>
+        String(b.createdTime || "").localeCompare(String(a.createdTime || ""))
+      );
 
     const trustedReceiptLines = receiptLines.filter(
       (line) => line.approved === true && line.needsReview !== true
     );
 
     const trends = rawTrends.map(buildTrend).filter((trend) => trend.itemName);
-        const approvedStockCountLines = rawStockCountLines
+
+    const approvedStockCountLines = rawStockCountLines
       .map(buildStockCountLine)
       .filter((line) => {
         return (
@@ -1073,13 +1379,15 @@ export default async function handler(req, res) {
           String(line.reviewState || "").toLowerCase() !== "rejected"
         );
       })
-      .sort((a, b) => String(b.createdTime || "").localeCompare(String(a.createdTime || "")));
+      .sort((a, b) =>
+        String(b.createdTime || "").localeCompare(String(a.createdTime || ""))
+      );
 
     const blankParRows = parRecords.filter((record) => {
       return !parRecordHasIdentity(record);
     }).length;
 
-       const parItems = parRecords
+    const parItems = parRecords
       .filter(parRecordHasIdentity)
       .map((record) =>
         buildParItem(record, trustedReceiptLines, trends, approvedStockCountLines)
@@ -1107,12 +1415,7 @@ export default async function handler(req, res) {
     const stockCountOnlyItems = approvedStockCountLines
       .filter((line) => {
         if (!line.itemName) return false;
-
-        const alreadyCovered = coveredNames.some((name) => {
-          return matchScore(name, line.itemName) >= 0.5;
-        });
-
-        return !alreadyCovered;
+        return !stockCountLineIsSafelyCovered(line, coveredNames);
       })
       .slice(0, 40)
       .map(buildStockCountOnlyItem);
@@ -1132,6 +1435,13 @@ export default async function handler(req, res) {
       approvedReceiptLines: trustedReceiptLines.length,
       approvedStockCountLines: approvedStockCountLines.length,
       stockCountBackedItems: items.filter((item) => item.stockCount).length,
+      stockCountAutoMatchedItems: items.filter((item) => {
+        return item.stockCount && item.stockCountMatchType !== "count_seed";
+      }).length,
+      stockCountSeedItems: stockCountOnlyItems.length,
+      stockCountGenericSeedItems: stockCountOnlyItems.filter((item) => {
+        return isGenericOnlyName(item.itemName);
+      }).length,
       criticalItems: items.filter((item) => item.status === "critical").length,
       orderSoonItems: items.filter((item) => item.status === "order_soon").length,
       watchItems: items.filter((item) => item.status === "watch").length,
@@ -1140,8 +1450,10 @@ export default async function handler(req, res) {
       needsSetupItems: items.filter((item) => item.status === "needs_setup").length,
       demandPressureItems: items.filter((item) => item.trend).length,
       criticalRuleItems: items.filter((item) => item.orderRules?.criticalItem).length,
-      emergencyRiskItems: items.filter((item) => item.orderRules?.emergencyRunRisk).length,
-      eventSensitiveItems: items.filter((item) => item.orderRules?.eventSensitive).length,
+      emergencyRiskItems: items.filter((item) => item.orderRules?.emergencyRunRisk)
+        .length,
+      eventSensitiveItems: items.filter((item) => item.orderRules?.eventSensitive)
+        .length,
     };
 
     return sendJson(res, 200, {
