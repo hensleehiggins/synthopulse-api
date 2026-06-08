@@ -29,6 +29,7 @@ function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Cache-Control", "no-store, max-age=0");
 }
 
 function sendJson(res, statusCode, payload) {
@@ -67,7 +68,6 @@ function numberOrNull(value) {
 
 function photoInfo(value) {
   const files = Array.isArray(value) ? value : [];
-
   const first = files[0];
 
   return {
@@ -77,9 +77,25 @@ function photoInfo(value) {
   };
 }
 
+function normalizeReviewState(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function isPendingReviewState(value) {
+  const state = normalizeReviewState(value);
+
+  return (
+    !state ||
+    state === "submitted" ||
+    state === "needs review" ||
+    state === "needs_review"
+  );
+}
+
 function normalizeLine(record) {
   const fields = record.fields || {};
   const photo = photoInfo(fields.Photo);
+  const reviewState = fields["Count Review State"] || "Submitted";
 
   return {
     id: record.id,
@@ -91,7 +107,7 @@ function normalizeLine(record) {
     quantity: numberOrNull(fields["Count Quantity"]),
     unit: fields["Count Unit"] || "",
     notes: fields["Count Notes"] || "",
-    reviewState: fields["Count Review State"] || "Submitted",
+    reviewState,
     approvedForOrdering: fields["Approved For Ordering"] === true,
     counterName: fields["Counter Name"] || "",
     countTimeText: fields["Count Time Text"] || "",
@@ -107,7 +123,7 @@ async function fetchPendingLines() {
   url.searchParams.set("pageSize", "100");
   url.searchParams.set(
     "filterByFormula",
-    "OR({Approved For Ordering}=BLANK(), {Approved For Ordering}=0, {Count Review State}='Submitted', {Count Review State}='Needs Review')"
+    "AND(OR({Count Review State}=BLANK(), {Count Review State}='Submitted', {Count Review State}='Needs Review'), NOT({Approved For Ordering}=1))"
   );
 
   FIELD_NAMES.forEach((fieldName) => {
@@ -118,6 +134,7 @@ async function fetchPendingLines() {
     headers: {
       Authorization: `Bearer ${AIRTABLE_TOKEN}`,
       "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
     },
   });
 
@@ -137,9 +154,11 @@ async function fetchPendingLines() {
     .map(normalizeLine)
     .filter((line) => {
       if (line.approvedForOrdering) return false;
-      return !String(line.reviewState || "").toLowerCase().includes("approved");
+      return isPendingReviewState(line.reviewState);
     })
-    .sort((a, b) => String(b.createdTime || "").localeCompare(String(a.createdTime || "")));
+    .sort((a, b) =>
+      String(b.createdTime || "").localeCompare(String(a.createdTime || ""))
+    );
 }
 
 async function updateLine({ recordId, action }) {
