@@ -146,10 +146,11 @@ function safeDate(value) {
 }
 
 function buildReceiptName({ vendorName, receiptDate }) {
-  const vendor = normalizeText(vendorName) || "Mobile receipt";
+  const vendor = normalizeText(vendorName);
   const date = safeDate(receiptDate) || new Date().toISOString().slice(0, 10);
+  const label = vendor ? `${vendor} receipt` : "Mobile receipt";
 
-  return `${vendor} receipt - ${date} - ${nowText()}`.slice(0, 180);
+  return `${label} - ${date} - ${nowText()}`.slice(0, 180);
 }
 
 function buildParseUrl(req) {
