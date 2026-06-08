@@ -3,7 +3,7 @@
 // Uses Google Business Profile Local Posts API, not dashboard scraping.
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
+const AIRTABLE_TOKEN = process.env.AIRTABLE_PAT;
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -12,7 +12,7 @@ const GOOGLE_BUSINESS_ACCOUNT_ID = process.env.GOOGLE_BUSINESS_ACCOUNT_ID;
 const GOOGLE_BUSINESS_LOCATION_ID = process.env.GOOGLE_BUSINESS_LOCATION_ID;
 
 const CHLOES_RESTAURANT_RECORD_ID =
-  process.env.CHLOES_RESTAURANT_RECORD_ID || "recn2LoRESKN33zHW";
+  process.env.AIRTABLE_CHLOES_RESTAURANT_ID || "recn2LoRESKN33zHW";
 
 const GOOGLE_BUSINESS_SYNC_SECRET = process.env.GOOGLE_BUSINESS_SYNC_SECRET;
 
@@ -310,7 +310,7 @@ module.exports = async function handler(req, res) {
     }
 
     requireEnv("AIRTABLE_BASE_ID", AIRTABLE_BASE_ID);
-    requireEnv("AIRTABLE_TOKEN", AIRTABLE_TOKEN);
+    requireEnv("AIRTABLE_PAT", AIRTABLE_TOKEN);
     requireEnv("GOOGLE_CLIENT_ID", GOOGLE_CLIENT_ID);
     requireEnv("GOOGLE_CLIENT_SECRET", GOOGLE_CLIENT_SECRET);
     requireEnv("GOOGLE_REFRESH_TOKEN", GOOGLE_REFRESH_TOKEN);
