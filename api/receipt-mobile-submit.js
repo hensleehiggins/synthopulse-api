@@ -63,6 +63,32 @@ function safeFileName(name) {
     .slice(0, 120);
 }
 
+function isHeicUpload(uploadedFile) {
+  const fileName = String(
+    uploadedFile?.originalFilename || uploadedFile?.newFilename || ""
+  ).toLowerCase();
+
+  const mimeType = String(uploadedFile?.mimetype || "").toLowerCase();
+
+  return (
+    fileName.endsWith(".heic") ||
+    fileName.endsWith(".heif") ||
+    mimeType.includes("heic") ||
+    mimeType.includes("heif")
+  );
+}
+
+function makeHeicError() {
+  const error = new Error(
+    "This photo is still in iPhone HEIC format. Retake or choose the photo again so KitchenPulse can convert it to JPEG before processing."
+  );
+
+  error.status = 415;
+  error.errorType = "heic_upload_not_supported";
+
+  return error;
+}
+
 function nowText() {
   const now = new Date();
 
@@ -187,6 +213,10 @@ async function uploadReceiptPhoto({ uploadedFile, put, fs }) {
   if (!uploadedFile) {
     throw new Error("Receipt photo is required.");
   }
+
+  if (isHeicUpload(uploadedFile)) {
+  throw makeHeicError();
+}
 
   if (!BLOB_TOKEN) {
     throw new Error(
@@ -450,10 +480,10 @@ export default async function handler(req, res) {
     console.error("Receipt mobile submit error:", error);
 
     return sendJson(res, error.status || 500, {
-      ok: false,
-      error: error.message || "Unexpected receipt submit error.",
-      details: error.details || null,
-      stack: error.stack,
-    });
+  ok: false,
+  error: error.message || "Unexpected receipt submit error.",
+  errorType: error.errorType || "receipt_mobile_submit_failed",
+  details: error.details || null,
+});
   }
 }
