@@ -453,7 +453,6 @@ function dedupeSuggestions(suggestions = []) {
         suggestion.displayName,
         suggestion.vendor,
         suggestion.packSize,
-        suggestion.unit,
       ].join(" ")
     );
 
@@ -466,9 +465,42 @@ function dedupeSuggestions(suggestions = []) {
       return;
     }
 
-    if (existing.source !== "cost_source_item" && suggestion.source === "cost_source_item") {
-      byKey.set(key, suggestion);
-    }
+    const mergedAliases = unique([
+      ...(existing.aliases || []),
+      ...(suggestion.aliases || []),
+      existing.sourceItemName,
+      suggestion.sourceItemName,
+      existing.vendorItemName,
+      suggestion.vendorItemName,
+    ]);
+
+    const preferIncoming =
+      existing.source !== "cost_source_item" &&
+      suggestion.source === "cost_source_item";
+
+    const winner = preferIncoming ? suggestion : existing;
+    const fallback = preferIncoming ? existing : suggestion;
+
+    byKey.set(key, {
+      ...winner,
+      aliases: mergedAliases,
+      vendorItemName:
+        winner.vendorItemName ||
+        fallback.vendorItemName ||
+        winner.displayName ||
+        "",
+      vendorOrderUnit:
+        winner.vendorOrderUnit ||
+        fallback.vendorOrderUnit ||
+        winner.unit ||
+        "",
+      unit: winner.unit || fallback.unit || "",
+      packSize: winner.packSize || fallback.packSize || "",
+      currentCost:
+        winner.currentCost !== null && winner.currentCost !== undefined
+          ? winner.currentCost
+          : fallback.currentCost,
+    });
   });
 
   return [...byKey.values()];
