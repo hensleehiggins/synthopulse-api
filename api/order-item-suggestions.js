@@ -207,13 +207,30 @@ function normalizeVendor(value) {
   return raw;
 }
 
+function stripLinkedRecordVendorPrefix(value) {
+  const text = cleanText(value);
+
+  if (!text) return "";
+
+  const parts = text
+    .split(/\s+[—-]\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length >= 2) {
+    return parts.slice(1).join(" - ");
+  }
+
+  return text;
+}
+
 function linkedRecordNames(value) {
   if (!Array.isArray(value)) return [];
 
   return value
     .map((item) => {
       if (typeof item === "string") return "";
-      return cleanText(item?.name);
+      return stripLinkedRecordVendorPrefix(item?.name);
     })
     .filter(Boolean);
 }
@@ -241,7 +258,6 @@ function suggestionSearchText(suggestion) {
       suggestion.displayName,
       suggestion.sourceItemName,
       suggestion.vendorItemName,
-      suggestion.vendor,
       suggestion.unit,
       suggestion.packSize,
       suggestion.category,
@@ -258,7 +274,7 @@ function scoreSuggestion(suggestion, query) {
   const display = normalizeSearch(suggestion.displayName);
   const source = normalizeSearch(suggestion.sourceItemName);
   const vendorItem = normalizeSearch(suggestion.vendorItemName);
-  const vendor = normalizeSearch(suggestion.vendor);
+
   const full = suggestionSearchText(suggestion);
 
   if (display === search) return 120;
@@ -279,7 +295,6 @@ function scoreSuggestion(suggestion, query) {
     return 70;
   }
 
-  if (vendor.includes(search)) return 25;
 
   return 0;
 }
