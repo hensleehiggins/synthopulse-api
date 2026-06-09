@@ -23,7 +23,7 @@ const TABLES = {
 
 function sendJson(res, status, payload) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.status(status).json(payload);
 }
@@ -360,6 +360,41 @@ async function updateParLevelRecord(recordId, fields) {
   return payload?.records?.[0] || null;
 }
 
+async function deleteParLevelRecord(recordId) {
+  if (!AIRTABLE_API_KEY) {
+    throw new Error("Missing Airtable API key.");
+  }
+
+  if (!validRecordId(recordId)) {
+    throw new Error("Missing or invalid order rule record id.");
+  }
+
+  const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(
+    TABLES.parLevels
+  )}/${recordId}`;
+
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const payload = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message =
+      payload?.error?.message ||
+      payload?.error ||
+      "Airtable could not remove the order rule.";
+
+    throw new Error(message);
+  }
+
+  return payload || null;
+}
+
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
     return sendJson(res, 200, { ok: true });
@@ -395,7 +430,7 @@ export default async function handler(req, res) {
     });
   }
 
-  if (req.method !== "POST" && req.method !== "PATCH") {
+  if (req.method !== "POST" && req.method !== "PATCH" && req.method !== "DELETE") {
     return sendJson(res, 405, {
       ok: false,
       error: "Method not allowed.",
@@ -405,6 +440,18 @@ export default async function handler(req, res) {
   try {
     const body =
       typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+
+    if (req.method === "DELETE") {
+      const recordId = cleanText(body.recordId || body.parRecordId || body.id);
+      const deleted = await deleteParLevelRecord(recordId);
+
+      return sendJson(res, 200, {
+        ok: true,
+        message: "Order rule removed.",
+        recordId,
+        deleted,
+      });
+    }
 
     if (req.method === "PATCH") {
       const recordId = cleanText(body.recordId || body.parRecordId || body.id);
