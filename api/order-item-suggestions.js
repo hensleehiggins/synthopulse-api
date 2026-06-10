@@ -444,66 +444,147 @@ function buildParLevelSuggestion(record) {
   };
 }
 
+function sourceRank(source) {
+  if (source === "cost_source_item") return 3;
+  if (source === "order_rule") return 2;
+  return 1;
+}
+
+function richnessScore(suggestion = {}) {
+  let score = 0;
+
+  if (suggestion.currentCost !== null && suggestion.currentCost !== undefined) score += 4;
+  if (suggestion.packSize) score += 3;
+  if (suggestion.vendorOrderUnit || suggestion.unit) score += 2;
+  if (suggestion.vendor) score += 2;
+  if (suggestion.vendorItemName) score += 1;
+  if ((suggestion.aliases || []).length) score += 1;
+
+  return score;
+}
+
+function mergeSuggestionPair(existing, incoming) {
+  const preferIncoming =
+    sourceRank(incoming.source) > sourceRank(existing.source) ||
+    (sourceRank(incoming.source) === sourceRank(existing.source) &&
+      richnessScore(incoming) > richnessScore(existing));
+
+  const winner = preferIncoming ? incoming : existing;
+  const fallback = preferIncoming ? existing : incoming;
+
+  const mergedAliases = unique([
+    ...(existing.aliases || []),
+    ...(incoming.aliases || []),
+    existing.sourceItemName,
+    incoming.sourceItemName,
+    existing.vendorItemName,
+    incoming.vendorItemName,
+    existing.displayName,
+    incoming.displayName,
+  ]);
+
+  return {
+    ...winner,
+    aliases: mergedAliases,
+    vendorItemName:
+      winner.vendorItemName ||
+      fallback.vendorItemName ||
+      winner.displayName ||
+      "",
+    vendor:
+      winner.vendor ||
+      fallback.vendor ||
+      "",
+    vendorOrderUnit:
+      winner.vendorOrderUnit ||
+      fallback.vendorOrderUnit ||
+      winner.unit ||
+      fallback.unit ||
+      "",
+    unit:
+      winner.unit ||
+      fallback.unit ||
+      "",
+    packSize:
+      winner.packSize ||
+      fallback.packSize ||
+      "",
+    category:
+      winner.category ||
+      fallback.category ||
+      "",
+    currentCost:
+      winner.currentCost !== null && winner.currentCost !== undefined
+        ? winner.currentCost
+        : fallback.currentCost,
+  };
+}
+
 function dedupeSuggestions(suggestions = []) {
-  const byKey = new Map();
+  const byHardKey = new Map();
 
   suggestions.forEach((suggestion) => {
-    const key = normalizeSearch(
+    const hardKey = normalizeSearch(
       [
         suggestion.displayName,
         suggestion.vendor,
         suggestion.packSize,
+        suggestion.unit,
       ].join(" ")
     );
 
-    if (!key) return;
+    if (!hardKey) return;
 
-    const existing = byKey.get(key);
+    const existing = byHardKey.get(hardKey);
 
     if (!existing) {
-      byKey.set(key, suggestion);
+      byHardKey.set(hardKey, suggestion);
       return;
     }
 
-    const mergedAliases = unique([
-      ...(existing.aliases || []),
-      ...(suggestion.aliases || []),
-      existing.sourceItemName,
-      suggestion.sourceItemName,
-      existing.vendorItemName,
-      suggestion.vendorItemName,
-    ]);
-
-    const preferIncoming =
-      existing.source !== "cost_source_item" &&
-      suggestion.source === "cost_source_item";
-
-    const winner = preferIncoming ? suggestion : existing;
-    const fallback = preferIncoming ? existing : suggestion;
-
-    byKey.set(key, {
-      ...winner,
-      aliases: mergedAliases,
-      vendorItemName:
-        winner.vendorItemName ||
-        fallback.vendorItemName ||
-        winner.displayName ||
-        "",
-      vendorOrderUnit:
-        winner.vendorOrderUnit ||
-        fallback.vendorOrderUnit ||
-        winner.unit ||
-        "",
-      unit: winner.unit || fallback.unit || "",
-      packSize: winner.packSize || fallback.packSize || "",
-      currentCost:
-        winner.currentCost !== null && winner.currentCost !== undefined
-          ? winner.currentCost
-          : fallback.currentCost,
-    });
+    byHardKey.set(hardKey, mergeSuggestionPair(existing, suggestion));
   });
 
-  return [...byKey.values()];
+  const bySoftKey = new Map();
+
+  [...byHardKey.values()].forEach((suggestion) => {
+    const softKey = normalizeSearch(
+      [
+        suggestion.displayName,
+        suggestion.vendor,
+      ].join(" ")
+    );
+
+    if (!softKey) return;
+
+    const existing = bySoftKey.get(softKey);
+
+    if (!existing) {
+      bySoftKey.set(softKey, suggestion);
+      return;
+    }
+
+    const sourcesDiffer = existing.source !== suggestion.source;
+    const sameDisplay = normalizeSearch(existing.displayName) === normalizeSearch(suggestion.displayName);
+    const sameVendor = normalizeSearch(existing.vendor) === normalizeSearch(suggestion.vendor);
+
+    if (sourcesDiffer && sameDisplay && sameVendor) {
+      bySoftKey.set(softKey, mergeSuggestionPair(existing, suggestion));
+      return;
+    }
+
+    const variantKey = `${softKey}-${normalizeSearch(
+      [
+        suggestion.packSize,
+        suggestion.unit,
+        suggestion.vendorOrderUnit,
+      ].join(" ")
+    )}`;
+
+    bySoftKey.set(variantKey, suggestion);
+  });
+
+  return [...bySoftKey.values()];
 }
 
 function getLimit(value) {
