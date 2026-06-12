@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@clerk/backend": "^3.7.0",
     "@vercel/blob": "latest",
     "airtable": "^0.12.2",
     "formidable": "latest",
