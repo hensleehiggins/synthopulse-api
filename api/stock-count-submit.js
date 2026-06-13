@@ -24,6 +24,7 @@ const MAX_STORAGE_AREA_LENGTH = 80;
 const MAX_UNIT_LENGTH = 40;
 const MAX_LINE_NOTES_LENGTH = 500;
 const MAX_SESSION_NOTES_LENGTH = 1000;
+const AUTO_APPROVE_ORDERING_ROLES = new Set(["MANAGER", "OWNER", "ADMIN"]);
 
 function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -374,6 +375,12 @@ function getRestaurantRecordId(auth) {
   return normalizeText(auth?.restaurantRecordId) || CHLOES_RESTAURANT_ID || "";
 }
 
+function canAutoApproveForOrdering(auth) {
+  const role = normalizeText(auth?.role || auth?.operatorUser?.role).toUpperCase();
+
+  return AUTO_APPROVE_ORDERING_ROLES.has(role);
+}
+
 function buildRestaurantSlug(auth, restaurantRecordId) {
   return safeFileName(
     normalizeText(auth?.restaurantName) || restaurantRecordId || "restaurant"
@@ -483,6 +490,11 @@ export default async function handler(req, res) {
     const rawLines = getFieldValue(formFields, "lines");
 
     const operatorName = getOperatorName(auth);
+    const autoApproveForOrdering = canAutoApproveForOrdering(auth);
+    const countReviewState = autoApproveForOrdering ? "Approved" : "Submitted";
+    const sessionStatus = autoApproveForOrdering ? "Approved" : "Submitted";
+    const approvedForOrdering = Boolean(autoApproveForOrdering);
+
     const clientCounterName = normalizeText(clientCounterNameValue);
     const sessionNotes = truncateText(
       sessionNotesValue || "",
@@ -514,6 +526,9 @@ export default async function handler(req, res) {
       sessionNotes ? `Staff note: ${sessionNotes}` : "",
       "Mobile stock count submission.",
       "Stock count upload was auth-checked before Airtable record creation.",
+      autoApproveForOrdering
+        ? "Trusted mobile role auto-approved this count for ordering."
+        : "Count requires review before affecting ordering.",
       `Submitted by: ${operatorName}`,
       auth?.email ? `Operator email: ${auth.email}` : "",
       auth?.operatorUser?.recordId
@@ -534,7 +549,7 @@ export default async function handler(req, res) {
       Restaurant: [restaurantRecordId],
       "Count Date Text": countTimeText,
       "Submitted By": operatorName,
-      "Session Status": "Submitted",
+      "Session Status": sessionStatus,
       "Review Notes": reviewNotes,
     };
 
@@ -574,8 +589,8 @@ export default async function handler(req, res) {
         "Count Quantity": line.quantity,
         "Count Unit": line.unit,
         "Count Notes": lineNotes,
-        "Count Review State": "Submitted",
-        "Approved For Ordering": false,
+        "Count Review State": countReviewState,
+        "Approved For Ordering": approvedForOrdering,
         "Counter Name": operatorName,
         "Count Time Text": countTimeText,
       };
@@ -618,6 +633,11 @@ export default async function handler(req, res) {
         email: auth.email || "",
         displayName: operatorName,
         role: auth.role || "",
+      },
+      review: {
+        autoApprovedForOrdering: autoApproveForOrdering,
+        countReviewState,
+        sessionStatus,
       },
       safeguards: {
         maxQuantity: MAX_COUNT_QUANTITY,
