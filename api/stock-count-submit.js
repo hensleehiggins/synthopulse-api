@@ -1,3 +1,5 @@
+const { requireKitchenPulseUser } = require("./_auth");
+
 export const config = {
   api: {
     bodyParser: false,
@@ -15,6 +17,14 @@ const BLOB_TOKEN =
 const STOCK_COUNT_SESSIONS_TABLE = "Stock Count Sessions";
 const STOCK_COUNT_LINES_TABLE = "Stock Count Lines";
 
+const MAX_COUNT_LINES = Number(process.env.STOCK_COUNT_MAX_LINES || 50);
+const MAX_COUNT_QUANTITY = Number(process.env.STOCK_COUNT_MAX_QUANTITY || 1000);
+const MAX_ITEM_NAME_LENGTH = 120;
+const MAX_STORAGE_AREA_LENGTH = 80;
+const MAX_UNIT_LENGTH = 40;
+const MAX_LINE_NOTES_LENGTH = 500;
+const MAX_SESSION_NOTES_LENGTH = 1000;
+
 function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
@@ -27,6 +37,14 @@ function setCorsHeaders(res) {
 function sendJson(res, statusCode, payload) {
   setCorsHeaders(res);
   res.status(statusCode).json(payload);
+}
+
+function normalizeText(value) {
+  return String(value || "").trim();
+}
+
+function truncateText(value, maxLength) {
+  return normalizeText(value).slice(0, maxLength);
 }
 
 function getFieldValue(fields, key) {
@@ -72,6 +90,96 @@ function buildFallbackSessionName() {
   return `Stock Count - ${nowText()}`;
 }
 
+function parseQuantity(value, lineNumber) {
+  const cleaned = String(value ?? "").replace(/,/g, "").trim();
+  const quantity = Number(cleaned);
+
+  if (!Number.isFinite(quantity)) {
+    throw new Error(`Line ${lineNumber}: Count quantity must be a number.`);
+  }
+
+  if (quantity <= 0) {
+    throw new Error(`Line ${lineNumber}: Count quantity must be greater than zero.`);
+  }
+
+  if (quantity > MAX_COUNT_QUANTITY) {
+    throw new Error(
+      `Line ${lineNumber}: Count quantity ${quantity.toLocaleString()} is too high. Maximum allowed is ${MAX_COUNT_QUANTITY.toLocaleString()}.`
+    );
+  }
+
+  return quantity;
+}
+
+function looksLikeJunkText(value) {
+  const text = normalizeText(value).toLowerCase();
+
+  if (!text) {
+    return true;
+  }
+
+  const compact = text.replace(/[^a-z0-9]+/g, "");
+
+  if (!compact) {
+    return true;
+  }
+
+  const hardRejects = [
+    "fellonkeyboard",
+    "keyboardmash",
+    "asdf",
+    "asdfasdf",
+    "qwerty",
+    "qwertyuiop",
+    "aaaaaaaa",
+    "zzzzzzzz",
+  ];
+
+  if (hardRejects.includes(compact)) {
+    return true;
+  }
+
+  if (text.includes("fell on keyboard")) {
+    return true;
+  }
+
+  if (/^(.)\1{7,}$/.test(compact)) {
+    return true;
+  }
+
+  return false;
+}
+
+function validateItemName(itemName, lineNumber) {
+  if (!itemName) {
+    throw new Error(`Line ${lineNumber}: Item name is required.`);
+  }
+
+  if (itemName.length > MAX_ITEM_NAME_LENGTH) {
+    throw new Error(
+      `Line ${lineNumber}: Item name is too long. Keep it under ${MAX_ITEM_NAME_LENGTH} characters.`
+    );
+  }
+
+  if (looksLikeJunkText(itemName)) {
+    throw new Error(
+      `Line ${lineNumber}: Item name does not look valid. Select or enter a real inventory item.`
+    );
+  }
+}
+
+function validateShortText({ value, maxLength, label, lineNumber }) {
+  const text = normalizeText(value);
+
+  if (text.length > maxLength) {
+    throw new Error(
+      `Line ${lineNumber}: ${label} is too long. Keep it under ${maxLength} characters.`
+    );
+  }
+
+  return text;
+}
+
 function parseLines(rawLines) {
   let parsed;
 
@@ -85,25 +193,64 @@ function parseLines(rawLines) {
     throw new Error("Count lines must be an array.");
   }
 
-  return parsed
-    .map((line) => {
-      const itemName = String(line?.itemName || "").trim();
-      const storageArea = String(line?.storageArea || "Other").trim();
-      const quantityNumber = Number(line?.quantity);
-      const unit = String(line?.unit || "").trim();
-      const notes = String(line?.notes || "").trim();
+  if (parsed.length > MAX_COUNT_LINES) {
+    throw new Error(
+      `Too many count lines submitted at once. Maximum allowed is ${MAX_COUNT_LINES}.`
+    );
+  }
 
-      return {
-        itemName,
-        storageArea,
-        quantity: Number.isFinite(quantityNumber) ? quantityNumber : null,
-        unit,
-        notes,
-      };
-    })
-    .filter((line) => {
-      return line.itemName && line.quantity !== null && line.quantity > 0;
+  const cleanedLines = [];
+
+  parsed.forEach((line, index) => {
+    const lineNumber = index + 1;
+
+    const itemName = truncateText(line?.itemName, MAX_ITEM_NAME_LENGTH);
+    const storageArea =
+      validateShortText({
+        value: line?.storageArea || "Other",
+        maxLength: MAX_STORAGE_AREA_LENGTH,
+        label: "Storage area",
+        lineNumber,
+      }) || "Other";
+
+    const unit = validateShortText({
+      value: line?.unit || "",
+      maxLength: MAX_UNIT_LENGTH,
+      label: "Count unit",
+      lineNumber,
     });
+
+    const notes = truncateText(line?.notes || "", MAX_LINE_NOTES_LENGTH);
+
+    const hasAnyContent =
+      itemName ||
+      normalizeText(line?.quantity) ||
+      unit ||
+      storageArea !== "Other" ||
+      notes;
+
+    if (!hasAnyContent) {
+      return;
+    }
+
+    validateItemName(itemName, lineNumber);
+
+    const quantity = parseQuantity(line?.quantity, lineNumber);
+
+    cleanedLines.push({
+      itemName,
+      storageArea,
+      quantity,
+      unit,
+      notes,
+    });
+  });
+
+  if (!cleanedLines.length) {
+    throw new Error("At least one counted item with a valid quantity is required.");
+  }
+
+  return cleanedLines;
 }
 
 function chunkArray(items, chunkSize) {
@@ -166,7 +313,7 @@ async function airtableRequest({ tableName, method = "POST", body }) {
   return data;
 }
 
-async function uploadOptionalPhoto({ uploadedFile, put, fs }) {
+async function uploadOptionalPhoto({ uploadedFile, put, fs, restaurantSlug }) {
   if (!uploadedFile) {
     return null;
   }
@@ -192,7 +339,7 @@ async function uploadOptionalPhoto({ uploadedFile, put, fs }) {
   const contentType = uploadedFile.mimetype || "application/octet-stream";
   const fileBuffer = fs.readFileSync(uploadedFile.filepath);
 
-  const blobPath = `stock-counts/chloes/${Date.now()}-${safeFileName(
+  const blobPath = `stock-counts/${restaurantSlug}/${Date.now()}-${safeFileName(
     originalFileName
   )}`;
 
@@ -215,6 +362,24 @@ async function uploadOptionalPhoto({ uploadedFile, put, fs }) {
   };
 }
 
+function getOperatorName(auth) {
+  return (
+    normalizeText(auth?.operatorUser?.displayName) ||
+    normalizeText(auth?.email) ||
+    "KitchenPulse operator"
+  );
+}
+
+function getRestaurantRecordId(auth) {
+  return normalizeText(auth?.restaurantRecordId) || CHLOES_RESTAURANT_ID || "";
+}
+
+function buildRestaurantSlug(auth, restaurantRecordId) {
+  return safeFileName(
+    normalizeText(auth?.restaurantName) || restaurantRecordId || "restaurant"
+  ).toLowerCase();
+}
+
 export default async function handler(req, res) {
   setCorsHeaders(res);
 
@@ -231,6 +396,11 @@ export default async function handler(req, res) {
         sessions: STOCK_COUNT_SESSIONS_TABLE,
         lines: STOCK_COUNT_LINES_TABLE,
       },
+      safeguards: {
+        authRequiredForPost: true,
+        maxLines: MAX_COUNT_LINES,
+        maxQuantity: MAX_COUNT_QUANTITY,
+      },
     });
   }
 
@@ -242,11 +412,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN || !CHLOES_RESTAURANT_ID) {
+    const auth = await requireKitchenPulseUser(req, res, {
+      source: "mobile",
+      minimumRole: "Staff",
+      touchLastLogin: false,
+    });
+
+    if (!auth) {
+      return;
+    }
+
+    if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN) {
       return sendJson(res, 500, {
         ok: false,
         error:
-          "Missing required environment variables. Check AIRTABLE_BASE_ID, AIRTABLE_PAT or AIRTABLE_TOKEN, and AIRTABLE_CHLOES_RESTAURANT_ID.",
+          "Missing required environment variables. Check AIRTABLE_BASE_ID and AIRTABLE_PAT or AIRTABLE_TOKEN.",
+      });
+    }
+
+    const restaurantRecordId = getRestaurantRecordId(auth);
+
+    if (!restaurantRecordId) {
+      return sendJson(res, 403, {
+        ok: false,
+        error:
+          "This operator account is not assigned to a restaurant, so stock counts cannot be submitted.",
       });
     }
 
@@ -288,44 +478,50 @@ export default async function handler(req, res) {
     );
 
     const sessionNameValue = getFieldValue(formFields, "sessionName");
-    const counterNameValue = getFieldValue(formFields, "counterName");
+    const clientCounterNameValue = getFieldValue(formFields, "counterName");
     const sessionNotesValue = getFieldValue(formFields, "sessionNotes");
     const rawLines = getFieldValue(formFields, "lines");
 
-    const counterName = String(counterNameValue || "").trim();
-    const sessionNotes = String(sessionNotesValue || "").trim();
+    const operatorName = getOperatorName(auth);
+    const clientCounterName = normalizeText(clientCounterNameValue);
+    const sessionNotes = truncateText(
+      sessionNotesValue || "",
+      MAX_SESSION_NOTES_LENGTH
+    );
+
     const sessionName =
       typeof sessionNameValue === "string" && sessionNameValue.trim()
-        ? sessionNameValue.trim()
+        ? sessionNameValue.trim().slice(0, 180)
         : buildFallbackSessionName();
-
-    if (!counterName) {
-      return sendJson(res, 400, {
-        ok: false,
-        error: "Counter name is required.",
-      });
-    }
 
     const lines = parseLines(rawLines);
 
-    if (!lines.length) {
-      return sendJson(res, 400, {
-        ok: false,
-        error: "At least one counted item with a quantity is required.",
-      });
-    }
-
     const uploadedFile = getUploadedFile(files);
+    const restaurantSlug = buildRestaurantSlug(auth, restaurantRecordId);
+
     const uploadedPhoto = uploadedFile
-      ? await uploadOptionalPhoto({ uploadedFile, put, fs })
+      ? await uploadOptionalPhoto({
+          uploadedFile,
+          put,
+          fs,
+          restaurantSlug,
+        })
       : null;
 
     const countTimeText = nowText();
 
     const reviewNotes = [
       sessionNotes ? `Staff note: ${sessionNotes}` : "",
-      "Initial mobile stock count submission.",
-      `Counter: ${counterName}`,
+      "Mobile stock count submission.",
+      "Stock count upload was auth-checked before Airtable record creation.",
+      `Submitted by: ${operatorName}`,
+      auth?.email ? `Operator email: ${auth.email}` : "",
+      auth?.operatorUser?.recordId
+        ? `Operator User record: ${auth.operatorUser.recordId}`
+        : "",
+      clientCounterName && clientCounterName !== operatorName
+        ? `Client-supplied counter name: ${clientCounterName}`
+        : "",
       `Submitted at: ${countTimeText}`,
       uploadedPhoto?.url ? `Photo URL: ${uploadedPhoto.url}` : "",
       uploadedPhoto?.filename ? `Photo file: ${uploadedPhoto.filename}` : "",
@@ -335,9 +531,9 @@ export default async function handler(req, res) {
 
     const sessionFields = {
       "Session Name": sessionName,
-      Restaurant: [CHLOES_RESTAURANT_ID],
+      Restaurant: [restaurantRecordId],
       "Count Date Text": countTimeText,
-      "Submitted By": counterName,
+      "Submitted By": operatorName,
       "Session Status": "Submitted",
       "Review Notes": reviewNotes,
     };
@@ -380,7 +576,7 @@ export default async function handler(req, res) {
         "Count Notes": lineNotes,
         "Count Review State": "Submitted",
         "Approved For Ordering": false,
-        "Counter Name": counterName,
+        "Counter Name": operatorName,
         "Count Time Text": countTimeText,
       };
 
@@ -418,6 +614,15 @@ export default async function handler(req, res) {
       sessionName,
       lineCount: createdLineRecords.length,
       photoUrl: uploadedPhoto?.url || "",
+      operator: {
+        email: auth.email || "",
+        displayName: operatorName,
+        role: auth.role || "",
+      },
+      safeguards: {
+        maxQuantity: MAX_COUNT_QUANTITY,
+        maxLines: MAX_COUNT_LINES,
+      },
     });
   } catch (error) {
     console.error("Stock count submit error:", error);
@@ -426,7 +631,6 @@ export default async function handler(req, res) {
       ok: false,
       error: error.message || "Unexpected stock count submit error.",
       details: error.details || null,
-      stack: error.stack,
     });
   }
 }
