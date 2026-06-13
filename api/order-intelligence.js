@@ -855,13 +855,30 @@ function classifyParItem({
   estimatedDailyUsage,
   criticalItem,
   emergencyRunRisk,
+  suggestedOrderQty,
 }) {
   const reorderFlag = String(reorderNeededText || "").toLowerCase();
   const hasCurrentStock = currentStock !== null;
   const hasParTarget = parTarget !== null;
   const hasReorderPoint = reorderPoint !== null;
+  const hasSuggestedOrder =
+    suggestedOrderQty !== null && Number(suggestedOrderQty) > 0;
 
   if (!hasCurrentStock) return "needs_count";
+
+  if (!hasParTarget) return "needs_setup";
+
+  if (!hasSuggestedOrder) {
+    if (
+      estimatedDailyUsage !== null &&
+      estimatedDailyUsage > 0 &&
+      currentStock / estimatedDailyUsage <= 2
+    ) {
+      return "watch";
+    }
+
+    return "stable";
+  }
 
   if (
     criticalItem === true ||
@@ -872,18 +889,8 @@ function classifyParItem({
     return "critical";
   }
 
-  if (!hasParTarget && !hasReorderPoint) return "needs_setup";
-
-  if (hasParTarget && currentStock < parTarget) {
+  if (currentStock < parTarget) {
     return "order_soon";
-  }
-
-  if (
-    estimatedDailyUsage !== null &&
-    estimatedDailyUsage > 0 &&
-    currentStock / estimatedDailyUsage <= 2
-  ) {
-    return "watch";
   }
 
   return "stable";
@@ -1180,6 +1187,14 @@ function buildParItem(parRecord, receiptLines, trends, stockCountLines) {
   const suggestedPar = numberOrNull(getField(parRecord, "Suggested Par"));
   const reorderNeededText = getField(parRecord, "Reorder Needed?") || "";
 
+  const rawSuggestedOrder =
+    parTarget !== null && currentStock !== null
+      ? Math.max(0, parTarget - currentStock)
+      : null;
+
+  const suggestedOrderQty =
+    rawSuggestedOrder !== null ? Math.ceil(rawSuggestedOrder) : null;
+
   const status = classifyParItem({
     currentStock,
     parTarget,
@@ -1188,15 +1203,8 @@ function buildParItem(parRecord, receiptLines, trends, stockCountLines) {
     estimatedDailyUsage,
     criticalItem: orderRules.criticalItem,
     emergencyRunRisk: orderRules.emergencyRunRisk,
+    suggestedOrderQty,
   });
-
-  const rawSuggestedOrder =
-    parTarget !== null && currentStock !== null
-      ? Math.max(0, parTarget - currentStock)
-      : null;
-
-  const suggestedOrderQty =
-    rawSuggestedOrder !== null ? Math.ceil(rawSuggestedOrder) : null;
 
   const priority =
     priorityForStatus(status) +
