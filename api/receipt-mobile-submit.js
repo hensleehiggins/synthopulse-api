@@ -1,13 +1,10 @@
-import { createRequire } from "module";
+const { requireKitchenPulseUser } = require("./_auth");
 
 export const config = {
   api: {
     bodyParser: false,
   },
 };
-
-const require = createRequire(import.meta.url);
-const { requireKitchenPulseUser } = require("./_auth");
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.AIRTABLE_PAT;
