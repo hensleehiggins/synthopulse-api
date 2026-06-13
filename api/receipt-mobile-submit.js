@@ -1,12 +1,18 @@
+import { createRequire } from "module";
+
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
+const require = createRequire(import.meta.url);
+const { requireKitchenPulseUser } = require("./_auth");
+
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.AIRTABLE_PAT;
 const CHLOES_RESTAURANT_ID = process.env.AIRTABLE_CHLOES_RESTAURANT_ID;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const BLOB_TOKEN =
   process.env.BLOB_READ_WRITE_TOKEN ||
@@ -26,6 +32,19 @@ function setCorsHeaders(res) {
 function sendJson(res, statusCode, payload) {
   setCorsHeaders(res);
   res.status(statusCode).json(payload);
+}
+
+function getHeader(req, name) {
+  const target = String(name || "").toLowerCase();
+  const headers = req.headers || {};
+
+  for (const [key, value] of Object.entries(headers)) {
+    if (String(key).toLowerCase() === target) {
+      return Array.isArray(value) ? value[0] : value;
+    }
+  }
+
+  return "";
 }
 
 function getFieldValue(fields, key) {
@@ -210,14 +229,206 @@ async function airtableRequest({ tableName, method = "POST", body }) {
   return data;
 }
 
+function parseJsonFromModelText(text) {
+  const raw = String(text || "").trim();
+
+  if (!raw) {
+    throw new Error("OpenAI returned an empty document preflight response.");
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch (directError) {
+    const match = raw.match(/\{[\s\S]*\}/);
+
+    if (!match) {
+      throw new Error("OpenAI document preflight response did not contain JSON.");
+    }
+
+    return JSON.parse(match[0]);
+  }
+}
+
+function extractOpenAIText(openAiData) {
+  if (typeof openAiData?.output_text === "string") {
+    return openAiData.output_text;
+  }
+
+  const output = Array.isArray(openAiData?.output) ? openAiData.output : [];
+  const textParts = [];
+
+  for (const item of output) {
+    const content = Array.isArray(item?.content) ? item.content : [];
+
+    for (const contentItem of content) {
+      if (typeof contentItem?.text === "string") {
+        textParts.push(contentItem.text);
+      }
+    }
+  }
+
+  return textParts.join("\n").trim();
+}
+
+function buildDocumentPreflightPrompt({ fileName, contentType }) {
+  return `
+You are checking an upload for KitchenPulse Receipt Intake.
+
+Return ONLY valid JSON. No markdown. No commentary.
+
+Decide whether this file is a restaurant vendor receipt, invoice, or purchase document showing items actually bought.
+
+Accept:
+- vendor receipt
+- vendor invoice
+- purchase receipt
+- delivery invoice
+- restaurant supply receipt with quantities/prices/totals
+
+Reject:
+- catalog
+- product list
+- price sheet
+- order guide
+- menu
+- marketing flyer
+- sales sheet
+- vendor product brochure
+- random screenshot
+- app screenshot
+- camera roll screenshot
+- giant product table that does not show a specific purchase
+- text, notes, keyboard mashing, or other non-receipt content
+
+Important:
+- Large real invoices are allowed.
+- Do not reject just because there are many line items.
+- Reject only when the document is not a receipt/invoice/purchase record.
+- Catalog-like documents often have columns such as Supplier Name, Item #, Brand, Product, Pack, Size, Tokens, or long product lists without purchase totals.
+- If uncertain but it looks like a real purchase document, allow it.
+- If the image is clearly not a receipt or invoice, reject it.
+
+JSON shape:
+{
+  "documentType": "receipt_invoice" | "catalog_or_price_sheet" | "menu" | "order_guide" | "screenshot" | "unknown",
+  "isReceiptOrInvoice": true,
+  "confidence": "High" | "Medium" | "Low",
+  "reason": "short reason",
+  "userMessage": "short message suitable for the upload UI"
+}
+
+File metadata:
+- Uploaded filename: ${fileName || ""}
+- Content type: ${contentType || ""}
+`.trim();
+}
+
+function isUnsupportedPreflightResult(result) {
+  const documentType = String(result?.documentType || "").toLowerCase();
+  const isReceiptOrInvoice = result?.isReceiptOrInvoice;
+
+  if (isReceiptOrInvoice === false) return true;
+
+  return [
+    "catalog_or_price_sheet",
+    "catalog",
+    "price_sheet",
+    "product_list",
+    "order_guide",
+    "menu",
+    "marketing_flyer",
+    "sales_sheet",
+    "screenshot",
+    "unknown_non_receipt",
+  ].includes(documentType);
+}
+
+function unsupportedPreflightMessage(result) {
+  return (
+    String(result?.userMessage || "").trim() ||
+    String(result?.reason || "").trim() ||
+    "This does not look like a vendor receipt or invoice. Upload a clear receipt or invoice showing items actually purchased."
+  );
+}
+
+async function callOpenAIForDocumentPreflight({
+  fileUrl,
+  fileName,
+  contentType,
+}) {
+  if (!OPENAI_API_KEY) {
+    throw new Error("Missing OPENAI_API_KEY for receipt upload preflight.");
+  }
+
+  const prompt = buildDocumentPreflightPrompt({ fileName, contentType });
+
+  const content = [
+    {
+      type: "input_text",
+      text: prompt,
+    },
+  ];
+
+  if (String(contentType || "").toLowerCase().includes("pdf")) {
+    content.push({
+      type: "input_file",
+      file_url: fileUrl,
+    });
+  } else {
+    content.push({
+      type: "input_image",
+      image_url: fileUrl,
+      detail: "high",
+    });
+  }
+
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_RECEIPT_MODEL || "gpt-4.1-mini",
+      input: [
+        {
+          role: "user",
+          content,
+        },
+      ],
+      max_output_tokens: 800,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      status: response.status,
+      data,
+    };
+  }
+
+  const text = extractOpenAIText(data);
+  const parsed = parseJsonFromModelText(text);
+
+  return {
+    ok: true,
+    status: 200,
+    data,
+    parsed,
+  };
+}
+
 async function uploadReceiptPhoto({ uploadedFile, put, fs }) {
   if (!uploadedFile) {
     throw new Error("Receipt photo is required.");
   }
 
   if (isHeicUpload(uploadedFile)) {
-  throw makeHeicError();
-}
+    throw makeHeicError();
+  }
 
   if (!BLOB_TOKEN) {
     throw new Error(
@@ -263,22 +474,51 @@ async function uploadReceiptPhoto({ uploadedFile, put, fs }) {
   };
 }
 
+async function deleteUploadedPhoto({ uploadedPhoto, del }) {
+  if (!uploadedPhoto?.url || !del || !BLOB_TOKEN) {
+    return;
+  }
+
+  try {
+    await del(uploadedPhoto.url, { token: BLOB_TOKEN });
+  } catch (error) {
+    console.error("Could not delete rejected mobile receipt blob:", error);
+  }
+}
+
 async function createVendorReceiptRecord({
   uploadedPhoto,
   vendorName,
   receiptDate,
   notes,
+  auth,
+  preflight,
 }) {
   const normalizedVendor = normalizeText(vendorName);
   const normalizedDate = safeDate(receiptDate);
   const normalizedNotes = normalizeText(notes);
   const submittedAt = new Date().toISOString();
+  const restaurantRecordId =
+    auth?.restaurantRecordId || CHLOES_RESTAURANT_ID;
+
+  const operatorName =
+    normalizeText(auth?.operatorUser?.displayName) ||
+    normalizeText(auth?.email) ||
+    "KitchenPulse operator";
 
   const noteParts = [
     "Submitted from KitchenPulse Operator mobile app.",
-    "Mobile receipt uploads are parser-first. Vendor/date are optional because KitchenPulse reads them from the image when possible.",
+    "Mobile receipt uploads are auth-checked and document-preflighted before Airtable receipt creation.",
+    "Vendor/date are optional because KitchenPulse reads them from the image when possible.",
     "Operator tip shown in app: right-side-up photos process faster.",
+    `Submitted by: ${operatorName}`,
+    auth?.email ? `Operator email: ${auth.email}` : "",
+    auth?.operatorUser?.recordId
+      ? `Operator User record: ${auth.operatorUser.recordId}`
+      : "",
     normalizedNotes ? `Staff note: ${normalizedNotes}` : "",
+    preflight?.reason ? `Upload preflight: ${preflight.reason}` : "",
+    preflight?.confidence ? `Upload preflight confidence: ${preflight.confidence}` : "",
     `Submitted at: ${submittedAt}`,
     uploadedPhoto?.url ? `Photo URL: ${uploadedPhoto.url}` : "",
     uploadedPhoto?.filename ? `Photo file: ${uploadedPhoto.filename}` : "",
@@ -289,7 +529,8 @@ async function createVendorReceiptRecord({
       vendorName: normalizedVendor,
       receiptDate: normalizedDate,
     }),
-    Restaurant: [CHLOES_RESTAURANT_ID],
+    Restaurant: [restaurantRecordId],
+    Source: "Mobile App",
     "Processing Status": "Parsing",
     "Review Needed": true,
     Approved: true,
@@ -333,11 +574,13 @@ async function createVendorReceiptRecord({
 
 async function parseReceiptNow({ req, recordId }) {
   const parseUrl = buildParseUrl(req);
+  const authorization = getHeader(req, "authorization");
 
   const response = await fetch(parseUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...(authorization ? { Authorization: authorization } : {}),
     },
     body: JSON.stringify({
       recordId,
@@ -377,6 +620,16 @@ export default async function handler(req, res) {
   }
 
   try {
+    const auth = await requireKitchenPulseUser(req, res, {
+      source: "mobile",
+      minimumRole: "Staff",
+      touchLastLogin: false,
+    });
+
+    if (!auth) {
+      return;
+    }
+
     if (!AIRTABLE_BASE_ID || !AIRTABLE_TOKEN || !CHLOES_RESTAURANT_ID) {
       return sendJson(res, 500, {
         ok: false,
@@ -385,7 +638,16 @@ export default async function handler(req, res) {
       });
     }
 
+    if (!OPENAI_API_KEY) {
+      return sendJson(res, 500, {
+        ok: false,
+        error:
+          "Missing OPENAI_API_KEY. Mobile receipt upload needs document preflight before creating Airtable records.",
+      });
+    }
+
     let put;
+    let del;
     let formidable;
     let fs;
 
@@ -395,6 +657,7 @@ export default async function handler(req, res) {
       const fsModule = await import("fs");
 
       put = blobModule.put;
+      del = blobModule.del;
       formidable =
         formidableModule.default ||
         formidableModule.formidable ||
@@ -409,11 +672,11 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!formidable || !fs) {
+    if (!put || !formidable || !fs) {
       return sendJson(res, 500, {
         ok: false,
         error:
-          "Receipt upload dependencies loaded incorrectly. Check formidable and fs imports.",
+          "Receipt upload dependencies loaded incorrectly. Check @vercel/blob, formidable, and fs imports.",
       });
     }
 
@@ -433,11 +696,45 @@ export default async function handler(req, res) {
       fs,
     });
 
+    const preflightResult = await callOpenAIForDocumentPreflight({
+      fileUrl: uploadedPhoto.url,
+      fileName: uploadedPhoto.filename,
+      contentType: uploadedPhoto.contentType,
+    });
+
+    if (!preflightResult.ok) {
+      await deleteUploadedPhoto({ uploadedPhoto, del });
+
+      return sendJson(res, preflightResult.status || 500, {
+        ok: false,
+        error:
+          "KitchenPulse could not verify this upload as a receipt or invoice. Try a clearer receipt photo or invoice file.",
+        errorType: "receipt_preflight_failed",
+        details: preflightResult.data,
+      });
+    }
+
+    if (isUnsupportedPreflightResult(preflightResult.parsed)) {
+      const message = unsupportedPreflightMessage(preflightResult.parsed);
+
+      await deleteUploadedPhoto({ uploadedPhoto, del });
+
+      return sendJson(res, 422, {
+        ok: false,
+        errorType: "unsupported_document_type",
+        error: message,
+        documentType: preflightResult.parsed?.documentType || "unsupported",
+        confidence: preflightResult.parsed?.confidence || "",
+      });
+    }
+
     const receiptRecord = await createVendorReceiptRecord({
       uploadedPhoto,
       vendorName,
       receiptDate,
       notes,
+      auth,
+      preflight: preflightResult.parsed,
     });
 
     const parseResult = await parseReceiptNow({
@@ -471,6 +768,7 @@ export default async function handler(req, res) {
       lineCount: parseResult.data?.lineCount || 0,
       transformApplied: parseResult.data?.transformApplied || "",
       orientationNeedsReview: Boolean(parseResult.data?.orientationNeedsReview),
+      preflight: preflightResult.parsed || null,
       parser: {
         parserVersion: parseResult.data?.parserVersion || "",
         orientationConfidence: parseResult.data?.orientationConfidence || "",
@@ -481,10 +779,10 @@ export default async function handler(req, res) {
     console.error("Receipt mobile submit error:", error);
 
     return sendJson(res, error.status || 500, {
-  ok: false,
-  error: error.message || "Unexpected receipt submit error.",
-  errorType: error.errorType || "receipt_mobile_submit_failed",
-  details: error.details || null,
-});
+      ok: false,
+      error: error.message || "Unexpected receipt submit error.",
+      errorType: error.errorType || "receipt_mobile_submit_failed",
+      details: error.details || null,
+    });
   }
 }
