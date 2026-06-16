@@ -63,8 +63,32 @@ function getInviteRedirectUrl() {
 }
 
 function getAllowedOrigin(origin) {
+  const allowed = new Set([
+    "https://portal.synthopulse.ai",
+    "https://www.synthopulse.ai",
+    "https://synthopulse.ai",
+    "http://localhost:3000",
+    "http://localhost:5173",
+  ]);
 
-  if (origin && allowed.has(origin)) return origin;
+  if (!origin) return "https://portal.synthopulse.ai";
+
+  if (allowed.has(origin)) return origin;
+
+  try {
+    const hostname = new URL(origin).hostname;
+
+    if (
+      hostname === "softr.app" ||
+      hostname.endsWith(".softr.app") ||
+      hostname === "softr.io" ||
+      hostname.endsWith(".softr.io")
+    ) {
+      return origin;
+    }
+  } catch {
+    return "https://portal.synthopulse.ai";
+  }
 
   return "https://portal.synthopulse.ai";
 }
