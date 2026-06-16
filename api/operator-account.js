@@ -63,13 +63,6 @@ function getInviteRedirectUrl() {
 }
 
 function getAllowedOrigin(origin) {
-  const allowed = new Set([
-    "https://portal.synthopulse.ai",
-    "https://www.synthopulse.ai",
-    "https://synthopulse.ai",
-    "http://localhost:3000",
-    "http://localhost:5173",
-  ]);
 
   if (origin && allowed.has(origin)) return origin;
 
