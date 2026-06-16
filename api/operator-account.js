@@ -3,31 +3,32 @@ const OPERATOR_USERS_TABLE_ID = "tblonO1fBQNB0PhJU";
 
 const DEFAULT_RESTAURANT_NAME =
   process.env.KITCHENPULSE_DEFAULT_RESTAURANT_NAME || "Chloe's";
+
 const DEFAULT_RESTAURANT_RECORD_ID =
   process.env.KITCHENPULSE_DEFAULT_RESTAURANT_RECORD_ID ||
   process.env.AIRTABLE_CHLOES_RESTAURANT_ID ||
   "recn2LoRESKN33zHW";
 
 const FIELD = {
-  email: "fldJp94NeNRKnS23b",
-  displayName: "fldpsasdMGgSa9FDm",
-  authProviderUserId: "fldtP3EVMJDBIyml8",
-  authProvider: "fldUEecqzcQC2WtGD",
-  restaurantName: "flduqtAU8z5JNDYoF",
-  restaurantAirtableRecordId: "fldH6iS8hwxKXjjIL",
-  role: "fldXKROtZ9cgkwdOR",
-  accessStatus: "fldTDjECLgqfnJekT",
-  mobileAccess: "fldiSdCIh3l1YCSVm",
-  portalAccess: "fldCXoESj5LEH2bP0",
-  lastLoginAt: "fldVEJC6mI29yZoFe",
-  notes: "fldAHuxgHyQF9DCG3",
+  email: "Email",
+  displayName: "Display Name",
+  authProviderUserId: "Auth Provider User ID",
+  authProvider: "Auth Provider",
+  restaurantName: "Restaurant Name",
+  restaurantAirtableRecordId: "Restaurant Airtable Record ID",
+  role: "Role",
+  accessStatus: "Access Status",
+  mobileAccess: "Mobile Access",
+  portalAccess: "Portal Access",
+  lastLoginAt: "Last Login At",
+  notes: "Notes",
 
-  sendClerkInvite: "fld6Hs406Qxsebf1A",
-  inviteStatus: "fldYYjjgAC1gzQnLg",
-  clerkInvitationId: "fldGrZtClTZo4RmCX",
-  inviteSentAt: "fldywY9PtSmHmC7xE",
-  inviteLastError: "fldDfHbhdQQ4MtNxs",
-  inviteReadySummary: "fld0sXZnocU6O7DZa",
+  sendClerkInvite: "Send Clerk Invite",
+  inviteStatus: "Invite Status",
+  clerkInvitationId: "Clerk Invitation ID",
+  inviteSentAt: "Invite Sent At",
+  inviteLastError: "Invite Last Error",
+  inviteReadySummary: "Invite Ready Summary",
 };
 
 const INVITE_STATUS = {
@@ -250,7 +251,7 @@ async function findOperatorByEmail(email) {
     FIELD.inviteStatus,
     FIELD.inviteSentAt,
     FIELD.inviteLastError,
-  ].forEach((fieldId) => params.append("fields[]", fieldId));
+  ].forEach((fieldName) => params.append("fields[]", fieldName));
 
   const data = await airtableFetch(`?${params.toString()}`);
   const record = data?.records?.[0];
@@ -287,7 +288,7 @@ async function listOperators() {
     FIELD.inviteSentAt,
     FIELD.inviteLastError,
     FIELD.inviteReadySummary,
-  ].forEach((fieldId) => params.append("fields[]", fieldId));
+  ].forEach((fieldName) => params.append("fields[]", fieldName));
 
   const data = await airtableFetch(`?${params.toString()}`);
 
