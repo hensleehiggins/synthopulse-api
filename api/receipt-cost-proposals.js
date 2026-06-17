@@ -234,6 +234,119 @@ function asNumberOrNull(value) {
   return Number.isNaN(numberValue) ? null : numberValue;
 }
 
+function formatReceiptNumber(value) {
+  const numberValue = asNumberOrNull(value);
+  if (numberValue === null) return "";
+
+  return Number.isInteger(numberValue)
+    ? String(numberValue)
+    : String(Number(numberValue.toFixed(2)));
+}
+
+function farmersUnitLabel(value) {
+  const upper = String(value || "").toUpperCase();
+
+  if (upper === "CS") return "case";
+  if (upper === "BX") return "box";
+  if (upper === "LB") return "lb";
+  if (upper === "PC") return "pc";
+  if (upper === "EA") return "each";
+
+  return String(value || "").toLowerCase();
+}
+
+function extractFarmersPortionSize(rawText) {
+  const text = String(rawText || "");
+
+  const ounceMatch = text.match(/\b(\d+(?:\s*\/\s*\d+)?(?:\.\d+)?)\s*OZ\b/i);
+  if (!ounceMatch) return "";
+
+  return `${ounceMatch[1].replace(/\s+/g, "")} oz`;
+}
+
+function extractFarmersPackSize(rawText) {
+  const text = String(rawText || "");
+
+  const packMatch = text.match(/\b(\d+)\s*[xX]\s*(\d+(?:\.\d+)?)\s*LB\b/i);
+  if (!packMatch) return "";
+
+  return `${packMatch[1]} x ${packMatch[2]} lb`;
+}
+
+function isFarmersFishermenVendor(value) {
+  const upper = String(value || "").toUpperCase();
+
+  return (
+    upper.includes("FARMERS") ||
+    upper.includes("FISHERMEN") ||
+    upper.includes("FISHERMEN PURVEYORS")
+  );
+}
+
+function normalizeFarmersFishermenLineValues(line = {}) {
+  const vendor = line.vendor || "";
+  const rawText = [
+    line.rawLineText,
+    line.originalLineItemName,
+    line.lineItemName,
+    line.lineName,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  if (!isFarmersFishermenVendor(vendor)) return null;
+  if (!rawText || isNonItemChargeLine(rawText)) return null;
+
+  const match = rawText.match(
+    /\b(\d+(?:\.\d+)?)\s*(CS|BX|EA|PC|LB)\s+(\d+(?:\.\d+)?)\s*(LB|CS|BX|EA|PC)\s+\$?(\d+(?:\.\d+)?)\s+\$?(\d+(?:\.\d+)?)\b\s*$/i
+  );
+
+  if (!match) return null;
+
+  const orderQty = asNumberOrNull(match[1]);
+  const orderUnitRaw = match[2];
+  const shippedQty = asNumberOrNull(match[3]);
+  const shippedUnitRaw = match[4];
+  const unitCost = asNumberOrNull(match[5]);
+  const lineTotal = asNumberOrNull(match[6]);
+
+  if (
+    orderQty === null ||
+    shippedQty === null ||
+    unitCost === null ||
+    lineTotal === null
+  ) {
+    return null;
+  }
+
+  const orderUnit = farmersUnitLabel(orderUnitRaw);
+  const shippedUnit = farmersUnitLabel(shippedUnitRaw);
+  const portionSize = extractFarmersPortionSize(rawText);
+  const explicitPackSize = extractFarmersPackSize(rawText);
+
+  let packageSize = "";
+
+  if (explicitPackSize) {
+    packageSize = `${formatReceiptNumber(orderQty)} ${orderUnit} / ${explicitPackSize}`;
+  } else {
+    packageSize = `${formatReceiptNumber(orderQty)} ${orderUnit} / ${formatReceiptNumber(
+      shippedQty
+    )} ${shippedUnit}`;
+  }
+
+  if (portionSize && !packageSize.toLowerCase().includes(portionSize.toLowerCase())) {
+    packageSize = `${packageSize} / ${portionSize}`;
+  }
+
+  return {
+    quantity: shippedQty,
+    unit: shippedUnit,
+    packageSize,
+    unitCost,
+    lineTotal,
+  };
+}
+
 function money(value) {
   const numberValue = asNumberOrNull(value);
   if (numberValue === null) return "unknown";
@@ -277,14 +390,18 @@ function isMeaningfulCostChange(currentCost, proposedCost) {
 }
 
 function getProposedCostFromLineRecord(record) {
-  const fields = record.fields || {};
-  const unitCost = asNumberOrNull(fields[LINE_FIELD.unitCost]);
-  const lineTotal = asNumberOrNull(fields[LINE_FIELD.lineTotal]);
-  const quantity = asNumberOrNull(fields[LINE_FIELD.quantity]);
+  const line = normalizeLineRecord(record);
+
+  const unitCost = asNumberOrNull(line.unitCost);
+  const lineTotal = asNumberOrNull(line.lineTotal);
+  const quantity = asNumberOrNull(line.quantity);
 
   if (unitCost !== null && unitCost > 0) return unitCost;
-  if (lineTotal !== null && quantity !== null && quantity > 0) return lineTotal / quantity;
+  if (lineTotal !== null && quantity !== null && quantity > 0) {
+    return lineTotal / quantity;
+  }
   if (lineTotal !== null && lineTotal > 0) return lineTotal;
+
   return null;
 }
 
@@ -601,7 +718,7 @@ function getInventoryCurrentCost(record) {
 function normalizeLineRecord(record) {
   const fields = record.fields || {};
 
-  return {
+  const rawLine = {
     id: record.id,
     createdTime: record.createdTime,
     lineName: fields[LINE_FIELD.lineName] || "",
@@ -623,6 +740,19 @@ function normalizeLineRecord(record) {
     approved: Boolean(fields[LINE_FIELD.approved]),
     rawLineText: fields[LINE_FIELD.rawLineText] || "",
     notes: fields[LINE_FIELD.notes] || "",
+  };
+
+  const farmersValues = normalizeFarmersFishermenLineValues(rawLine);
+
+  if (!farmersValues) return rawLine;
+
+  return {
+    ...rawLine,
+    quantity: farmersValues.quantity,
+    unit: farmersValues.unit,
+    packageSize: farmersValues.packageSize,
+    unitCost: farmersValues.unitCost,
+    lineTotal: farmersValues.lineTotal,
   };
 }
 
