@@ -1141,6 +1141,122 @@ function asNumberOrNull(value) {
   return numericValue;
 }
 
+function formatReceiptNumber(value) {
+  const numberValue = asNumberOrNull(value);
+  if (numberValue === null) return "";
+
+  return Number.isInteger(numberValue)
+    ? String(numberValue)
+    : String(Number(numberValue.toFixed(2)));
+}
+
+function farmersUnitLabel(value) {
+  const upper = String(value || "").toUpperCase();
+
+  if (upper === "CS") return "case";
+  if (upper === "BX") return "box";
+  if (upper === "LB") return "lb";
+  if (upper === "PC") return "pc";
+  if (upper === "EA") return "each";
+
+  return String(value || "").toLowerCase();
+}
+
+function extractFarmersPortionSize(rawText) {
+  const text = String(rawText || "");
+
+  const ounceMatch = text.match(/\b(\d+(?:\s*\/\s*\d+)?(?:\.\d+)?)\s*OZ\b/i);
+  if (!ounceMatch) return "";
+
+  return `${ounceMatch[1].replace(/\s+/g, "")} oz`;
+}
+
+function extractFarmersPackSize(rawText) {
+  const text = String(rawText || "");
+
+  const packMatch = text.match(/\b(\d+)\s*[xX]\s*(\d+(?:\.\d+)?)\s*LB\b/i);
+  if (!packMatch) return "";
+
+  return `${packMatch[1]} x ${packMatch[2]} lb`;
+}
+
+function isFarmersFishermenVendor(value) {
+  const upper = String(value || "").toUpperCase();
+
+  return (
+    upper.includes("FARMERS") ||
+    upper.includes("FISHERMEN") ||
+    upper.includes("FISHERMEN PURVEYORS")
+  );
+}
+
+function normalizeFarmersFishermenLineValues(line = {}) {
+  const vendor = line.vendor || "";
+  const rawText = [
+    line.rawLineText,
+    line.originalLineItemName,
+    line.lineItemName,
+    line.lineName,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  if (!isFarmersFishermenVendor(vendor)) return null;
+  if (!rawText || isNonItemChargeLine(rawText)) return null;
+
+  // Farmers & Fishermen catch-weight row shape:
+  // order qty + order unit + shipped qty + shipped unit + price + extension
+  // Example: 1.00 CS 12.76 LB 40.59 517.93
+  const match = rawText.match(
+    /\b(\d+(?:\.\d+)?)\s*(CS|BX|EA|PC|LB)\s+(\d+(?:\.\d+)?)\s*(LB|CS|BX|EA|PC)\s+\$?(\d+(?:\.\d+)?)\s+\$?(\d+(?:\.\d+)?)\b\s*$/i
+  );
+
+  if (!match) return null;
+
+  const orderQty = asNumberOrNull(match[1]);
+  const orderUnitRaw = match[2];
+  const shippedQty = asNumberOrNull(match[3]);
+  const shippedUnitRaw = match[4];
+  const unitCost = asNumberOrNull(match[5]);
+  const lineTotal = asNumberOrNull(match[6]);
+
+  if (
+    orderQty === null ||
+    shippedQty === null ||
+    unitCost === null ||
+    lineTotal === null
+  ) {
+    return null;
+  }
+
+  const orderUnit = farmersUnitLabel(orderUnitRaw);
+  const shippedUnit = farmersUnitLabel(shippedUnitRaw);
+  const portionSize = extractFarmersPortionSize(rawText);
+  const explicitPackSize = extractFarmersPackSize(rawText);
+
+  let packageSize = "";
+
+  if (explicitPackSize) {
+    packageSize = `${formatReceiptNumber(orderQty)} ${orderUnit} / ${explicitPackSize}`;
+  } else {
+    packageSize = `${formatReceiptNumber(orderQty)} ${orderUnit} / ${formatReceiptNumber(
+      shippedQty
+    )} ${shippedUnit}`;
+  }
+
+  if (portionSize && !packageSize.toLowerCase().includes(portionSize.toLowerCase())) {
+    packageSize = `${packageSize} / ${portionSize}`;
+  }
+
+  return {
+    quantity: shippedQty,
+    unit: shippedUnit,
+    packageSize,
+    unitCost,
+    lineTotal,
+  };
+}
+
 function normalizeLineRecord(record) {
   const fields = record.fields || {};
 
@@ -1162,10 +1278,24 @@ function normalizeLineRecord(record) {
       ? fields[FIELD.lineTotal]
       : null;
 
+  const farmersValues = normalizeFarmersFishermenLineValues({
+    vendor: fields[FIELD.vendor] || "",
+    rawLineText,
+    originalLineItemName: rawLineName,
+    lineItemName: cleanedLineName,
+    lineName: fields[FIELD.lineName] || "",
+  });
+
+  const finalQuantity = farmersValues?.quantity ?? quantity;
+  const finalUnit = farmersValues?.unit ?? unit;
+  const finalPackageSize = farmersValues?.packageSize ?? packageSize;
+  const finalUnitCost = farmersValues?.unitCost ?? unitCost;
+  const finalLineTotal = farmersValues?.lineTotal ?? lineTotal;
+
   const previewLine = {
-    quantity,
-    unit,
-    packageSize,
+    quantity: finalQuantity,
+    unit: finalUnit,
+    packageSize: finalPackageSize,
   };
 
 return {
@@ -1184,11 +1314,11 @@ return {
     matchedCostSourceItemIds: linkedIds(fields[FIELD.matchedCostSourceItem]),
 
     category,
-    quantity,
-    unit,
-    packageSize,
-    unitCost,
-    lineTotal,
+    quantity: finalQuantity,
+    unit: finalUnit,
+    packageSize: finalPackageSize,
+    unitCost: finalUnitCost,
+    lineTotal: finalLineTotal,
 
     confidence,
     needsReview: Boolean(fields[FIELD.needsReview]),
@@ -1404,6 +1534,16 @@ if (isNonItemChargeLine(chargeCheckText)) {
     ok: false,
     error: "This looks like a vendor charge, not a product line. It should not be approved as a cost item.",
   });
+}
+
+const farmersValues = normalizeFarmersFishermenLineValues(existingLine);
+
+if (farmersValues) {
+  fields[FIELD.quantity] = farmersValues.quantity;
+  fields[FIELD.unit] = farmersValues.unit;
+  fields[FIELD.packageSize] = farmersValues.packageSize;
+  fields[FIELD.unitCost] = farmersValues.unitCost;
+  fields[FIELD.lineTotal] = farmersValues.lineTotal;
 }
 
 if (
