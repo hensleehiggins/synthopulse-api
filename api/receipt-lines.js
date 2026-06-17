@@ -133,7 +133,8 @@ function isNonItemChargeLine(value) {
     /\bREMOTE\s+STOCK\b/.test(upper) ||
     /\bF\s+OUT\b/.test(upper) ||
     /\bOUT\s+EA\b/.test(upper) ||
-    /\bOUT\s+CS\b/.test(upper)
+    /\bOUT\s+CS\b/.test(upper) ||
+    /\bOUT\b/.test(upper)
   ) {
     return true;
   }
@@ -430,6 +431,167 @@ function buildLineReviewHint({ originalLineItemName, cleanedLineName, rawLineTex
   return reasons.join(" · ");
 }
 
+function farmersFishermenFriendlyName(value) {
+  const original = String(value || "").trim();
+
+  if (!original) return "";
+
+  const upper = original.toUpperCase().replace(/&/g, " AND ");
+  const compact = upper.replace(/[^A-Z0-9/]+/g, " ").replace(/\s+/g, " ").trim();
+
+  if (!compact) return "";
+
+  if (/\bOUT\b/.test(compact)) return "";
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\bMIDWESTERN\b/.test(compact) &&
+    /\bTENDERLOIN\b/.test(compact) &&
+    /\b(FILET|FILLET)\b/.test(compact)
+  ) {
+    if (/\bC\s*\/\s*C\b/.test(upper) && /\b8\s*OZ\b/.test(upper)) {
+      return "Beef Tenderloin Filet C/C 8 oz";
+    }
+
+    if (/\b8\s*OZ\b/.test(upper)) {
+      return "Beef Tenderloin Filet 8 oz";
+    }
+
+    return "Beef Tenderloin Filet";
+  }
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\bRIBEYE\b/.test(compact) &&
+    /\bLIP\s*[- ]?\s*ON\b/.test(upper) &&
+    /\bCHOICE\b/.test(compact) &&
+    /\bANGUS\b/.test(compact)
+  ) {
+    return "Beef Ribeye Lip-On Choice Angus";
+  }
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\b(?:OX1|0X1|O\s*X\s*1|0\s*X\s*1)\b/.test(upper) &&
+    /\bSTRIP/.test(compact) &&
+    /\bCHOICE\b/.test(compact) &&
+    /\bANGUS\b/.test(compact)
+  ) {
+    return "Beef 0x1 Strip Loin Choice Angus";
+  }
+
+  if (
+    /\bSQUID\b/.test(compact) &&
+    /\bRINGS?\b/.test(compact) &&
+    /\bTENTACLES?\b/.test(compact)
+  ) {
+    if (/\bTOWN\s+DOCK\b/.test(upper)) {
+      return "Town Dock Squid Rings & Tentacles";
+    }
+
+    return "Squid Rings & Tentacles";
+  }
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\bRIBEYE\b/.test(compact) &&
+    /\bCOWBOY\b/.test(compact) &&
+    /\bCHOICE\b/.test(compact) &&
+    /\bANGUS\b/.test(compact)
+  ) {
+    const isBoneIn =
+      /\bB\s*\/\s*I\b/.test(upper) ||
+      /\bBONE\s*[- ]?\s*IN\b/.test(upper);
+
+    if (isBoneIn && /\b20\s*OZ\b/.test(upper)) {
+      return "Cowboy Ribeye Steak Bone-In Choice 20 oz Angus";
+    }
+
+    if (isBoneIn) {
+      return "Cowboy Ribeye Steak Bone-In Choice Angus";
+    }
+
+    return "Cowboy Ribeye Steak Choice Angus";
+  }
+
+  if (
+    /\bCOWBOY\b/.test(compact) &&
+    /\bSTEAK\b/.test(compact) &&
+    /\bSPLIT\b/.test(compact) &&
+    /\bBONE\b/.test(compact) &&
+    /\b1855\b/.test(compact)
+  ) {
+    return "Cowboy Steak Split Bone 1855 Angus Beef Rib USDA Choice";
+  }
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\bPATTY\b/.test(compact) &&
+    /\bSPECIAL\b/.test(compact) &&
+    /\bBLEND\b/.test(compact)
+  ) {
+    if (/\b8\s*OZ\b/.test(upper)) {
+      return "Beef Patty 8 oz Special Blend";
+    }
+
+    return "Beef Patty Special Blend";
+  }
+
+  if (
+    /\bCANADIAN\b/.test(compact) &&
+    /\bLOBSTER\b/.test(compact) &&
+    /\bTAILS?\b/.test(compact)
+  ) {
+    if (/\b6\s*\/\s*7\s*OZ\b/.test(upper)) {
+      return "Canadian Lobster Tails 6/7 oz";
+    }
+
+    return "Canadian Lobster Tails";
+  }
+
+  if (
+    /\bCOOKED\b/.test(compact) &&
+    /\bOCTOPUS\b/.test(compact) &&
+    /\bLEGS?\b/.test(compact)
+  ) {
+    return "Cooked Octopus Legs";
+  }
+
+  if (
+    /\bSOCKEYE\b/.test(compact) &&
+    /\bSALMON\b/.test(compact) &&
+    /\b(FILLET|FILET|FILLETS|FILETS)\b/.test(compact)
+  ) {
+    if (/\bSKIN\b|\bSKIN\s*[- ]?\s*ON\b|\bS\s*\/\s*ON\b/.test(upper)) {
+      return "Sockeye Salmon Fillet Skin-On";
+    }
+
+    return "Sockeye Salmon Fillet";
+  }
+
+  if (
+    /\bCHICKEN\b|\bCHIX\b|\bCHKN\b/.test(compact) &&
+    /\bWINGS?\b|\bWNG\b/.test(compact) &&
+    /\bSPLIT\b/.test(compact) &&
+    /\b6\s*\/\s*8\b/.test(upper)
+  ) {
+    return "Chicken Wings Split 6/8 Jumbo";
+  }
+
+  if (
+    /\bOLLI\b/.test(compact) &&
+    /\bPEPPERONI\b/.test(compact)
+  ) {
+    if (/\b2\s*\/\s*5\s*LB\b/.test(upper)) {
+      return "Olli Pepperoni 2/5 lb";
+    }
+
+    return "Olli Pepperoni";
+  }
+
+  return "";
+}
+
 function friendlyVendorItemName(value, category = "") {
  const rawOriginal = String(value || "").trim();
 if (!rawOriginal) return "";
@@ -442,7 +604,10 @@ if (!raw) return "";
 
 const upper = raw.toUpperCase();
 
-  if (isNonItemChargeLine(upper)) return "";
+  if (isNonItemChargeLine(upper) || isNonItemChargeLine(rawOriginal)) return "";
+
+  const farmersName = farmersFishermenFriendlyName(rawOriginal);
+  if (farmersName) return farmersName;
 
   const conservativeSyscoName = conservativeSyscoFriendlyName(upper);
   if (conservativeSyscoName) return conservativeSyscoName;
