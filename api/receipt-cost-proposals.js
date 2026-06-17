@@ -234,13 +234,13 @@ function asNumberOrNull(value) {
   return Number.isNaN(numberValue) ? null : numberValue;
 }
 
-function formatReceiptNumber(value) {
-  const numberValue = asNumberOrNull(value);
-  if (numberValue === null) return "";
+function niceNumber(value) {
+  const numericValue = asNumberOrNull(value);
+  if (numericValue === null) return "";
 
-  return Number.isInteger(numberValue)
-    ? String(numberValue)
-    : String(Number(numberValue.toFixed(2)));
+  return Number.isInteger(numericValue)
+    ? String(numericValue)
+    : String(Number(numericValue.toFixed(2)));
 }
 
 function farmersUnitLabel(value) {
@@ -257,20 +257,27 @@ function farmersUnitLabel(value) {
 
 function extractFarmersPortionSize(rawText) {
   const text = String(rawText || "");
+  const ounceMatch = text.match(/(\d+(?:\s*\/\s*\d+)?(?:\.\d+)?)\s*OZ/i);
 
-  const ounceMatch = text.match(/\b(\d+(?:\s*\/\s*\d+)?(?:\.\d+)?)\s*OZ\b/i);
   if (!ounceMatch) return "";
 
   return `${ounceMatch[1].replace(/\s+/g, "")} oz`;
 }
 
-function extractFarmersPackSize(rawText) {
+function extractFarmersExplicitPackSize(rawText) {
   const text = String(rawText || "");
 
-  const packMatch = text.match(/\b(\d+)\s*[xX]\s*(\d+(?:\.\d+)?)\s*LB\b/i);
-  if (!packMatch) return "";
+  const poundPackMatch = text.match(/(\d+)\s*[xX]\s*(\d+(?:\.\d+)?)\s*LB/i);
+  if (poundPackMatch) {
+    return `${poundPackMatch[1]} x ${poundPackMatch[2]} lb`;
+  }
 
-  return `${packMatch[1]} x ${packMatch[2]} lb`;
+  const countPackMatch = text.match(/(\d+)\s*[xX]\s*(\d+)/i);
+  if (countPackMatch) {
+    return `${countPackMatch[1]}x${countPackMatch[2]}`;
+  }
+
+  return "";
 }
 
 function isFarmersFishermenVendor(value) {
@@ -281,6 +288,88 @@ function isFarmersFishermenVendor(value) {
     upper.includes("FISHERMEN") ||
     upper.includes("FISHERMEN PURVEYORS")
   );
+}
+
+function parseFarmersCatchWeight(rawText = "") {
+  const text = String(rawText || "")
+    .replace(/\$/g, "")
+    .replace(/,/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const matches = [...text.matchAll(
+    /(\d+(?:\.\d+)?)\s*(CS|BX|EA|PC|LB)\s+(\d+(?:\.\d+)?)\s*(LB|CS|BX|EA|PC)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)/gi
+  )];
+
+  if (!matches.length) return null;
+
+  const candidates = matches
+    .map((match) => {
+      const orderQty = asNumberOrNull(match[1]);
+      const orderUnitRaw = match[2];
+      const shippedQty = asNumberOrNull(match[3]);
+      const shippedUnitRaw = match[4];
+      const unitCost = asNumberOrNull(match[5]);
+      const lineTotal = asNumberOrNull(match[6]);
+
+      if (
+        orderQty === null ||
+        shippedQty === null ||
+        unitCost === null ||
+        lineTotal === null
+      ) {
+        return null;
+      }
+
+      const expectedTotal = shippedQty * unitCost;
+      const delta = Math.abs(expectedTotal - lineTotal);
+
+      return {
+        orderQty,
+        orderUnitRaw,
+        shippedQty,
+        shippedUnitRaw,
+        unitCost,
+        lineTotal,
+        delta,
+      };
+    })
+    .filter(Boolean);
+
+  if (!candidates.length) return null;
+
+  candidates.sort((a, b) => a.delta - b.delta);
+  const best = candidates[0];
+
+  // Avoid turning unrelated numbers into receipt cost math.
+  if (best.delta > 0.15) return null;
+
+  const orderUnit = farmersUnitLabel(best.orderUnitRaw);
+  const shippedUnit = farmersUnitLabel(best.shippedUnitRaw);
+  const portionSize = extractFarmersPortionSize(text);
+  const explicitPackSize = extractFarmersExplicitPackSize(text);
+
+  let packageSize = "";
+
+  if (explicitPackSize) {
+    packageSize = `${niceNumber(best.orderQty)} ${orderUnit} / ${explicitPackSize}`;
+  } else {
+    packageSize = `${niceNumber(best.orderQty)} ${orderUnit} / ${niceNumber(
+      best.shippedQty
+    )} ${shippedUnit}`;
+  }
+
+  if (portionSize && !packageSize.toLowerCase().includes(portionSize.toLowerCase())) {
+    packageSize = `${packageSize} / ${portionSize}`;
+  }
+
+  return {
+    quantity: best.shippedQty,
+    unit: shippedUnit,
+    packageSize,
+    unitCost: best.unitCost,
+    lineTotal: best.lineTotal,
+  };
 }
 
 function normalizeFarmersFishermenLineValues(line = {}) {
@@ -297,54 +386,7 @@ function normalizeFarmersFishermenLineValues(line = {}) {
   if (!isFarmersFishermenVendor(vendor)) return null;
   if (!rawText || isNonItemChargeLine(rawText)) return null;
 
-  const match = rawText.match(
-    /\b(\d+(?:\.\d+)?)\s*(CS|BX|EA|PC|LB)\s+(\d+(?:\.\d+)?)\s*(LB|CS|BX|EA|PC)\s+\$?(\d+(?:\.\d+)?)\s+\$?(\d+(?:\.\d+)?)\b\s*$/i
-  );
-
-  if (!match) return null;
-
-  const orderQty = asNumberOrNull(match[1]);
-  const orderUnitRaw = match[2];
-  const shippedQty = asNumberOrNull(match[3]);
-  const shippedUnitRaw = match[4];
-  const unitCost = asNumberOrNull(match[5]);
-  const lineTotal = asNumberOrNull(match[6]);
-
-  if (
-    orderQty === null ||
-    shippedQty === null ||
-    unitCost === null ||
-    lineTotal === null
-  ) {
-    return null;
-  }
-
-  const orderUnit = farmersUnitLabel(orderUnitRaw);
-  const shippedUnit = farmersUnitLabel(shippedUnitRaw);
-  const portionSize = extractFarmersPortionSize(rawText);
-  const explicitPackSize = extractFarmersPackSize(rawText);
-
-  let packageSize = "";
-
-  if (explicitPackSize) {
-    packageSize = `${formatReceiptNumber(orderQty)} ${orderUnit} / ${explicitPackSize}`;
-  } else {
-    packageSize = `${formatReceiptNumber(orderQty)} ${orderUnit} / ${formatReceiptNumber(
-      shippedQty
-    )} ${shippedUnit}`;
-  }
-
-  if (portionSize && !packageSize.toLowerCase().includes(portionSize.toLowerCase())) {
-    packageSize = `${packageSize} / ${portionSize}`;
-  }
-
-  return {
-    quantity: shippedQty,
-    unit: shippedUnit,
-    packageSize,
-    unitCost,
-    lineTotal,
-  };
+  return parseFarmersCatchWeight(rawText);
 }
 
 function money(value) {
@@ -390,18 +432,16 @@ function isMeaningfulCostChange(currentCost, proposedCost) {
 }
 
 function getProposedCostFromLineRecord(record) {
-  const line = normalizeLineRecord(record);
-
-  const unitCost = asNumberOrNull(line.unitCost);
-  const lineTotal = asNumberOrNull(line.lineTotal);
-  const quantity = asNumberOrNull(line.quantity);
+  const line = record?.fields ? normalizeLineRecord(record) : record;
+  const unitCost = asNumberOrNull(line?.unitCost);
+  const lineTotal = asNumberOrNull(line?.lineTotal);
+  const quantity = asNumberOrNull(line?.quantity);
 
   if (unitCost !== null && unitCost > 0) return unitCost;
   if (lineTotal !== null && quantity !== null && quantity > 0) {
     return lineTotal / quantity;
   }
   if (lineTotal !== null && lineTotal > 0) return lineTotal;
-
   return null;
 }
 
@@ -428,22 +468,22 @@ function isReliablePackageIdentity(value) {
   if (!normalized) return false;
 
   // Reject obvious OCR/model garbage.
-  if (/\bonly\b/i.test(normalized)) return false;
+  if (/only/i.test(normalized)) return false;
   if (normalized.includes(",")) return false;
-  if (normalized.length > 24) return false;
+  if (normalized.length > 32) return false;
 
   // Catch weights like 12.76 lb, 9.00 lb, or 27.74 lb should not become
   // permanent cost-source identity text. They change invoice to invoice.
-  if (/\b\d+\.\d+\s*lb\b/i.test(normalized)) return false;
+  if (/\d+\.\d+\s*lb/i.test(normalized)) return false;
 
   // Must contain a real package/unit marker.
-  if (!/\b(cs|case|ea|lb|oz|gal|qt|pt|ct|dz)\b/i.test(normalized)) {
+  if (!/(cs|case|ea|lb|oz|gal|qt|pt|ct|dz)/i.test(normalized)) {
     return false;
   }
 
   // Reject long mixed phrases that look like multiple products/packages.
   const tokenCount = normalized.split(/\s+/).filter(Boolean).length;
-  if (tokenCount > 5) return false;
+  if (tokenCount > 6) return false;
 
   return true;
 }
@@ -1585,61 +1625,61 @@ function isNonItemChargeLine(value) {
   const upper = String(value || "").toUpperCase();
 
   if (
-    /\bREMOTE\s*-\s*STOCK\b/.test(upper) ||
-    /\bREMOTE\s+STOCK\b/.test(upper) ||
-    /\bF\s+OUT\b/.test(upper) ||
-    /\bOUT\s+EA\b/.test(upper) ||
-    /\bOUT\s+CS\b/.test(upper) ||
-    /\bOUT\b/.test(upper)
+    /REMOTE\s*-\s*STOCK/.test(upper) ||
+    /REMOTE\s+STOCK/.test(upper) ||
+    /F\s+OUT/.test(upper) ||
+    /OUT\s+EA/.test(upper) ||
+    /OUT\s+CS/.test(upper) ||
+    /OUT/.test(upper)
   ) {
     return true;
   }
 
   if (
-    /\bBREAD\b/.test(upper) &&
-    /\b(SOUR|DGH|DOUGH)\b/.test(upper) &&
-    /\b(BOWL|BOWLS)\b/.test(upper)
+    /BREAD/.test(upper) &&
+    /(SOUR|DGH|DOUGH)/.test(upper) &&
+    /(BOWL|BOWLS)/.test(upper)
   ) {
     return false;
   }
 
   if (
-    /\bCAMBRO\b/.test(upper) ||
+    /CAMBRO/.test(upper) ||
     (
-      /\b(COVER|COVERS)\b/.test(upper) &&
-      /\b(PLAS|PLASTIC|CAMWR|CAMBRO|CONTAINER|CNTNR)\b/.test(upper)
+      /(COVER|COVERS)/.test(upper) &&
+      /(PLAS|PLASTIC|CAMWR|CAMBRO|CONTAINER|CNTNR)/.test(upper)
     )
   ) {
     return true;
   }
 
   return (
-    /\bTOTAL\b/.test(upper) &&
-    /\b(PAPER|DISPOSABLE|DISPOSABLES|GROUP|SUPPLIES|EQUIPMENT)\b/.test(upper)
+    /TOTAL/.test(upper) &&
+    /(PAPER|DISPOSABLE|DISPOSABLES|GROUP|SUPPLIES|EQUIPMENT)/.test(upper)
   ) || (
-    /\bCATEGORY\b/.test(upper) && /\bTOTAL\b/.test(upper)
+    /CATEGORY/.test(upper) && /TOTAL/.test(upper)
   ) || (
-    /\bGROUP\s+TOTAL\b/.test(upper)
+    /GROUP\s+TOTAL/.test(upper)
   ) || (
-    /\bFUEL\b/.test(upper) && /\bSURCHARGE\b/.test(upper)
+    /FUEL/.test(upper) && /SURCHARGE/.test(upper)
   ) || (
-    /\bDELIVERY\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
+    /DELIVERY/.test(upper) && /(CHARGE|FEE)/.test(upper)
   ) || (
-    /\bTRANSPORTATION\b/.test(upper) && /\bFEE\b/.test(upper)
+    /TRANSPORTATION/.test(upper) && /FEE/.test(upper)
   ) || (
-    /\bFREIGHT\b/.test(upper)
+    /FREIGHT/.test(upper)
   ) || (
-    /\bSERVICE\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
+    /SERVICE/.test(upper) && /(CHARGE|FEE)/.test(upper)
   ) || (
-    /\bMISC\b/.test(upper) && /\bCHARGES?\b/.test(upper)
+    /MISC/.test(upper) && /CHARGES?/.test(upper)
   ) || (
-    /\bCHGS?\b/.test(upper) && /\bFUEL\b/.test(upper)
+    /CHGS?/.test(upper) && /FUEL/.test(upper)
   ) || (
-    /\b(CONTAINER|CNTNR|CUP|CUPS|LID|LIDS|COVER|COVERS|CUTLERY|FORK|FORKS|KNIFE|KNIVES|SPOON|SPOONS|NAPKIN|NAPKINS|STRAW|STRAWS|PLATE|PLATES|BOWL|BOWLS|TRAY|TRAYS|LINER|LINERS|GLOVE|GLOVES|NITRILE|PAD\s+SCOUR|SCOUR\s+PAD|SCOUR|BRUSH|TOWEL|TOWELS)\b/.test(upper)
+    /(CONTAINER|CNTNR|CUP|CUPS|LID|LIDS|COVER|COVERS|CUTLERY|FORK|FORKS|KNIFE|KNIVES|SPOON|SPOONS|NAPKIN|NAPKINS|STRAW|STRAWS|PLATE|PLATES|BOWL|BOWLS|TRAY|TRAYS|LINER|LINERS|GLOVE|GLOVES|NITRILE|PAD\s+SCOUR|SCOUR\s+PAD|SCOUR|BRUSH|TOWEL|TOWELS)/.test(upper)
   ) || (
-    /\bPLAS\b/.test(upper) && /\b(CONTAINER|CUP|CLR|CLEAR|MICRO|BLACK|BLK|COVER|COVERS)\b/.test(upper)
+    /PLAS/.test(upper) && /(CONTAINER|CUP|CLR|CLEAR|MICRO|BLACK|BLK|COVER|COVERS)/.test(upper)
   ) || (
-    /\bEARTHCHO\b/.test(upper) && /\bKIT\b/.test(upper) && /\bCUTLERY\b/.test(upper)
+    /EARTHCHO/.test(upper) && /KIT/.test(upper) && /CUTLERY/.test(upper)
   );
 }
 
@@ -1693,20 +1733,19 @@ function farmersFishermenFriendlyName(value) {
   const compact = upper.replace(/[^A-Z0-9/]+/g, " ").replace(/\s+/g, " ").trim();
 
   if (!compact) return "";
-
-  if (/\bOUT\b/.test(compact)) return "";
+  if (/OUT/.test(compact)) return "";
 
   if (
-    /\bBEEF\b/.test(compact) &&
-    /\bMIDWESTERN\b/.test(compact) &&
-    /\bTENDERLOIN\b/.test(compact) &&
-    /\b(FILET|FILLET)\b/.test(compact)
+    /BEEF/.test(compact) &&
+    /MIDWESTERN/.test(compact) &&
+    /TENDERLOIN/.test(compact) &&
+    /(FILET|FILLET)/.test(compact)
   ) {
-    if (/\bC\s*\/\s*C\b/.test(upper) && /\b8\s*OZ\b/.test(upper)) {
+    if (/C\s*\/\s*C/.test(upper) && /8\s*OZ/.test(upper)) {
       return "Beef Tenderloin Filet C/C 8 oz";
     }
 
-    if (/\b8\s*OZ\b/.test(upper)) {
+    if (/8\s*OZ/.test(upper)) {
       return "Beef Tenderloin Filet 8 oz";
     }
 
@@ -1714,31 +1753,31 @@ function farmersFishermenFriendlyName(value) {
   }
 
   if (
-    /\bBEEF\b/.test(compact) &&
-    /\bRIBEYE\b/.test(compact) &&
-    /\bLIP\s*[- ]?\s*ON\b/.test(upper) &&
-    /\bCHOICE\b/.test(compact) &&
-    /\bANGUS\b/.test(compact)
+    /BEEF/.test(compact) &&
+    /RIBEYE/.test(compact) &&
+    /LIP\s*[- ]?\s*ON/.test(upper) &&
+    /CHOICE/.test(compact) &&
+    /ANGUS/.test(compact)
   ) {
     return "Beef Ribeye Lip-On Choice Angus";
   }
 
   if (
-    /\bBEEF\b/.test(compact) &&
-    /\b(?:OX1|0X1|O\s*X\s*1|0\s*X\s*1)\b/.test(upper) &&
-    /\bSTRIP/.test(compact) &&
-    /\bCHOICE\b/.test(compact) &&
-    /\bANGUS\b/.test(compact)
+    /BEEF/.test(compact) &&
+    /(?:OX1|0X1|O\s*X\s*1|0\s*X\s*1)/.test(upper) &&
+    /STRIP/.test(compact) &&
+    /CHOICE/.test(compact) &&
+    /ANGUS/.test(compact)
   ) {
     return "Beef 0x1 Strip Loin Choice Angus";
   }
 
   if (
-    /\bSQUID\b/.test(compact) &&
-    /\bRINGS?\b/.test(compact) &&
-    /\bTENTACLES?\b/.test(compact)
+    /SQUID/.test(compact) &&
+    /RINGS?/.test(compact) &&
+    /TENTACLES?/.test(compact)
   ) {
-    if (/\bTOWN\s+DOCK\b/.test(upper)) {
+    if (/TOWN\s+DOCK/.test(upper)) {
       return "Town Dock Squid Rings & Tentacles";
     }
 
@@ -1746,17 +1785,17 @@ function farmersFishermenFriendlyName(value) {
   }
 
   if (
-    /\bBEEF\b/.test(compact) &&
-    /\bRIBEYE\b/.test(compact) &&
-    /\bCOWBOY\b/.test(compact) &&
-    /\bCHOICE\b/.test(compact) &&
-    /\bANGUS\b/.test(compact)
+    /BEEF/.test(compact) &&
+    /RIBEYE/.test(compact) &&
+    /COWBOY/.test(compact) &&
+    /CHOICE/.test(compact) &&
+    /ANGUS/.test(compact)
   ) {
     const isBoneIn =
-      /\bB\s*\/\s*I\b/.test(upper) ||
-      /\bBONE\s*[- ]?\s*IN\b/.test(upper);
+      /B\s*\/\s*I/.test(upper) ||
+      /BONE\s*[- ]?\s*IN/.test(upper);
 
-    if (isBoneIn && /\b20\s*OZ\b/.test(upper)) {
+    if (isBoneIn && /20\s*OZ/.test(upper)) {
       return "Cowboy Ribeye Steak Bone-In Choice 20 oz Angus";
     }
 
@@ -1768,22 +1807,22 @@ function farmersFishermenFriendlyName(value) {
   }
 
   if (
-    /\bCOWBOY\b/.test(compact) &&
-    /\bSTEAK\b/.test(compact) &&
-    /\bSPLIT\b/.test(compact) &&
-    /\bBONE\b/.test(compact) &&
-    /\b1855\b/.test(compact)
+    /COWBOY/.test(compact) &&
+    /STEAK/.test(compact) &&
+    /SPLIT/.test(compact) &&
+    /BONE/.test(compact) &&
+    /1855/.test(compact)
   ) {
     return "Cowboy Steak Split Bone 1855 Angus Beef Rib USDA Choice";
   }
 
   if (
-    /\bBEEF\b/.test(compact) &&
-    /\bPATTY\b/.test(compact) &&
-    /\bSPECIAL\b/.test(compact) &&
-    /\bBLEND\b/.test(compact)
+    /BEEF/.test(compact) &&
+    /PATTY/.test(compact) &&
+    /SPECIAL/.test(compact) &&
+    /BLEND/.test(compact)
   ) {
-    if (/\b8\s*OZ\b/.test(upper)) {
+    if (/8\s*OZ/.test(upper)) {
       return "Beef Patty 8 oz Special Blend";
     }
 
@@ -1791,11 +1830,11 @@ function farmersFishermenFriendlyName(value) {
   }
 
   if (
-    /\bCANADIAN\b/.test(compact) &&
-    /\bLOBSTER\b/.test(compact) &&
-    /\bTAILS?\b/.test(compact)
+    /CANADIAN/.test(compact) &&
+    /LOBSTER/.test(compact) &&
+    /TAILS?/.test(compact)
   ) {
-    if (/\b6\s*\/\s*7\s*OZ\b/.test(upper)) {
+    if (/6\s*\/\s*7\s*OZ/.test(upper)) {
       return "Canadian Lobster Tails 6/7 oz";
     }
 
@@ -1803,19 +1842,19 @@ function farmersFishermenFriendlyName(value) {
   }
 
   if (
-    /\bCOOKED\b/.test(compact) &&
-    /\bOCTOPUS\b/.test(compact) &&
-    /\bLEGS?\b/.test(compact)
+    /COOKED/.test(compact) &&
+    /OCTOPUS/.test(compact) &&
+    /LEGS?/.test(compact)
   ) {
     return "Cooked Octopus Legs";
   }
 
   if (
-    /\bSOCKEYE\b/.test(compact) &&
-    /\bSALMON\b/.test(compact) &&
-    /\b(FILLET|FILET|FILLETS|FILETS)\b/.test(compact)
+    /SOCKEYE/.test(compact) &&
+    /SALMON/.test(compact) &&
+    /(FILLET|FILET|FILLETS|FILETS)/.test(compact)
   ) {
-    if (/\bSKIN\b|\bSKIN\s*[- ]?\s*ON\b|\bS\s*\/\s*ON\b/.test(upper)) {
+    if (/SKIN|SKIN\s*[- ]?\s*ON|S\s*\/\s*ON/.test(upper)) {
       return "Sockeye Salmon Fillet Skin-On";
     }
 
@@ -1823,19 +1862,16 @@ function farmersFishermenFriendlyName(value) {
   }
 
   if (
-    /\bCHICKEN\b|\bCHIX\b|\bCHKN\b/.test(compact) &&
-    /\bWINGS?\b|\bWNG\b/.test(compact) &&
-    /\bSPLIT\b/.test(compact) &&
-    /\b6\s*\/\s*8\b/.test(upper)
+    /CHICKEN|CHIX|CHKN/.test(compact) &&
+    /WINGS?|WNG/.test(compact) &&
+    /SPLIT/.test(compact) &&
+    /6\s*\/\s*8/.test(upper)
   ) {
     return "Chicken Wings Split 6/8 Jumbo";
   }
 
-  if (
-    /\bOLLI\b/.test(compact) &&
-    /\bPEPPERONI\b/.test(compact)
-  ) {
-    if (/\b2\s*\/\s*5\s*LB\b/.test(upper)) {
+  if (/OLLI/.test(compact) && /PEPPERONI/.test(compact)) {
+    if (/2\s*\/\s*5\s*LB/.test(upper)) {
       return "Olli Pepperoni 2/5 lb";
     }
 
