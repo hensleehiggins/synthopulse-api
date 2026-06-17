@@ -315,6 +315,10 @@ function isReliablePackageIdentity(value) {
   if (normalized.includes(",")) return false;
   if (normalized.length > 24) return false;
 
+  // Catch weights like 12.76 lb, 9.00 lb, or 27.74 lb should not become
+  // permanent cost-source identity text. They change invoice to invoice.
+  if (/\b\d+\.\d+\s*lb\b/i.test(normalized)) return false;
+
   // Must contain a real package/unit marker.
   if (!/\b(cs|case|ea|lb|oz|gal|qt|pt|ct|dz)\b/i.test(normalized)) {
     return false;
@@ -1450,8 +1454,36 @@ function titleCaseItemName(value) {
 function isNonItemChargeLine(value) {
   const upper = String(value || "").toUpperCase();
 
+  if (
+    /\bREMOTE\s*-\s*STOCK\b/.test(upper) ||
+    /\bREMOTE\s+STOCK\b/.test(upper) ||
+    /\bF\s+OUT\b/.test(upper) ||
+    /\bOUT\s+EA\b/.test(upper) ||
+    /\bOUT\s+CS\b/.test(upper) ||
+    /\bOUT\b/.test(upper)
+  ) {
+    return true;
+  }
+
+  if (
+    /\bBREAD\b/.test(upper) &&
+    /\b(SOUR|DGH|DOUGH)\b/.test(upper) &&
+    /\b(BOWL|BOWLS)\b/.test(upper)
+  ) {
+    return false;
+  }
+
+  if (
+    /\bCAMBRO\b/.test(upper) ||
+    (
+      /\b(COVER|COVERS)\b/.test(upper) &&
+      /\b(PLAS|PLASTIC|CAMWR|CAMBRO|CONTAINER|CNTNR)\b/.test(upper)
+    )
+  ) {
+    return true;
+  }
+
   return (
-    // Sysco category / group totals
     /\bTOTAL\b/.test(upper) &&
     /\b(PAPER|DISPOSABLE|DISPOSABLES|GROUP|SUPPLIES|EQUIPMENT)\b/.test(upper)
   ) || (
@@ -1459,9 +1491,8 @@ function isNonItemChargeLine(value) {
   ) || (
     /\bGROUP\s+TOTAL\b/.test(upper)
   ) || (
-    // Delivery / service / misc charges
     /\bFUEL\b/.test(upper) && /\bSURCHARGE\b/.test(upper)
-   ) || (
+  ) || (
     /\bDELIVERY\b/.test(upper) && /\b(CHARGE|FEE)\b/.test(upper)
   ) || (
     /\bTRANSPORTATION\b/.test(upper) && /\bFEE\b/.test(upper)
@@ -1474,10 +1505,9 @@ function isNonItemChargeLine(value) {
   ) || (
     /\bCHGS?\b/.test(upper) && /\bFUEL\b/.test(upper)
   ) || (
-    // Disposable / supply lines we do not want in food cost tracking right now
-    /\b(CONTAINER|CNTNR|CUP|CUPS|LID|LIDS|CUTLERY|FORK|FORKS|KNIFE|KNIVES|SPOON|SPOONS|NAPKIN|NAPKINS|STRAW|STRAWS|PLATE|PLATES|BOWL|BOWLS|TRAY|TRAYS|LINER|LINERS|GLOVE|GLOVES|NITRILE|PAD\s+SCOUR|SCOUR\s+PAD|BRUSH|TOWEL|TOWELS)\b/.test(upper)
+    /\b(CONTAINER|CNTNR|CUP|CUPS|LID|LIDS|COVER|COVERS|CUTLERY|FORK|FORKS|KNIFE|KNIVES|SPOON|SPOONS|NAPKIN|NAPKINS|STRAW|STRAWS|PLATE|PLATES|BOWL|BOWLS|TRAY|TRAYS|LINER|LINERS|GLOVE|GLOVES|NITRILE|PAD\s+SCOUR|SCOUR\s+PAD|SCOUR|BRUSH|TOWEL|TOWELS)\b/.test(upper)
   ) || (
-    /\bPLAS\b/.test(upper) && /\b(CONTAINER|CUP|CLR|CLEAR|MICRO|BLACK|BLK)\b/.test(upper)
+    /\bPLAS\b/.test(upper) && /\b(CONTAINER|CUP|CLR|CLEAR|MICRO|BLACK|BLK|COVER|COVERS)\b/.test(upper)
   ) || (
     /\bEARTHCHO\b/.test(upper) && /\bKIT\b/.test(upper) && /\bCUTLERY\b/.test(upper)
   );
@@ -1524,6 +1554,167 @@ function removePackageSizeFromItemName(value) {
     .trim();
 }
 
+function farmersFishermenFriendlyName(value) {
+  const original = String(value || "").trim();
+
+  if (!original) return "";
+
+  const upper = original.toUpperCase().replace(/&/g, " AND ");
+  const compact = upper.replace(/[^A-Z0-9/]+/g, " ").replace(/\s+/g, " ").trim();
+
+  if (!compact) return "";
+
+  if (/\bOUT\b/.test(compact)) return "";
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\bMIDWESTERN\b/.test(compact) &&
+    /\bTENDERLOIN\b/.test(compact) &&
+    /\b(FILET|FILLET)\b/.test(compact)
+  ) {
+    if (/\bC\s*\/\s*C\b/.test(upper) && /\b8\s*OZ\b/.test(upper)) {
+      return "Beef Tenderloin Filet C/C 8 oz";
+    }
+
+    if (/\b8\s*OZ\b/.test(upper)) {
+      return "Beef Tenderloin Filet 8 oz";
+    }
+
+    return "Beef Tenderloin Filet";
+  }
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\bRIBEYE\b/.test(compact) &&
+    /\bLIP\s*[- ]?\s*ON\b/.test(upper) &&
+    /\bCHOICE\b/.test(compact) &&
+    /\bANGUS\b/.test(compact)
+  ) {
+    return "Beef Ribeye Lip-On Choice Angus";
+  }
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\b(?:OX1|0X1|O\s*X\s*1|0\s*X\s*1)\b/.test(upper) &&
+    /\bSTRIP/.test(compact) &&
+    /\bCHOICE\b/.test(compact) &&
+    /\bANGUS\b/.test(compact)
+  ) {
+    return "Beef 0x1 Strip Loin Choice Angus";
+  }
+
+  if (
+    /\bSQUID\b/.test(compact) &&
+    /\bRINGS?\b/.test(compact) &&
+    /\bTENTACLES?\b/.test(compact)
+  ) {
+    if (/\bTOWN\s+DOCK\b/.test(upper)) {
+      return "Town Dock Squid Rings & Tentacles";
+    }
+
+    return "Squid Rings & Tentacles";
+  }
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\bRIBEYE\b/.test(compact) &&
+    /\bCOWBOY\b/.test(compact) &&
+    /\bCHOICE\b/.test(compact) &&
+    /\bANGUS\b/.test(compact)
+  ) {
+    const isBoneIn =
+      /\bB\s*\/\s*I\b/.test(upper) ||
+      /\bBONE\s*[- ]?\s*IN\b/.test(upper);
+
+    if (isBoneIn && /\b20\s*OZ\b/.test(upper)) {
+      return "Cowboy Ribeye Steak Bone-In Choice 20 oz Angus";
+    }
+
+    if (isBoneIn) {
+      return "Cowboy Ribeye Steak Bone-In Choice Angus";
+    }
+
+    return "Cowboy Ribeye Steak Choice Angus";
+  }
+
+  if (
+    /\bCOWBOY\b/.test(compact) &&
+    /\bSTEAK\b/.test(compact) &&
+    /\bSPLIT\b/.test(compact) &&
+    /\bBONE\b/.test(compact) &&
+    /\b1855\b/.test(compact)
+  ) {
+    return "Cowboy Steak Split Bone 1855 Angus Beef Rib USDA Choice";
+  }
+
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\bPATTY\b/.test(compact) &&
+    /\bSPECIAL\b/.test(compact) &&
+    /\bBLEND\b/.test(compact)
+  ) {
+    if (/\b8\s*OZ\b/.test(upper)) {
+      return "Beef Patty 8 oz Special Blend";
+    }
+
+    return "Beef Patty Special Blend";
+  }
+
+  if (
+    /\bCANADIAN\b/.test(compact) &&
+    /\bLOBSTER\b/.test(compact) &&
+    /\bTAILS?\b/.test(compact)
+  ) {
+    if (/\b6\s*\/\s*7\s*OZ\b/.test(upper)) {
+      return "Canadian Lobster Tails 6/7 oz";
+    }
+
+    return "Canadian Lobster Tails";
+  }
+
+  if (
+    /\bCOOKED\b/.test(compact) &&
+    /\bOCTOPUS\b/.test(compact) &&
+    /\bLEGS?\b/.test(compact)
+  ) {
+    return "Cooked Octopus Legs";
+  }
+
+  if (
+    /\bSOCKEYE\b/.test(compact) &&
+    /\bSALMON\b/.test(compact) &&
+    /\b(FILLET|FILET|FILLETS|FILETS)\b/.test(compact)
+  ) {
+    if (/\bSKIN\b|\bSKIN\s*[- ]?\s*ON\b|\bS\s*\/\s*ON\b/.test(upper)) {
+      return "Sockeye Salmon Fillet Skin-On";
+    }
+
+    return "Sockeye Salmon Fillet";
+  }
+
+  if (
+    /\bCHICKEN\b|\bCHIX\b|\bCHKN\b/.test(compact) &&
+    /\bWINGS?\b|\bWNG\b/.test(compact) &&
+    /\bSPLIT\b/.test(compact) &&
+    /\b6\s*\/\s*8\b/.test(upper)
+  ) {
+    return "Chicken Wings Split 6/8 Jumbo";
+  }
+
+  if (
+    /\bOLLI\b/.test(compact) &&
+    /\bPEPPERONI\b/.test(compact)
+  ) {
+    if (/\b2\s*\/\s*5\s*LB\b/.test(upper)) {
+      return "Olli Pepperoni 2/5 lb";
+    }
+
+    return "Olli Pepperoni";
+  }
+
+  return "";
+}
+
 function friendlyVendorItemName(value, category = "") {
     const rawOriginal = String(value || "").trim();
 
@@ -1537,7 +1728,10 @@ function friendlyVendorItemName(value, category = "") {
 
   const upper = raw.toUpperCase();
 
-  if (isNonItemChargeLine(upper)) return "";
+  if (isNonItemChargeLine(upper) || isNonItemChargeLine(rawOriginal)) return "";
+
+  const farmersName = farmersFishermenFriendlyName(rawOriginal);
+  if (farmersName) return farmersName;
 
     // Royal / general produce and prep cleanup.
   // Keep this outside the Sysco-only block so Royal Food Service lines can use it.
@@ -2378,6 +2572,14 @@ if (!line.approved) {
       skipped.push({
         lineId: line.id,
         reason: "No usable receipt cost found on line.",
+      });
+      continue;
+    }
+
+    if (line.lineTotal !== null && line.lineTotal <= 0) {
+      skipped.push({
+        lineId: line.id,
+        reason: "Zero-dollar receipt line skipped.",
       });
       continue;
     }
