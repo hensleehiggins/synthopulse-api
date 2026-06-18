@@ -266,13 +266,32 @@ function extractFarmersPortionSize(rawText) {
 
 function extractFarmersExplicitPackSize(rawText) {
   const text = String(rawText || "");
+  const compact = text
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  const poundPackMatch = text.match(/\b(\d+)\s*[xX]\s*(\d+(?:\.\d+)?)\s*LB\b/i);
+  // Farmers beef trim/spec language like "0x1" or "OX1" is not package size.
+  // Example: "Beef 0x1 Strips Choice Angus" should package as catch weight,
+  // not "1 case / 0x1".
+  if (
+    /\bBEEF\b/.test(compact) &&
+    /\b(?:0X1|OX1|O\s*X\s*1|0\s*X\s*1)\b/.test(text.toUpperCase())
+  ) {
+    return "";
+  }
+
+  const poundPackMatch = text.match(
+    /\b([1-9]\d*)\s*[xX]\s*(\d+(?:\.\d+)?)\s*LB\b/i
+  );
+
   if (poundPackMatch) {
     return `${poundPackMatch[1]} x ${poundPackMatch[2]} lb`;
   }
 
-  const countPackMatch = text.match(/\b(\d+)\s*[xX]\s*(\d+)\b/i);
+  const countPackMatch = text.match(/\b([1-9]\d*)\s*[xX]\s*(\d+)\b/i);
+
   if (countPackMatch) {
     return `${countPackMatch[1]}x${countPackMatch[2]}`;
   }
