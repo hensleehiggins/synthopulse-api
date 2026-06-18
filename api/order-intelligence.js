@@ -16,6 +16,7 @@ const TABLES = {
   vendorReceiptLines: "Vendor Receipt Lines",
   weeklyItemTrends: "Weekly Item Trends",
   stockCountLines: "Stock Count Lines",
+  costSourceItems: "Cost Source Items",
 };
 
 const FIELD_SETS = {
@@ -92,6 +93,16 @@ const FIELD_SETS = {
     "Approved For Ordering",
     "Counter Name",
     "Count Time Text",
+  ],
+  costSourceItems: [
+    "Source Item Name",
+    "Supplier",
+    "SKU",
+    "Category",
+    "Unit",
+    "Price",
+    "Unit Price",
+    "Final Price",
   ],
 };
 
@@ -641,6 +652,43 @@ async function fetchAirtableTable(tableName, fields = []) {
   return records;
 }
 
+function getCostSourceCurrentCost(record) {
+  return (
+    numberOrNull(getField(record, "Final Price")) ??
+    numberOrNull(getField(record, "Unit Price")) ??
+    numberOrNull(getField(record, "Price"))
+  );
+}
+
+function buildCostSourceItem(record) {
+  const itemName = getField(record, "Source Item Name") || "";
+  const supplier = normalizeVendor(getField(record, "Supplier"));
+  const category = selectName(getField(record, "Category"));
+  const unit = getField(record, "Unit") || "";
+  const sku = getField(record, "SKU") || "";
+  const currentCost = getCostSourceCurrentCost(record);
+
+  return {
+    id: record.id,
+    createdTime: record.createdTime,
+    itemName,
+    normalizedItemName: normalizeText(itemName),
+    vendor: supplier,
+    category,
+    unit,
+    packageSize: unit,
+    sku,
+    unitCost: currentCost,
+    lineTotal: null,
+    confidence: "High",
+    approved: true,
+    needsReview: false,
+    rawLineText: "",
+    lastSeenDate: dateOnly(record.createdTime),
+    lastSeenDaysAgo: daysAgoFromIso(record.createdTime),
+  };
+}
+
 function buildReceiptLine(line) {
   const itemName = getField(line, "Line Item Name") || "";
   const vendor = normalizeVendor(getField(line, "Vendor"));
@@ -783,6 +831,49 @@ function getReceiptCandidateNames(itemName, orderRules = {}) {
     itemName,
     orderRules.vendorItemName,
   ]).filter(Boolean);
+}
+
+function findBestCostSourceMatch(itemName, costSourceItems = []) {
+  let best = null;
+
+  for (const item of costSourceItems) {
+    if (!item.itemName) continue;
+
+    const details = getSafeItemMatchDetails({
+      targetItemName: itemName,
+      sourceItemName: item.itemName,
+      sourceLabel: "tracked vendor item",
+      exactNotes: "Exact tracked vendor item match.",
+      sameTokensNotes:
+        "Tracked vendor item uses the same item words in a different order.",
+      containmentNotes: "Tracked vendor item is a strong specific name match.",
+      tokenOverlapNotes:
+        "Tracked vendor item shares enough specific item words to match.",
+      genericBlockNotes:
+        "Generic count names require an exact tracked vendor item match before vendor context can attach.",
+      noMeaningfulOverlapNotes:
+        "The tracked vendor item did not share a specific enough item word with this count.",
+      weakOverlapNotes:
+        "Tracked vendor item was not specific enough to safely attach vendor context.",
+    });
+
+    if (details.blocked) continue;
+    if (details.score < RECEIPT_MATCH_THRESHOLD) continue;
+
+    if (
+      !best ||
+      details.score > best.score ||
+      (details.score === best.score &&
+        String(item.createdTime || "") > String(best.item.createdTime || ""))
+    ) {
+      best = {
+        ...details,
+        item,
+      };
+    }
+  }
+
+  return best;
 }
 
 function findBestReceiptMatch(itemName, receiptLines, orderRules = {}) {
@@ -1384,7 +1475,56 @@ function buildReceiptOnlyItem(line, stockCountLines) {
   };
 }
 
-function buildStockCountOnlyItem(line) {
+function buildStockCountOnlyItem(line, receiptLines = [], costSourceItems = []) {
+  const costSourceMatch = findBestCostSourceMatch(line.itemName, costSourceItems);
+  const receiptMatch = findBestReceiptMatch(line.itemName, receiptLines, {});
+  const vendorContext =
+    costSourceMatch?.item ||
+    receiptMatch?.line ||
+    null;
+
+  const vendorContextSource = costSourceMatch?.item
+    ? "tracked vendor item"
+    : receiptMatch?.line
+      ? "approved receipt line"
+      : "";
+
+  const vendorContextReceipt = vendorContext
+    ? {
+        id: vendorContext.id,
+        createdTime: vendorContext.createdTime || "",
+        itemName: vendorContext.itemName || line.itemName || "",
+        normalizedItemName:
+          vendorContext.normalizedItemName || normalizeText(vendorContext.itemName),
+        vendor: vendorContext.vendor || "",
+        category: vendorContext.category || "",
+        quantity: vendorContext.quantity ?? null,
+        unit: vendorContext.unit || "",
+        packageSize: vendorContext.packageSize || vendorContext.unit || "",
+        unitCost: vendorContext.unitCost ?? null,
+        lineTotal: vendorContext.lineTotal ?? null,
+        confidence: vendorContext.confidence || "High",
+        needsReview: false,
+        approved: true,
+        rawLineText: vendorContext.rawLineText || "",
+        lastSeenDate: vendorContext.lastSeenDate || dateOnly(vendorContext.createdTime),
+        lastSeenDaysAgo:
+          vendorContext.lastSeenDaysAgo ?? daysAgoFromIso(vendorContext.createdTime),
+      }
+    : null;
+
+  const vendorMatchScore = costSourceMatch?.score || receiptMatch?.score || 0;
+  const vendorMatchConfidence =
+    costSourceMatch?.confidence || receiptMatch?.confidence || "";
+  const vendorMatchType = costSourceMatch
+    ? "cost_source_catalog"
+    : receiptMatch
+      ? receiptMatch.type
+      : "";
+  const vendorMatchNotes = costSourceMatch
+    ? costSourceMatch.notes
+    : receiptMatch?.notes || "";
+
   return {
     id: `stock-count-${line.id}`,
     itemName: line.itemName || "Counted item",
@@ -1401,18 +1541,25 @@ function buildStockCountOnlyItem(line) {
     status: "needs_setup",
     statusLabel: "Needs setup",
     recommendationType: "Count Seed",
-    priority: 50,
-    confidence: "Medium",
-    signals: ["Approved count", "Count Seed", "Needs order rules"],
+    priority: vendorContext ? 56 : 50,
+    confidence: vendorContext ? "High" : "Medium",
+    signals: [
+      "Approved count",
+      "Count Seed",
+      vendorContext ? "Vendor catalog match" : "",
+      costSourceMatch ? "Tracked vendor item" : "",
+      receiptMatch ? "Receipt-backed" : "",
+      "Needs order rules",
+    ].filter(Boolean),
     lastChecked: line.countTimeText || "",
     orderRules: {
-      preferredVendor: "",
-      vendorItemName: "",
-      orderVendorSku: "",
+      preferredVendor: vendorContext?.vendor || "",
+      vendorItemName: vendorContext?.itemName || line.itemName || "",
+      orderVendorSku: vendorContext?.sku || "",
       storageArea: line.storageArea || "",
       countUnit: line.unit || "",
-      vendorOrderUnit: "",
-      packSize: "",
+      vendorOrderUnit: vendorContext?.unit || "",
+      packSize: vendorContext?.packageSize || vendorContext?.unit || "",
       unitConversionNotes: "",
       safetyStock: null,
       leadTimeDays: null,
@@ -1423,23 +1570,28 @@ function buildStockCountOnlyItem(line) {
       emergencyRunRisk: false,
       eventSensitive: false,
     },
-    receipt: null,
-    receiptMatchScore: 0,
-    receiptMatchConfidence: "",
-    receiptMatchType: "",
-    receiptMatchNotes: "",
-    receiptMatchedOn: "",
+    receipt: vendorContextReceipt,
+    receiptMatchScore: vendorMatchScore,
+    receiptMatchConfidence: vendorMatchConfidence,
+    receiptMatchType: vendorMatchType,
+    receiptMatchNotes: vendorMatchNotes,
+    receiptMatchedOn: vendorContext?.itemName || "",
     stockCount: line,
     stockCountMatchScore: 1,
     stockCountMatchConfidence: "Count Seed",
     stockCountMatchType: "count_seed",
-    stockCountMatchNotes:
-      "Approved count did not safely match an existing order rule or receipt-backed item. Create or link an order rule before using it for reorder math.",
+    stockCountMatchNotes: vendorContext
+      ? `Approved count matched ${vendorContextSource} for vendor context. Create or link an order rule before using it for reorder math.`
+      : "Approved count did not safely match an existing order rule or receipt-backed item. Create or link an order rule before using it for reorder math.",
     trend: null,
     trendMatchScore: 0,
     reason: `${line.itemName} has an approved stock count of ${line.quantity}${
       line.unit ? ` ${line.unit}` : ""
-    }${line.storageArea ? ` in ${line.storageArea}` : ""}. This approved count was not forced onto a fuzzy item match. Add or link an order-rule record with target stock and reorder point before KitchenPulse can calculate reorder pressure.`,
+    }${line.storageArea ? ` in ${line.storageArea}` : ""}. ${
+      vendorContext
+        ? `KitchenPulse also found ${vendorContext.vendor || "vendor"} context from a ${vendorContextSource}. `
+        : "This approved count was not forced onto a fuzzy item match. "
+    }Add or link an order-rule record with target stock and reorder point before KitchenPulse can calculate reorder pressure.`,
   };
 }
 
@@ -1456,17 +1608,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const [parRecords, rawReceiptLines, rawTrends, rawStockCountLines] =
-      await Promise.all([
-        fetchAirtableTable(TABLES.parLevels, FIELD_SETS.parLevels),
-        fetchAirtableTable(TABLES.vendorReceiptLines, FIELD_SETS.vendorReceiptLines),
-        fetchAirtableTable(TABLES.weeklyItemTrends, FIELD_SETS.weeklyItemTrends).catch(
-          () => []
-        ),
-        fetchAirtableTable(TABLES.stockCountLines, FIELD_SETS.stockCountLines).catch(
-          () => []
-        ),
-      ]);
+    const [
+      parRecords,
+      rawReceiptLines,
+      rawTrends,
+      rawStockCountLines,
+      rawCostSourceItems,
+    ] = await Promise.all([
+      fetchAirtableTable(TABLES.parLevels, FIELD_SETS.parLevels),
+      fetchAirtableTable(TABLES.vendorReceiptLines, FIELD_SETS.vendorReceiptLines),
+      fetchAirtableTable(TABLES.weeklyItemTrends, FIELD_SETS.weeklyItemTrends).catch(
+        () => []
+      ),
+      fetchAirtableTable(TABLES.stockCountLines, FIELD_SETS.stockCountLines).catch(
+        () => []
+      ),
+      fetchAirtableTable(TABLES.costSourceItems, FIELD_SETS.costSourceItems).catch(
+        () => []
+      ),
+    ]);
 
     const receiptLines = rawReceiptLines
       .map(buildReceiptLine)
@@ -1478,6 +1638,10 @@ export default async function handler(req, res) {
     const trustedReceiptLines = receiptLines.filter(
       (line) => line.approved === true && line.needsReview !== true
     );
+
+    const costSourceItems = rawCostSourceItems
+      .map(buildCostSourceItem)
+      .filter((item) => item.itemName && item.vendor);
 
     const trends = rawTrends.map(buildTrend).filter((trend) => trend.itemName);
 
@@ -1525,7 +1689,9 @@ export default async function handler(req, res) {
         return !stockCountLineIsSafelyCovered(line, coveredNames);
       })
       .slice(0, 40)
-      .map(buildStockCountOnlyItem);
+      .map((line) =>
+        buildStockCountOnlyItem(line, trustedReceiptLines, costSourceItems)
+      );
 
     const items = [...parItems, ...receiptOnlyItems, ...stockCountOnlyItems]
       .sort((a, b) => {
