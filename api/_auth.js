@@ -133,8 +133,50 @@ function normalizeSelect(value) {
   return String(value).trim();
 }
 
+function normalizeAccessRole(value) {
+  const raw = normalizeSelect(value);
+
+  const normalized = raw
+    .toUpperCase()
+    .replace(/&/g, " AND ")
+    .replace(/[^A-Z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!normalized) return "";
+
+  if (normalized === "ADMIN") return "Admin";
+  if (normalized === "OWNER") return "Owner";
+
+  // Permission aliases. Chef is a job title, but it should use Manager access.
+  if (
+    normalized === "MANAGER" ||
+    normalized === "GM" ||
+    normalized === "GENERAL MANAGER" ||
+    normalized === "CHEF" ||
+    normalized === "KITCHEN MANAGER" ||
+    normalized.includes("CHEF")
+  ) {
+    return "Manager";
+  }
+
+  if (
+    normalized === "STAFF" ||
+    normalized === "OPERATOR" ||
+    normalized === "REVIEWER"
+  ) {
+    return "Staff";
+  }
+
+  if (normalized === "READ ONLY" || normalized === "READONLY") {
+    return "Read Only";
+  }
+
+  return raw;
+}
+
 function normalizeRole(value) {
-  return normalizeSelect(value).toUpperCase();
+  return normalizeAccessRole(value).toUpperCase();
 }
 
 function boolField(value) {
@@ -387,7 +429,7 @@ function serializeOperatorUser(record) {
     authProvider: normalizeSelect(fields["Auth Provider"]),
     restaurantName: normalizeText(fields["Restaurant Name"]),
     restaurantRecordId,
-    role: normalizeSelect(fields.Role),
+    role: normalizeAccessRole(fields.Role),
     accessStatus: normalizeSelect(fields["Access Status"]),
     mobileAccess: boolField(fields["Mobile Access"]),
     portalAccess: boolField(fields["Portal Access"]),
