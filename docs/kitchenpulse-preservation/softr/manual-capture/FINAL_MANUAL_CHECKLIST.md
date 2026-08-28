@@ -1,0 +1,32 @@
+# Final Manual Checklist
+
+This is the authoritative remaining human-work list. Do not add MCP-covered artifacts here.
+
+- [ ] NOT CAPTURED — Link Expired configuration and permissions → `pages/link-expired__4f0c2fde-ec1a-4954-9a91-c7c043ffd7c6.md`.
+- [ ] NOT CAPTURED — Tripleseat Vibe current source → `vibe/tripleseat/vibe-coding__c8eb0698-db61-4c7b-98c9-bb9347d88cde.jsx`; metadata → `vibe/tripleseat/vibe-coding__c8eb0698-db61-4c7b-98c9-bb9347d88cde.metadata.json`.
+- [x] CAPTURED — Billing safe placeholder and restoration handoff → `vibe/billing/vibe-coding__11cdca04-1d0c-4f83-8bab-26d44b4ea47a.jsx` and `vibe/billing/vibe-coding__11cdca04-1d0c-4f83-8bab-26d44b4ea47a.metadata.md`; no live literal is requested.
+- [ ] NOT CAPTURED — Receipt Intake `/receipt-intake` Custom Code block `d82e2d4c-8350-461d-ac8d-c926bbc67d3a` → `custom-code/receipt-intake/custom-code__d82e2d4c-8350-461d-ac8d-c926bbc67d3a.html`; metadata → `custom-code/receipt-intake/custom-code__d82e2d4c-8350-461d-ac8d-c926bbc67d3a.metadata.json`.
+- [ ] NOT CAPTURED — Home `/` Custom Code block `d9b2e445-415e-4cc5-be9e-42f8a3d4fc7e` → `custom-code/home/custom-code__d9b2e445-415e-4cc5-be9e-42f8a3d4fc7e.html`; metadata → `custom-code/home/custom-code__d9b2e445-415e-4cc5-be9e-42f8a3d4fc7e.metadata.json`.
+- [ ] NOT CAPTURED — What Changed `/what-changed` Custom Code block `7116c336-8add-4aa9-8311-2a1420b93836` → `custom-code/what-changed/custom-code__7116c336-8add-4aa9-8311-2a1420b93836.html`; metadata → `custom-code/what-changed/custom-code__7116c336-8add-4aa9-8311-2a1420b93836.metadata.json`.
+- [ ] NOT CAPTURED — Cost Center `/cost-center` Custom Code block `747e7dec-2b2e-45b0-bb63-e3be3634a3ec` → `custom-code/cost-center/custom-code__747e7dec-2b2e-45b0-bb63-e3be3634a3ec.html`; metadata → `custom-code/cost-center/custom-code__747e7dec-2b2e-45b0-bb63-e3be3634a3ec.metadata.json`.
+- [ ] NOT CAPTURED — Hero Template - Stable `/home-copy` Custom Code block `d5bd7a00-0c5d-4dc5-8071-3ef671e8fdbd` → `custom-code/hero-template-stable/custom-code__d5bd7a00-0c5d-4dc5-8071-3ef671e8fdbd.html`; metadata → `custom-code/hero-template-stable/custom-code__d5bd7a00-0c5d-4dc5-8071-3ef671e8fdbd.metadata.json`.
+- [ ] NOT CAPTURED — Hero Template - Stable `/home-copy` Custom Code block `4cd71f08-d973-444e-81a6-ed64359f3af5` → `custom-code/hero-template-stable/custom-code__4cd71f08-d973-444e-81a6-ed64359f3af5.html`; metadata → `custom-code/hero-template-stable/custom-code__4cd71f08-d973-444e-81a6-ed64359f3af5.metadata.json`.
+- [ ] NOT CAPTURED — Hero Template - Stable `/home-copy` Custom Code block `031d0131-2f9f-4259-8614-c4a4d40bf492` → `custom-code/hero-template-stable/custom-code__031d0131-2f9f-4259-8614-c4a4d40bf492.html`; metadata → `custom-code/hero-template-stable/custom-code__031d0131-2f9f-4259-8614-c4a4d40bf492.metadata.json`.
+- [ ] NOT CAPTURED — Order Intelligence `/order-intelligence` Custom Code block `ea6cf85d-b2ca-4607-8fc4-0ba12b1722bd` → `custom-code/order-intelligence/custom-code__ea6cf85d-b2ca-4607-8fc4-0ba12b1722bd.html`; metadata → `custom-code/order-intelligence/custom-code__ea6cf85d-b2ca-4607-8fc4-0ba12b1722bd.metadata.json`.
+- [ ] NOT CAPTURED — Sales Dashboard `/sales-dashboard` Custom Code block `ba4cc04c-a936-4f27-8d36-f74b74c27cb5` → `custom-code/sales-dashboard/custom-code__ba4cc04c-a936-4f27-8d36-f74b74c27cb5.html`; metadata → `custom-code/sales-dashboard/custom-code__ba4cc04c-a936-4f27-8d36-f74b74c27cb5.metadata.json`.
+- [ ] NOT CAPTURED — Tripleseat `/tripleseat` Custom Code block `67a2dcdf-f5ce-4400-8c77-bb4943a9abc2` → `custom-code/tripleseat/custom-code__67a2dcdf-f5ce-4400-8c77-bb4943a9abc2.html`; metadata → `custom-code/tripleseat/custom-code__67a2dcdf-f5ce-4400-8c77-bb4943a9abc2.metadata.json`.
+- [ ] NOT CAPTURED — Events `/events` Custom Code block `ed6aa0b4-dc3e-40b0-9ad0-b9548bb96ece` → `custom-code/events/custom-code__ed6aa0b4-dc3e-40b0-9ad0-b9548bb96ece.html`; metadata → `custom-code/events/custom-code__ed6aa0b4-dc3e-40b0-9ad0-b9548bb96ece.metadata.json`.
+- [ ] NOT CAPTURED — Theme and assets → `STUDIO_CONFIGURATION.md` (§ Theme and assets); visual proof → `screenshots/studio-theme-and-assets.png`.
+- [ ] NOT CAPTURED — Navigation, header, and sidebar → `STUDIO_CONFIGURATION.md` (§ Navigation, header, and sidebar); visual proof → `screenshots/studio-navigation-header-sidebar.png`.
+- [ ] NOT CAPTURED — Authentication, login, and signup → `STUDIO_CONFIGURATION.md` (§ Authentication, login, and signup); visual proof → `screenshots/studio-auth-login-signup.png`.
+- [ ] NOT CAPTURED — Redirect rules → `STUDIO_CONFIGURATION.md` (§ Redirects and custom domain); visual proof → `screenshots/studio-redirects.png`.
+- [ ] NOT CAPTURED — Custom domain configuration → `STUDIO_CONFIGURATION.md` (§ Redirects and custom domain); visual proof → `screenshots/studio-custom-domain.png`.
+- [ ] NOT CAPTURED — Global CSS and JavaScript → `STUDIO_CONFIGURATION.md` (§ Global/app/page custom code).
+- [ ] NOT CAPTURED — App-level custom code → `STUDIO_CONFIGURATION.md` (§ Global/app/page custom code).
+- [ ] NOT CAPTURED — Page-level custom code → `STUDIO_CONFIGURATION.md` (§ Global/app/page custom code).
+- [ ] NOT CAPTURED — Four access-redirection mappings → `STUDIO_CONFIGURATION.md` (§ Access redirections); visual proof → `screenshots/studio-access-redirections.png`.
+- [ ] NOT CAPTURED — App/page published state differences → `STUDIO_CONFIGURATION.md` (§ Published state); visual proof → `screenshots/studio-publish-state.png`.
+
+## Completion rule
+
+Change an item to `[x] CAPTURED` only after its destination contains the copied text/configuration (or the required safe placeholder) and its metadata is complete. The Billing item is already safely captured because it deliberately excludes the live credential.

@@ -1,0 +1,24 @@
+{
+  "page": {
+    "name": "Sales Dashboard",
+    "id": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "path": "/sales-dashboard"
+  },
+  "block": {
+    "id": "ba4cc04c-a936-4f27-8d36-f74b74c27cb5",
+    "name": "custom-code",
+    "title": "Custom code block",
+    "type": "STATIC",
+    "category": "Custom Code"
+  },
+  "manualCopy": [
+    "Full current Softr Custom Code payload, including HTML, CSS, JavaScript, and external resource references",
+    "Block-specific configuration/visibility/navigation behavior visible in Studio but absent from the raw block metadata"
+  ],
+  "mcpPreserved": [
+    "Page/block identity",
+    "Block type/category",
+    "Enabled state, visibility/user groups, and visible-device metadata in ../mcp-export/blocks.json"
+  ],
+  "completionStatus": "NOT_CAPTURED"
+}

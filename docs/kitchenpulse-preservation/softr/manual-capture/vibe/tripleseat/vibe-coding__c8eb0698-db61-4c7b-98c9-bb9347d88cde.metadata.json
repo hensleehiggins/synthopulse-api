@@ -1,0 +1,23 @@
+{
+  "page": {
+    "name": "Tripleseat",
+    "id": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "path": "/tripleseat"
+  },
+  "block": {
+    "id": "c8eb0698-db61-4c7b-98c9-bb9347d88cde",
+    "name": "vibe-coding",
+    "type": "VIBE",
+    "category": "AI"
+  },
+  "manualCopy": [
+    "Full current Content -> Code source",
+    "Current editable settings, connected data sources, filters/sorts, actions/action permissions, and block visibility if the Studio surface shows anything not already present in MCP metadata"
+  ],
+  "mcpPreserved": [
+    "Block identity/page/category",
+    "Version history list (0 entries)",
+    "Current-source retrieval error: NOT_FOUND"
+  ],
+  "completionStatus": "NOT_CAPTURED"
+}

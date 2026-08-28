@@ -1,0 +1,24 @@
+{
+  "page": {
+    "name": "Receipt Intake",
+    "id": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "path": "/receipt-intake"
+  },
+  "block": {
+    "id": "d82e2d4c-8350-461d-ac8d-c926bbc67d3a",
+    "name": "custom-code",
+    "title": "Custom code block",
+    "type": "STATIC",
+    "category": "Custom Code"
+  },
+  "manualCopy": [
+    "Full current Softr Custom Code payload, including HTML, CSS, JavaScript, and external resource references",
+    "Block-specific configuration/visibility/navigation behavior visible in Studio but absent from the raw block metadata"
+  ],
+  "mcpPreserved": [
+    "Page/block identity",
+    "Block type/category",
+    "Enabled state, visibility/user groups, and visible-device metadata in ../mcp-export/blocks.json"
+  ],
+  "completionStatus": "NOT_CAPTURED"
+}

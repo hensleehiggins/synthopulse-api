@@ -1,0 +1,24 @@
+{
+  "page": {
+    "name": "Home",
+    "id": "37f11de8-2142-448e-b135-f07dfdf8e067",
+    "path": "/"
+  },
+  "block": {
+    "id": "d9b2e445-415e-4cc5-be9e-42f8a3d4fc7e",
+    "name": "custom-code",
+    "title": "Custom code block",
+    "type": "STATIC",
+    "category": "Custom Code"
+  },
+  "manualCopy": [
+    "Full current Softr Custom Code payload, including HTML, CSS, JavaScript, and external resource references",
+    "Block-specific configuration/visibility/navigation behavior visible in Studio but absent from the raw block metadata"
+  ],
+  "mcpPreserved": [
+    "Page/block identity",
+    "Block type/category",
+    "Enabled state, visibility/user groups, and visible-device metadata in ../mcp-export/blocks.json"
+  ],
+  "completionStatus": "NOT_CAPTURED"
+}

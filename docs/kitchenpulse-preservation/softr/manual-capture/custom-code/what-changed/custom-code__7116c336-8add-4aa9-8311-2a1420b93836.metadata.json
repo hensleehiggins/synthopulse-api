@@ -1,0 +1,24 @@
+{
+  "page": {
+    "name": "What Changed",
+    "id": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "path": "/what-changed"
+  },
+  "block": {
+    "id": "7116c336-8add-4aa9-8311-2a1420b93836",
+    "name": "custom-code",
+    "title": "Custom code block",
+    "type": "STATIC",
+    "category": "Custom Code"
+  },
+  "manualCopy": [
+    "Full current Softr Custom Code payload, including HTML, CSS, JavaScript, and external resource references",
+    "Block-specific configuration/visibility/navigation behavior visible in Studio but absent from the raw block metadata"
+  ],
+  "mcpPreserved": [
+    "Page/block identity",
+    "Block type/category",
+    "Enabled state, visibility/user groups, and visible-device metadata in ../mcp-export/blocks.json"
+  ],
+  "completionStatus": "NOT_CAPTURED"
+}

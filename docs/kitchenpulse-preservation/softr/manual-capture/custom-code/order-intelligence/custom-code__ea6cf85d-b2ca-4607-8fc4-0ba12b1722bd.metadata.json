@@ -1,0 +1,24 @@
+{
+  "page": {
+    "name": "Order Intelligence",
+    "id": "97ac6f46-2864-44b2-aa8d-5817ab5b97f5",
+    "path": "/order-intelligence"
+  },
+  "block": {
+    "id": "ea6cf85d-b2ca-4607-8fc4-0ba12b1722bd",
+    "name": "custom-code",
+    "title": "Custom code block",
+    "type": "STATIC",
+    "category": "Custom Code"
+  },
+  "manualCopy": [
+    "Full current Softr Custom Code payload, including HTML, CSS, JavaScript, and external resource references",
+    "Block-specific configuration/visibility/navigation behavior visible in Studio but absent from the raw block metadata"
+  ],
+  "mcpPreserved": [
+    "Page/block identity",
+    "Block type/category",
+    "Enabled state, visibility/user groups, and visible-device metadata in ../mcp-export/blocks.json"
+  ],
+  "completionStatus": "NOT_CAPTURED"
+}
