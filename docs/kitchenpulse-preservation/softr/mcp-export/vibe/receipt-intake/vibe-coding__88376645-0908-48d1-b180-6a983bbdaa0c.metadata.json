@@ -1,0 +1,331 @@
+{
+  "page": {
+    "id": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "name": "Receipt Intake",
+    "path": "/receipt-intake"
+  },
+  "block": {
+    "id": "88376645-0908-48d1-b180-6a983bbdaa0c",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/receipt-intake/vibe-coding__88376645-0908-48d1-b180-6a983bbdaa0c.jsx",
+  "current": {
+    "blockId": "88376645-0908-48d1-b180-6a983bbdaa0c",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "c683f7d3-cd6d-4911-8304-4925bc521bbb",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "sortOptions": [],
+        "condition": {
+          "expressions": [],
+          "logicalOperator": "AND"
+        }
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 29,
+    "returned": 29,
+    "versions": [
+      {
+        "versionId": "ffddb934-105c-446a-9558-c53eaae09386",
+        "versionNumber": 29,
+        "title": "Refactor Receipt Review UI Components",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:57:34",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "01f6dbe5-1e0f-4197-89f3-bd8fdae3011a",
+        "versionNumber": 28,
+        "title": "Fix date parsing and format in React component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-06-03T02:55:19",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "bbcdaee0-8a50-485c-93d9-d2b15b111449",
+        "versionNumber": 27,
+        "title": "Update button text and UI copy",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T18:53:57",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "19f28e62-1875-41c7-b483-8eaa0f3cfbe2",
+        "versionNumber": 26,
+        "title": "Refine receipt parse/approval flow",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T18:52:06",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3aaf331b-3001-4664-bc5c-43d8dd7b87ae",
+        "versionNumber": 25,
+        "title": "Add parse notice handling and classes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T18:47:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ee02635f-2f79-4d9c-9e90-1d7cad6df1ab",
+        "versionNumber": 24,
+        "title": "Add archived queue and counts UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-26T23:38:58",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "64232cff-a701-4bc4-ad73-ff5dddfdf8e4",
+        "versionNumber": 23,
+        "title": "Update receipt review: add event listener",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T04:07:23",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f0e01606-acf0-411c-a010-10ef17c28d09",
+        "versionNumber": 22,
+        "title": "Add events and notifications to receipt workflow",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T03:32:37",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "09e3c3f4-c218-4a12-82fb-6f4225860517",
+        "versionNumber": 21,
+        "title": "Summarize and update React receipt component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-21T19:19:41",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ac11b471-fab9-4193-8a7e-72c97e7e3b55",
+        "versionNumber": 20,
+        "title": "Add archive feature and exclude archived receipts",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T20:25:00",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "24dbbc38-e322-404e-ae55-130df65a52d5",
+        "versionNumber": 19,
+        "title": "Add Approve-and-Parse Button",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T17:31:08",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7e929793-1023-4f30-bf18-f73e0f19d517",
+        "versionNumber": 18,
+        "title": "Update canParse to exclude parsed/error",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T04:58:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "365119ca-169b-413e-b7a2-9af5ab0784d1",
+        "versionNumber": 17,
+        "title": "Add auto-refresh and visibility handlers",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCirc",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T04:55:52",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "af07a3b0-f7a2-454f-acb3-4abb3f870bf4",
+        "versionNumber": 16,
+        "title": "Refactor receipt review logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T04:52:16",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "acfbb301-ac8c-4efd-8f81-724b26158090",
+        "versionNumber": 15,
+        "title": "Add parse notices to receipt UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T01:37:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ceb75256-7bfa-4c4f-9ae9-7cef454c95ca",
+        "versionNumber": 14,
+        "title": "Add parse notices state and handling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T01:31:55",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "862ba8fb-8ea7-468d-920b-90d99ef3b63e",
+        "versionNumber": 13,
+        "title": "Refactor receipt parse flow ordering",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T01:29:41",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "48a0ac2b-4f86-4426-8411-07bcdd1c36cf",
+        "versionNumber": 12,
+        "title": "Update loadReceipts message handling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T01:27:28",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6b5ba357-19bb-4519-b4ff-0ceaf980e86b",
+        "versionNumber": 11,
+        "title": "Add receipt parsing and parsed status",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T01:23:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "91d50e26-7a45-44a0-856b-dbd7a4406c01",
+        "versionNumber": 10,
+        "title": "Rename Receipt Review Heading",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T00:58:43",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3a44f9eb-be13-4cc2-9432-6e1c2e707374",
+        "versionNumber": 9,
+        "title": "Refactor Receipt Review Buttons",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T00:55:39",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "40e72503-43d7-47f7-90a6-61a1b08a4306",
+        "versionNumber": 8,
+        "title": "Refactor Receipt Review React Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T00:54:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d7b7faae-4f70-42bb-bff5-2ff5ee146e11",
+        "versionNumber": 7,
+        "title": "Remove duplicate button blocks in component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T19:14:28",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5ceb08fb-85de-41e1-9e81-dec3973cd1d4",
+        "versionNumber": 6,
+        "title": "Refactor receipt review UI logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T18:51:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "b1069618-d153-4eca-a0b2-2346d0e48b89",
+        "versionNumber": 5,
+        "title": "Refine receipt review button logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T18:48:34",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "28392105-c52e-41ed-8f22-4ee60326aa1a",
+        "versionNumber": 4,
+        "title": "Update React Receipt Review Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T18:44:51",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a505cf78-6db0-4c17-8b15-1d62cf89cbde",
+        "versionNumber": 3,
+        "title": "Summarize React receipt review changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  RefreshCw,\\n  FileText,\\n  ShieldCheck,\\n  ExternalLink,\\n  AlertCircle,\\n  CheckCircle2,\\n  X",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T18:43:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8af9a185-2492-46ca-9b33-5f4961d8636e",
+        "versionNumber": 2,
+        "title": "Convert placeholder to receipt review UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T18:33:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "44deee75-34fc-472f-b854-8c34e417db12",
+        "versionNumber": 1,
+        "title": "Initial Version Prompt Creation",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-17T18:33:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

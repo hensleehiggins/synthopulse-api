@@ -1,0 +1,832 @@
+{
+  "page": {
+    "id": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "name": "Sales Dashboard",
+    "path": "/sales-dashboard"
+  },
+  "block": {
+    "id": "ebc4ba22-a1db-4511-a19b-f66516f9d673",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/sales-dashboard/vibe-coding__ebc4ba22-a1db-4511-a19b-f66516f9d673.jsx",
+  "current": {
+    "blockId": "ebc4ba22-a1db-4511-a19b-f66516f9d673",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "74e3f355-eaee-4f6c-a37a-9d27e4811404",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Item Movement",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fld0ICNfX8tbFiLmu",
+        "fields": [
+          {
+            "id": "fld0ICNfX8tbFiLmu",
+            "name": "Item",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldfDpMVns51YLgid",
+            "name": "Current Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldJP95P52diSiKcf",
+            "name": "Previous Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldb6siCRbu3Ztajq",
+            "name": "Movement Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selfdGzpuOTzc33pI",
+                  "label": "New Top",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selkYGA7TtOSQHxCn",
+                  "label": "Dropped from Top",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seluGV4azhm3qZ8fJ",
+                  "label": "New Low",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNFxVJxyC1jPSMV",
+                  "label": "Recovered",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selktHMaqcEax3Qlq",
+                  "label": "Declining",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selqXwgfmnmN29GoU",
+                  "label": "Stable",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "sel0YLyHaIeCJGYov",
+                  "label": "Rising",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "seliuTxAtCEVLUU0H",
+                  "label": "Recovered to Top",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel7uUx0re8ctekaP",
+                  "label": "Dropped to Low",
+                  "color": "orangeLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldCAV8lZJXoBBL5K",
+            "name": "List Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selzzlASfSfWhrtNa",
+                  "label": "Top Seller",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selz3qNoW3tNILoXR",
+                  "label": "Low Seller",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldDqcwDPEL9nOfT5",
+            "name": "Current Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldlQPe1eYk7zTKUu",
+            "name": "Previous Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldWOvuWwUrdvtLQ3",
+            "name": "Current Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldtF8MKYXmVWRv9N",
+            "name": "Previous Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldTdxY6bGWvRR9RF",
+            "name": "Qty Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld2tmyk39krp9wZk",
+            "name": "Revenue Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld7lmRTDqDc9zypo",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldC6NaarfoX0nGdP",
+            "name": "Created Time",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld5oRNHsO6Aq49UO",
+            "name": "Impact Level",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seldBvEq1BmvDNdob",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNLBkOGYTTVUH5P",
+                  "label": "Medium",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selGC9uFGyNSI6991",
+                  "label": "Low",
+                  "color": "cyanLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldIS6U0YNqXF2WcP",
+            "name": "Movement Insight",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldCGpksakC7IT4PL",
+            "name": "Current Run Is Latest",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldfDpMVns51YLgid",
+              "lookupFieldId": "fldesMOzM2weZPzyh",
+              "returnedField": {
+                "type": "CHECKBOX",
+                "vendorSideFieldType": "checkbox",
+                "options": {}
+              }
+            }
+          },
+          {
+            "id": "fldFM7LCirkphT9mv",
+            "name": "Latest Movement Flag",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOEqVyhqPXEbE4c",
+            "name": "Movement Priority ",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOjtxqhT2lRB7RE",
+            "name": "Menu Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fld3DfGMCkiO7jR1t",
+            "name": "Decision Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld71k3hOsNb2Us7p",
+            "name": "High Signal",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldWqFBVwuPF8KRSI",
+            "name": "Priority Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldvyOKeLapoKeBxY",
+            "name": "Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldv0H1ndXGghE9G2",
+            "name": "Final Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldcnH871M4Aq83hc",
+            "name": "Display Rank",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldYpjsYjYbgVXA5M",
+            "name": "Movement Category (Static)",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selksFdA3BGkoxazQ",
+                  "label": "Risk",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selKUqNpslYCP9uQH",
+                  "label": "Opportunity",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selxRpPlOPAUI4dYD",
+                  "label": "Neutral",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldW6qxdtuFt02raQ",
+            "name": "Is Latest Movement",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldGlnkRXa2HByoGG",
+            "name": "Current Run ID Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldpHOuGjE55DLBAp",
+            "name": "Is POS Movement",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldB0L7rtmPv7YTC5",
+            "name": "Is Latest Movement Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldLw5G3SB4eq6NPr",
+            "name": "Effective Unit Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldz0fxPl3quBCbwK",
+            "name": "Current Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld56QulhRxVd05Qq",
+            "name": "Previous Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldOnEWkxyqAcEaMt",
+            "name": "Profit Change",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld3uCcloe5AYL8hR",
+            "name": "Current Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldeGStuSWUsbwxBr",
+            "name": "Previous Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldBp38XBVXgjSYhb",
+            "name": "Margin Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 27,
+    "returned": 27,
+    "versions": [
+      {
+        "versionId": "df64fac5-9abf-4875-99e3-c6730501f317",
+        "versionNumber": 27,
+        "title": "Update JS component with refactorings",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Activity,\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  Eye,\\n  Info,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\ncon",
+        "promptTruncated": true,
+        "createdAt": "2026-06-06T05:21:44",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "056a62fc-96c0-409b-9bd0-69e191c87e5a",
+        "versionNumber": 26,
+        "title": "Summarize code changes in title",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Activity,\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  Eye,\\n  Info,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\ncon",
+        "promptTruncated": true,
+        "createdAt": "2026-06-06T05:19:24",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2fdd1e7a-d81e-414b-bf5c-2e8dc60996e2",
+        "versionNumber": 25,
+        "title": "Update Movement Watch Component Code",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Activity,\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  Eye,\\n  Info,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\ncon",
+        "promptTruncated": true,
+        "createdAt": "2026-06-06T05:17:34",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7d4227ca-d00e-401c-a66e-0b94a7265c03",
+        "versionNumber": 24,
+        "title": "Add rising/new-top movement detection",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Activity,\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  Eye,\\n  Info,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\ncon",
+        "promptTruncated": true,
+        "createdAt": "2026-06-06T05:15:28",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1630f8e4-ca75-4caf-a3a0-e5acf9de6ab5",
+        "versionNumber": 23,
+        "title": "Refactor low-activity detection logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Activity,\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  Eye,\\n  Info,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\ncon",
+        "promptTruncated": true,
+        "createdAt": "2026-06-06T05:13:19",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d881485e-8373-487a-88bf-a2a0da318792",
+        "versionNumber": 22,
+        "title": "Refactor Movement Watch UI Styling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Activity,\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  Eye,\\n  Info,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\ncon",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T16:53:53",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8368d1e7-3e26-4668-a55e-3ae1e817611f",
+        "versionNumber": 21,
+        "title": "Summarize code refactor changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T00:15:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d12fe482-c9f0-4dec-a1c5-337e218cdf82",
+        "versionNumber": 20,
+        "title": "Refine movement alert materiality thresholds",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item",
+        "promptTruncated": true,
+        "createdAt": "2026-05-15T16:26:02",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7cfd6f2b-79bb-49bb-a012-b16fac5fd0e4",
+        "versionNumber": 19,
+        "title": "Summarize Code Changes for Risk Block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item",
+        "promptTruncated": true,
+        "createdAt": "2026-05-15T15:07:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "67ed33c9-9783-4a77-8c70-da42f95ba6fc",
+        "versionNumber": 18,
+        "title": "Refactor RiskCard: remove Avg Sale block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T03:45:53",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "582a3605-9613-4cdd-a1a1-4329c554b2f5",
+        "versionNumber": 17,
+        "title": "Add average sale price and badge",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T03:41:53",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c1e00395-1c1f-4913-b550-6a5507042542",
+        "versionNumber": 16,
+        "title": "Normalize percent handling and display",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T20:19:11",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "dd61d43e-7276-41bb-ad36-9a0274474f56",
+        "versionNumber": 15,
+        "title": "Summarize and extend movement card UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T20:17:35",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ec62716f-62fa-4d6f-93ac-ca8582a4a83e",
+        "versionNumber": 14,
+        "title": "Update owner summary wording and copy",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertTriangle,\\n  ArrowDownRight,\\n  CircleDollarSign,\\n  ShieldAlert,\\n  TrendingDown,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T07:20:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a963fd7f-8855-49b1-b506-47aa331cc37f",
+        "versionNumber": 13,
+        "title": "Refactor Margin & Movement Block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\"",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T07:15:26",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "dc8c30d1-99aa-48c6-9743-351305e95342",
+        "versionNumber": 12,
+        "title": "Refactor movement watch component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting, useImageSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T04:45:58",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "b53a63c4-3128-48cf-a9d8-16c7999dd1fb",
+        "versionNumber": 11,
+        "title": "Expand movement filters to include types",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting, useImageSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T04:43:17",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f8b79593-24ad-4ff4-8c9b-5f9995cdd559",
+        "versionNumber": 10,
+        "title": "Filter latest run and top items",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting, useImageSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T04:42:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "eaa70413-0242-44a6-b7a9-b4cb0826be86",
+        "versionNumber": 9,
+        "title": "Filter latest declining/dropped items",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting, useImageSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T04:40:02",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "585c086b-1970-4d6a-bf90-62648b1be44e",
+        "versionNumber": 8,
+        "title": "Subtle Header Separation Enhancements",
+        "prompt": "{\"prompt\":\"Increase separation between the section header and the list:\\n\\n- Slightly lighten or darken the header background (just a bit)\\nOR\\n- Add a very subtle bottom border under the header\\n\\nKeep it minimal — just enough to create a clear break between header and content.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T03:01:50",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "fcf19b6d-498d-4a7d-8d2b-529ac6eb4e2b",
+        "versionNumber": 7,
+        "title": "Subtle Consistent Card Shadow Enhancement",
+        "prompt": "{\"prompt\":\"Add a very subtle, consistent shadow to all cards:\\n- Keep it light and soft\\n- Same shadow for all cards\\n- Do not increase intensity on top items (only border handles emphasis)\\n\\nGoal:\\nCreate slight separation from the background so the section feels more polished and layered.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T02:59:54",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3c33cb12-fe14-4405-9260-75f2994ecb58",
+        "versionNumber": 6,
+        "title": "Muting Red Warning Signal Styling",
+        "prompt": "{\"prompt\":\"Refine the red signal styling:\\n\\n- Slightly desaturate the red color (less bright, more muted)\\n- Use a softer red tone (lean toward a darker, less vibrant red)\\n- Keep the left border and tag, but make them feel less aggressive\\n\\nGoal:\\nThe red should feel like a professional warning s",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T02:59:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "0c9df244-3c91-4476-bec9-b2045df9ddad",
+        "versionNumber": 5,
+        "title": "Subtly Emphasize Top Items Visuals",
+        "prompt": "{\"prompt\":\"Increase contrast slightly for the top 1–2 items:\\n- Slightly darker border or stronger shadow\\n- Slightly bolder item name\\nKeep it subtle, but make them clearly feel like the primary focus.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T02:58:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d07fbcd4-a77e-41ce-9397-d9f6b412613e",
+        "versionNumber": 4,
+        "title": "Calm Professional Signal Panel Design",
+        "prompt": "{\"prompt\":\"Refine this section for better signal clarity:\\n\\n- Remove the solid red header background\\n- Use a neutral background for the header (light gray or transparent)\\n- Keep the title \\\"Items Needing Attention\\\" bold and clear\\n\\n- Only use red as a signal color, not a background:\\n  - Keep t",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T02:57:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "9f38b70c-acdb-43d9-8dda-6354bdc37d84",
+        "versionNumber": 3,
+        "title": "",
+        "prompt": "{\"prompt\":\"Limit results to the top 5 most important items.\\nSort by severity or most recent movement first.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T02:53:28",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "9840f520-22a4-4769-bfdf-e1e224c908e3",
+        "versionNumber": 2,
+        "title": "Declining/Dropped Items Quick List",
+        "prompt": "{\"prompt\":\"Filter to only show items where Movement Type is Declining or Dropped from Top.\\n\\nDisplay results as a clean vertical list:\\n\\nEach item should show:\\n- Item name (bold, primary)\\n- Movement type (small label)\\n- Notes (secondary, muted text)\\n\\nDesign:\\n- Minimal SaaS style\\n- Light spa",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T02:48:15",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8e3af57d-d7f4-4117-a9b5-5dbd32223b4a",
+        "versionNumber": 1,
+        "title": "Initial Version Prompt",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T02:46:35",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

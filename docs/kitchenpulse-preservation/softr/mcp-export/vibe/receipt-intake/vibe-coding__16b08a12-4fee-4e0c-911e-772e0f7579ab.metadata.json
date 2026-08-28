@@ -1,0 +1,522 @@
+{
+  "page": {
+    "id": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "name": "Receipt Intake",
+    "path": "/receipt-intake"
+  },
+  "block": {
+    "id": "16b08a12-4fee-4e0c-911e-772e0f7579ab",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/receipt-intake/vibe-coding__16b08a12-4fee-4e0c-911e-772e0f7579ab.jsx",
+  "current": {
+    "blockId": "16b08a12-4fee-4e0c-911e-772e0f7579ab",
+    "settings": [
+      {
+        "name": "brand-descriptor",
+        "type": "text",
+        "value": "AI for restaurant operators"
+      },
+      {
+        "name": "headline",
+        "type": "text",
+        "value": "Receipt Intake"
+      },
+      {
+        "name": "subheadline",
+        "type": "text",
+        "value": "Upload vendor receipts and invoices so KitchenPulse can stage cost, inventory, and margin intelligence before anything touches live operating logic."
+      }
+    ],
+    "dataSources": [
+      {
+        "id": "8c4592d7-7b42-4972-83ec-39c28d4821b8",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Vendor Receipts",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "sortOptions": [],
+        "condition": {
+          "expressions": [],
+          "logicalOperator": "AND"
+        },
+        "primaryFieldId": "fldDjPm3HqURn2xCp",
+        "fields": [
+          {
+            "id": "fldDjPm3HqURn2xCp",
+            "name": "Receipt Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldlR97cLfN0beS0E",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldiwSezFyDRjPRDE",
+            "name": "Vendor",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldA8trJzZOCAUNcl",
+            "name": "Receipt Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldQMjHhjw0DC85Bl",
+            "name": "Uploaded File",
+            "type": "ATTACHMENT",
+            "options": {
+              "showAs": "PREVIEW",
+              "inferredFileType": "OTHER",
+              "enableFileLinkExpiration": false,
+              "fileLinkExpirationValue": null,
+              "fileLinkExpirationUnit": null
+            }
+          },
+          {
+            "id": "fldtoDdR4YhOi4YoK",
+            "name": "Source",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "sela6zKCn1Qp2a3Ce",
+                  "label": "Owner Upload",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selNLZtAiRKD6Bb1X",
+                  "label": "Email Forward",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selpPF0iELTAGhdE6",
+                  "label": "Manual Entry",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel44P35r90FvsyQ3",
+                  "label": "API",
+                  "color": "purpleLight2"
+                },
+                {
+                  "id": "selhSF1nMazAamLaD",
+                  "label": "Mobile App",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldgOCLHoxo2LSLW6",
+            "name": "Processing Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selMRa8TGDBzWwV2Q",
+                  "label": "Uploaded",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selAa2sH8YvuFccCq",
+                  "label": "Parsing",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selSrUgpzXRoV2AV2",
+                  "label": "Needs Review",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "sel3ATesjHp4OtWjD",
+                  "label": "Parsed",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selmzpkofc9s96U57",
+                  "label": "Approved",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selF8fqUvV7mkSbgD",
+                  "label": "Rejected",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selWbwq01BCWr3HXp",
+                  "label": "Error",
+                  "color": "redBright"
+                },
+                {
+                  "id": "seljmVUmPsOyB5tEE",
+                  "label": "Staged",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldalXfkOpbHBAh4B",
+            "name": "Raw OCR / AI Text",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fld4b6FQUbTO1SSoh",
+            "name": "Parsed JSON",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldmHs1ZcoG4EnaRp",
+            "name": "Total Amount",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldRKIgKph5UXOmnp",
+            "name": "Review Needed",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldFyHgUIcfmgprFv",
+            "name": "Approved",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldx3V0NQZzkfQFMB",
+            "name": "Error Message",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldAXEm4PYq1gJqcK",
+            "name": "Processed At",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "flduYuAlsmmw3eFtz",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldW7YDGbpfxzTW9s",
+            "name": "Vendor Receipt Lines",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Vendor Receipt Lines"
+            }
+          },
+          {
+            "id": "fldKWt7qTemU4ZFH5",
+            "name": "Archived",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldPfR7PAsANF8CeH",
+            "name": "Parser Version",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld5ClMxbinc226k1",
+            "name": "Selected Orientation",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "sel6byjpkBwSFzsaI",
+                  "label": "none",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selNFoxVTf53XwPgR",
+                  "label": "rotate_90_clockwise",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selHx9FsRlhSMm8Vp",
+                  "label": "rotate_90_counterclockwise",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selpdBXCKPE9f2qdA",
+                  "label": "rotate_180",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selG2DjATpMlb9pOt",
+                  "label": "unresolved",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldFuOGveRhgPl5HE",
+            "name": "Transform Applied",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selsDtynXOpz343wq",
+                  "label": "none",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selEDYuG0nHn1MJth",
+                  "label": "rotate_90_clockwise",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selRR68pfXRTjRn5d",
+                  "label": "rotate_90_counterclockwise",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selWw4574lyPiSJOU",
+                  "label": "rotate_180",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel3e7HKqfD6qUSwI",
+                  "label": "unresolved",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "flddGjtE1KhYykMmH",
+            "name": "Orientation Score",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld87c6KUuCxICuyz",
+            "name": "Orientation Line Count",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldb0Adu7W1b1h5Vv",
+            "name": "Orientation Confidence",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "sel1rxVOszX6KYAug",
+                  "label": "High",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selFVb6znF83mn8C5",
+                  "label": "Medium",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selJ4nWTUgRh7hfn3",
+                  "label": "Low",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selnotNlWNNVRhiIf",
+                  "label": "Failed",
+                  "color": "cyanLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldbsIRUbfWguAByP",
+            "name": "Orientation Debug Summary",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldnOaF0ueIb074U9",
+            "name": "Orientation Needs Review",
+            "type": "CHECKBOX",
+            "options": {}
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 10,
+    "returned": 10,
+    "versions": [
+      {
+        "versionId": "3450d3bf-7b30-421a-bcff-82ad6e688154",
+        "versionNumber": 10,
+        "title": "Adjust container padding and layout style",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  ShieldCheck,\\n  Boxes,\\n  FileCheck2,\\n  Sparkles,\\n} from \\\"lucide-react\\\";\\n\\nfunction KitchenPulseLockup({ brandDescriptor }) {\\n  return (\\n",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:07:42",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f584bd90-9289-4bcc-85c0-f494a95f47ba",
+        "versionNumber": 9,
+        "title": "Restored: Refactor Block UI with Lockup",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  ReceiptText,\\n  ShieldCheck,\\n  Boxes,\\n  FileCheck2,\\n  Sparkles,\\n} from \\\"lu",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:05:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7be72b9e-5d18-47b6-bcbe-da89e888fd25",
+        "versionNumber": 8,
+        "title": "Restored: Refactor: Tweak copy and wording",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  ReceiptText,\\n  ShieldCheck,\\n  Boxes,\\n  FileCheck2,\\n  Sparkles,\\n} from \\\"lu",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:05:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "512d5d97-1136-4b03-870d-fa3792117cd2",
+        "versionNumber": 7,
+        "title": "Refactor Block UI with Lockup",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  ReceiptText,\\n  ShieldCheck,\\n  Boxes,\\n  FileCheck2,\\n  Sparkles,\\n} from \\\"lu",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:05:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d03784d0-602a-4ce4-8db1-a2814e8ef509",
+        "versionNumber": 6,
+        "title": "Refactor: Tweak copy and wording",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  ReceiptText,\\n  ShieldCheck,\\n  Boxes,\\n  FileCheck2,\\n  Sparkles,\\n} from \\\"lu",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T18:36:51",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e95e56d6-904d-48dc-9807-b7a08ce72512",
+        "versionNumber": 5,
+        "title": "Update React Block: Remove non-phone note",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  ReceiptText,\\n  ShieldCheck,\\n  Boxes,\\n  FileCheck2,\\n  Sparkles,\\n} from \\\"lu",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T05:55:46",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "81e0cfe5-e7fb-4bd0-8165-a0c8d7ebc850",
+        "versionNumber": 4,
+        "title": "Refactor UI layout and spacing adjustments",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  ReceiptText,\\n  ShieldCheck,\\n  Boxes,\\n  FileCheck2,\\n  Sparkles,\\n} from \\\"lu",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T05:54:26",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "0c9e8fa5-b361-4f0e-b089-cdcbb026a4ad",
+        "versionNumber": 3,
+        "title": "Add three-step feature cards to layout",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  ReceiptText,\\n  ShieldCheck,\\n  Boxes,\\n  FileCheck2,\\n  Sparkles,\\n} from \\\"lu",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T04:28:37",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "aa8c198e-640c-43d5-ae62-7584bbad79f2",
+        "versionNumber": 2,
+        "title": "Refactor placeholder to feature block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T04:24:46",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "992e90bf-3832-442d-9e16-fb65c13ae57b",
+        "versionNumber": 1,
+        "title": "Initial Version Prompt Draft",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-16T04:24:23",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

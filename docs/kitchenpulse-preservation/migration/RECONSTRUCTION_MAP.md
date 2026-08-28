@@ -17,3 +17,9 @@ This is documentation only. It does not implement a replacement UI.
 ## Deterministic migration prerequisites
 
 Before replacement UI work, attach each Softr page/block to one table row above, document its filters/sorts/visibility/Call API mapping, export full Vibe generated code, and capture app-level theme/auth/groups/custom code. Preserve API contracts as they are observed; do not infer them from a page label.
+
+## Softr MCP page/block overlay — 2026-08-28
+
+Read-only MCP extraction added 26 listed pages (25 fully readable), 97 readable blocks, and a 97-row evidence matrix at [softr/mcp-export/reconstruction-matrix.json](../softr/mcp-export/reconstruction-matrix.json). It includes block IDs, class, wired source/table, filters, actions, visibility, and only explicit Vercel-route references found in Vibe source.
+
+Current Vibe source is preserved for 45 blocks; one Billing source is redacted for a sensitive literal, and one Tripleseat source endpoint returned `NOT_FOUND`. Native Custom Code payloads remain Studio-only. These gaps remain `MANUAL_CAPTURE_REQUIRED` and do not supersede the source-backed map above.

@@ -1,0 +1,482 @@
+{
+  "page": {
+    "id": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "name": "Hero Template - Stable",
+    "path": "/home-copy"
+  },
+  "block": {
+    "id": "871acef4-e3ae-4401-b3d0-d00a2fbfc6ef",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/hero-template-stable/vibe-coding__871acef4-e3ae-4401-b3d0-d00a2fbfc6ef.jsx",
+  "current": {
+    "blockId": "871acef4-e3ae-4401-b3d0-d00a2fbfc6ef",
+    "settings": [
+      {
+        "name": "headline",
+        "type": "text",
+        "value": "Review Fried Lobster Tail before next rush"
+      },
+      {
+        "name": "supporting-line",
+        "type": "text",
+        "value": "Margin risk is forming — early correction prevents bleed"
+      },
+      {
+        "name": "timing",
+        "type": "text",
+        "value": "Act before next rush"
+      },
+      {
+        "name": "priority-label",
+        "type": "text",
+        "value": "Medium priority"
+      },
+      {
+        "name": "forward-signal",
+        "type": "text",
+        "value": "Watch next run"
+      },
+      {
+        "name": "do-now",
+        "type": "text",
+        "value": "Adjust pricing or portion size by end of shift"
+      },
+      {
+        "name": "why",
+        "type": "text",
+        "value": "Food cost spiked 8% this week, eroding profit margin"
+      },
+      {
+        "name": "if-ignored",
+        "type": "text",
+        "value": "Could lose $400+ in margin by week's end"
+      },
+      {
+        "name": "cta-text",
+        "type": "text",
+        "value": "Review Brief →"
+      },
+      {
+        "name": "cta-link",
+        "type": "navigation",
+        "value": {
+          "action": "OPEN_PAGE",
+          "destination": "/forecasts-insights-details",
+          "openIn": "MODAL",
+          "modalType": "POPUP",
+          "modalSize": "MD"
+        }
+      },
+      {
+        "name": "priority-level",
+        "type": "select",
+        "value": "high"
+      },
+      {
+        "name": "background-image",
+        "type": "image",
+        "value": {
+          "src": "https://replicate.delivery/xezq/zJO9U52wAezDW6PTjkX9AMOhkSpx0WAzOPxeHgFNpDfeex6zC/out-0.webp",
+          "alt": "Decision card background"
+        }
+      }
+    ],
+    "dataSources": [
+      {
+        "id": "e17029b4-f9ce-40a4-8629-1edced28b3ac",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Forecasts & Insights",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldglvdY2BF5WZqXr",
+        "fields": [
+          {
+            "id": "fldglvdY2BF5WZqXr",
+            "name": "Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldJ03KSbGWvXVIrx",
+            "name": "Brief Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld1dX93rNPB4XagP",
+            "name": "Run ID",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldOkAVCOCmf3xPkq",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldB4d5QoNpttkpjn",
+            "name": "Restaurant ID",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldOkAVCOCmf3xPkq",
+              "lookupFieldId": "fldQGL648TpDkcFwE",
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "flduKYT7l7v71p6Kn",
+            "name": "Summary",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldk2op2b2ZNDYhfr",
+            "name": "Top Callout",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld7IAH7nFCdvPHnL",
+            "name": "Risk Callout",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldD7sqIMPqwLuNDh",
+            "name": "Generated By",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldv3w3qB7UB0SCPD",
+            "name": "Formatted Brief (Display)",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldChVluMt7rENTUF",
+            "name": "Decision Priority",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldzPHrQAl5GdSY9Q",
+            "name": "Decision Display",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldEzHtr9fu1xVQ8d",
+            "name": "Action Callout",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldx3XRc2MaPYP1cU",
+            "name": "Decision JSON",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldIgvVKsMiYGmKLh",
+            "name": "Decision Timestamp",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldFr5F7j3SGLsQjs",
+            "name": "Decision Source",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldaIBeSsLO8xPuLm",
+            "name": "Is Latest Brief",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldMghJacKEXv5UgH",
+            "name": "Latest Brief Flag",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldUiBjesc28fRul8",
+            "name": "Trigger Decision",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldj6cRSrrLhh4F49",
+            "name": "Decision Log",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Decision Log"
+            }
+          },
+          {
+            "id": "fld6JajMxXJaPJcmx",
+            "name": "Last Analyzed Display",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldf85teKLvUlTMpz",
+            "name": "Quick - Why",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fld0F6FbRzLaVQ3XZ",
+            "name": "Quick - First Action",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "flduP7TJaz6r7dNwP",
+            "name": "Quick - Ignore Risk",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldp7HzjTHM3KF09X",
+            "name": "Quick - Watch",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldIpQ99XxNdE2bu3",
+            "name": "Hero State",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selwcqFBMngYGnqLp",
+                  "label": "PUSH",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selJX8MIq0GcedCwX",
+                  "label": "PROTECT",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "sel5MSf5XjwHl7wzv",
+                  "label": "RECOVER",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "sel2alR72zCSn5vdp",
+                  "label": "WATCH",
+                  "color": "greenLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fld8f8o5N3eCEbOzd",
+            "name": "Hero Confidence",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldTWCNC5XgCie974",
+            "name": "Hero Time Context",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldGJiN2XfaA4du6V",
+            "name": "Hero Headline",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldv2RKElusff4vIM",
+            "name": "Hero Subheadline",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldpJLqVEHTZAt6Ku",
+            "name": "Hero Pill 1",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldvR9yAaKgkPCyn4",
+            "name": "Hero Pill 2",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldk8FyMBQd6RrxlP",
+            "name": "Hero Pill 3",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld2FhggDpLh1IGsV",
+            "name": "Hero Card Label",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldQk1gubPHL66vVY",
+            "name": "Hero Card Value",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldmZznaz1M6xbprS",
+            "name": "Hero Card Priority",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld3vkoYUvLRHibRM",
+            "name": "Why Full",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 1,
+    "returned": 1,
+    "versions": [
+      {
+        "versionId": "e15b53c2-baa5-429c-b0bc-048c2567dc8c",
+        "versionNumber": 1,
+        "title": "Render visible urgency strip in decision card",
+        "prompt": "{\"prompt\":\"The urgency strip is not visible in the UI even though it was added.\\n\\nFix this explicitly.\\n\\n1. Ensure the urgency strip is rendered in the component:\\n\\n* It must appear in the JSX/return output of the decision card\\n* Place it directly below the signal pills and above the “Do now” se",
+        "promptTruncated": true,
+        "createdAt": "2026-04-28T20:59:15",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

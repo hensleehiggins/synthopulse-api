@@ -1,0 +1,101 @@
+{
+  "page": {
+    "id": "97ac6f46-2864-44b2-aa8d-5817ab5b97f5",
+    "name": "Order Intelligence",
+    "path": "/order-intelligence"
+  },
+  "block": {
+    "id": "fcec3bec-5db9-4e90-87b0-d01affbb2f0d",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/order-intelligence/vibe-coding__fcec3bec-5db9-4e90-87b0-d01affbb2f0d.jsx",
+  "current": {
+    "blockId": "fcec3bec-5db9-4e90-87b0-d01affbb2f0d",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "a9928824-1bb5-46c2-8130-06ff2f348d5b",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "sortOptions": [],
+        "condition": {
+          "expressions": [],
+          "logicalOperator": "AND"
+        }
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 6,
+    "returned": 6,
+    "versions": [
+      {
+        "versionId": "fa56458a-802c-4d20-8231-f2744d99ddb6",
+        "versionNumber": 6,
+        "title": "Add quiet refresh and visibility handler",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  ExternalLink,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  RefreshCw,\\n  ShieldCheck,\\n  ThumbsDown,\\n} from \\\"lucide-react\\\";\\n\\nconst REVIEW",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T23:50:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "9d1b27fd-65f4-4901-8ac5-a5a42970c6b1",
+        "versionNumber": 5,
+        "title": "Summarize React code changes request",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  ExternalLink,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  RefreshCw,\\n  ShieldCheck,\\n  ThumbsDown,\\n} from \\\"lucide-react\\\";\\n\\nconst REVIEW",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T23:31:21",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "edd0be85-33c8-4761-9b6f-30c6977920ad",
+        "versionNumber": 4,
+        "title": "Add count intake link and UI updates",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  RefreshCw,\\n  ShieldCheck,\\n  ThumbsDown,\\n} from \\\"lucide-react\\\";\\n\\nconst REVIEW_API = \\\"https://",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T07:28:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "624e23ff-d858-445f-affe-6f75c18234d0",
+        "versionNumber": 3,
+        "title": "Add review queue UI, actions, API integration",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React from \\\"react\\\";\\nimport {\\n  ArrowRight,\\n  ClipboardCheck,\\n  ClipboardList,\\n  FileText,\\n  LockKeyhole,\\n  PackageCheck,\\n  PenLine,\\n  QrCode,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  Sparkles,\\n} from \\\"lucide-react\\\";\\n\\nconst COUNT_URL = ",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T06:36:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6bfbb2ca-f61e-4776-aa4f-b5be724d5216",
+        "versionNumber": 2,
+        "title": "Refactor placeholder to CountIntake component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T00:42:21",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "76d24a9b-d4aa-49b8-832e-ec7b7ee11738",
+        "versionNumber": 1,
+        "title": "Create Initial Version Prompt",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-06-07T00:42:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

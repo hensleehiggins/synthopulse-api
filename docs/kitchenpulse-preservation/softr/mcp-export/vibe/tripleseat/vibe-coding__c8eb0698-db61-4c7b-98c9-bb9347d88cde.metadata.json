@@ -1,0 +1,23 @@
+{
+  "page": {
+    "id": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "name": "Tripleseat",
+    "path": "/tripleseat"
+  },
+  "block": {
+    "id": "c8eb0698-db61-4c7b-98c9-bb9347d88cde",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "MANUAL_SOURCE_CAPTURE_REQUIRED",
+  "sourcePath": null,
+  "current": {
+    "retrievalError": "Error: NOT_FOUND\nMessage: Resource not found: Resource not found: /v1/softr-internal/mcp/applications/bd94ae5e-6d9d-4b3f-9a19-c52758d99cf8/pages/d764339b-545c-44c1-b3cb-07058aaaaf49/blocks/c8eb0698-db61-4c7b-98c9-bb9347d88cde/code\nSuggestion: Verify the ID exists and you have access to it. Use list operations to find valid IDs.\n"
+  },
+  "versionHistory": {
+    "totalCount": 0,
+    "returned": 0,
+    "versions": []
+  }
+}

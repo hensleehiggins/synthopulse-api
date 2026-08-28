@@ -1,0 +1,464 @@
+{
+  "page": {
+    "id": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "name": "What Changed",
+    "path": "/what-changed"
+  },
+  "block": {
+    "id": "9300a904-ce20-4ca3-99a6-424fd7a443fe",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/what-changed/vibe-coding__9300a904-ce20-4ca3-99a6-424fd7a443fe.jsx",
+  "current": {
+    "blockId": "9300a904-ce20-4ca3-99a6-424fd7a443fe",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "c05fd68f-0d8b-452d-9945-46fed0c73fc2",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Cost Movement",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldJEbKfznts1bZli",
+        "fields": [
+          {
+            "id": "fldJEbKfznts1bZli",
+            "name": "Movement Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldoiOaFWdvZT6pQD",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldBFbZ2lVjCVIcna",
+            "name": "Source Cost Proposal",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Receipt Cost Proposals"
+            }
+          },
+          {
+            "id": "fldEWS8K3ES8JymC4",
+            "name": "Receipt Line",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Vendor Receipt Lines"
+            }
+          },
+          {
+            "id": "fldrrAjUUTvfPgqNR",
+            "name": "Inventory Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Inventory Items"
+            }
+          },
+          {
+            "id": "fldQm9oR7NCaDCjX2",
+            "name": "Cost Source Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Cost Source Items"
+            }
+          },
+          {
+            "id": "fld9olyCQOawVGBUD",
+            "name": "Related Menu Items",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fldLypvG46G0m3EDZ",
+            "name": "Related Menu Components",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Item Ingredients"
+            }
+          },
+          {
+            "id": "fldp2mDXFUqAXkCyM",
+            "name": "Vendor",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldR6ue6PnpWGErfR",
+            "name": "Cost Item Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldLaJEJVcXDYiRmL",
+            "name": "Vendor Line Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldI5qZmL4FCtGFRv",
+            "name": "Previous Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldYjqopqSgT82D70",
+            "name": "Latest Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldzrAqTOZieB1Gmk",
+            "name": "Cost Change $",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldhLiA9HmOnKYkW2",
+            "name": "Cost Change %",
+            "type": "PERCENT",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldpVAh3ihF7TirUV",
+            "name": "Direction",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selX5E0T0RdSr1UIF",
+                  "label": "Increase",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selDoEo7pQFRJKOMM",
+                  "label": "Decrease",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selAFHW2sAYSSi44j",
+                  "label": "Flat",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldRLI2genevJtJVd",
+            "name": "Severity",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selLbhY6JY62vwTSC",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "sel3ZKy8GRwUHgYX8",
+                  "label": "Medium",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selUshNmZqqwTJKFI",
+                  "label": "Low",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selWYze9UWHft2WrK",
+                  "label": "Watch",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldNi2qMbGFz042a9",
+            "name": "Review Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seltSxG4Wz7mqLBVw",
+                  "label": "Active",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selnAojRygPuJJMjg",
+                  "label": "Needs Review",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selNQ9qiypWvUzjl6",
+                  "label": "Resolved",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selgGeEWyCPLi58BY",
+                  "label": "Ignored",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldKpWYzCjZzIvIOw",
+            "name": "Signal Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldLC9rQlJ4VBHZbA",
+            "name": "Latest Receipt Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld0HgPTimnsx5uuQ",
+            "name": "Is Latest",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld6hC7owAfx1o3us",
+            "name": "Show on What Changed",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldGLmR9Tntta94Qy",
+            "name": "Show on Home",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldwgCG4QqJsoc3l6",
+            "name": "Decision Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld8z55qo97r5Sl7a",
+            "name": "Margin Pressure",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldiBQobIqAOGCGBi",
+            "name": "Suggested Action",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldNQkSbNBnyPfflr",
+            "name": "Formatted Cost Brief",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldWhzCxDaMYG0Zvg",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 12,
+    "returned": 12,
+    "versions": [
+      {
+        "versionId": "89d91f96-d9db-4338-b0c1-2249c39db3e7",
+        "versionNumber": 12,
+        "title": "Refactor Cost Watch UI Styles",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  Circle,\\n  CircleDollarSign,\\n  RefreshCw,\\n  ShieldCheck,\\n  Sparkles,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:42:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d3cc49cd-89b6-4fa4-914b-3693682711cd",
+        "versionNumber": 11,
+        "title": "Update cost signal colors to orange",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  Circle,\\n  CircleDollarSign,\\n  RefreshCw,\\n  ShieldCheck,\\n  Sparkles,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:39:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "4f96395a-7088-494c-914f-79605c6f6daf",
+        "versionNumber": 10,
+        "title": "Summarize Code Refactor Request",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  Circle,\\n  CircleDollarSign,\\n  RefreshCw,\\n  ShieldCheck,\\n  Sparkles,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:37:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "235399f8-7ac0-4561-907c-931bcc022edc",
+        "versionNumber": 9,
+        "title": "Refactor: Add Material Increase Logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  Circle,\\n  CircleDollarSign,\\n  RefreshCw,\\n  ShieldCheck,\\n  Sparkles,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:34:54",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c64152a7-5b80-47cc-bba3-b4645c3424d9",
+        "versionNumber": 8,
+        "title": "Refactor Cost Watch UI Styling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  RefreshCw,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  movemen",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:31:11",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f9b0357a-cb85-4190-ab5c-3b002423a9ca",
+        "versionNumber": 7,
+        "title": "Recalculate and Display Change Percent",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  RefreshCw,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  movemen",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T20:04:17",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d6af18c9-76d7-4917-8b06-0af00f52af7e",
+        "versionNumber": 6,
+        "title": "Normalize percent parsing and sorting",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  RefreshCw,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  movemen",
+        "promptTruncated": true,
+        "createdAt": "2026-05-21T21:03:24",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2ff13b6d-a07c-497f-9b4b-2916b08aee3d",
+        "versionNumber": 5,
+        "title": "Normalize percent display and parsing",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  RefreshCw,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  movemen",
+        "promptTruncated": true,
+        "createdAt": "2026-05-21T21:03:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5d1946a3-3884-44a0-aa71-894ab13eebcf",
+        "versionNumber": 4,
+        "title": "Refactor Cost Watch to Datasource",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  RefreshCw,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst COST_PROPOSALS_API =\\n  \\\"https://project-1csz2.vercel.app/api",
+        "promptTruncated": true,
+        "createdAt": "2026-05-21T20:56:27",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ac2e72d9-ff08-4aa1-8843-2f8745bca57a",
+        "versionNumber": 3,
+        "title": "Update Cost Watch UI copy and text",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  RefreshCw,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst COST_PROPOSALS_API =\\n  \\\"https://project-1csz2.vercel.app/api",
+        "promptTruncated": true,
+        "createdAt": "2026-05-21T20:04:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1f3d01d5-622e-4e3b-af21-399eb32e06f5",
+        "versionNumber": 2,
+        "title": "Replace placeholder with Cost Watch component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-21T19:25:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "40bf80ae-d23f-4898-b4f6-b92f17465a5e",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-21T19:25:18",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

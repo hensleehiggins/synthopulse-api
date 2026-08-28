@@ -1,0 +1,1353 @@
+{
+  "page": {
+    "id": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "name": "Tripleseat",
+    "path": "/tripleseat"
+  },
+  "block": {
+    "id": "2718faf7-4978-49f6-b0eb-330b911f2818",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/tripleseat/vibe-coding__2718faf7-4978-49f6-b0eb-330b911f2818.jsx",
+  "current": {
+    "blockId": "2718faf7-4978-49f6-b0eb-330b911f2818",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "03868d60-ef4e-4208-932c-96edf2d8e8c0",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "External Factors",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldIbWiPKDjss6rF5",
+        "fields": [
+          {
+            "id": "fldIbWiPKDjss6rF5",
+            "name": "Display Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldYlsGty3kRVPD1v",
+            "name": "Clean Date",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "DATETIME",
+                "vendorSideFieldType": "dateTime",
+                "options": {
+                  "precision": "DATETIME",
+                  "useRelativeDatetimeFormat": false,
+                  "timezoneType": "FIXED",
+                  "timezone": "DEFAULT",
+                  "format": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldTxLEfXJKOlNSir",
+            "name": "Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldv1tPCaXAp15s1e",
+            "name": "Restaurant ID",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldKJgHOeaNSObtpw",
+              "lookupFieldId": "fldQGL648TpDkcFwE",
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldf6KFeywVb7QVM1",
+            "name": "Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selSMY7RLry4bTLhX",
+                  "label": "Weather",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "seluOT6cgkmqxcCnd",
+                  "label": "Event",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selot8dL1WHWgsJwo",
+                  "label": "Holiday",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selJzjKVFs3kxgAxQ",
+                  "label": "Local Activity",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selcaxACy4r1uynJn",
+                  "label": "Promotion",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selziPXztdoi15Nqo",
+                  "label": "Other",
+                  "color": "orangeLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldFYJEoipkoC82Bp",
+            "name": "Description",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldJmy89JljBMk7Cv",
+            "name": "Temp High",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldUV5x3pt8ycQQyK",
+            "name": "Rain Chance %",
+            "type": "PERCENT",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld3nwxE5fvtDnXVA",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fld6CiWvjfkL7tu9D",
+            "name": "List dt",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldeseeM9hk87F1ni",
+            "name": "Temp Low",
+            "type": "NUMBER",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldTa5CueU3cYbODv",
+            "name": "Customer Impact",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldMVq1KcQ3Jxtynj",
+            "name": "Forecast Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldyEgA92alrI1e4C",
+            "name": "Date Key",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selCL1DrRlx0Anghe",
+                  "label": "4/1/2026",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "sel6AKzwl0wL14Vhz",
+                  "label": "4/2/2026",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selH8S84Qd6oK8VBu",
+                  "label": "4/3/2026",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selkPhO7tJ1RFQ9sy",
+                  "label": "4/4/2026",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel8tpIBFckDxE9hM",
+                  "label": "4/5/2026",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "sel8rKcimzItdXMU9",
+                  "label": "4/6/2026",
+                  "color": "orangeLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldvYZWBYHOEM9UjQ",
+            "name": "Short Date",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld50eRlVKYRAqpRK",
+            "name": "Impact Direction",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seljKTM36bUKXoXLj",
+                  "label": "Positive",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selpvcucpEODDUw9n",
+                  "label": "Negative",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "sel9Fj1ysaffdurxR",
+                  "label": "Neutral",
+                  "color": "tealLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldyb6iL6ssTRKIKl",
+            "name": "Impact Strength",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldaKtF7DCG0P0ccx",
+            "name": "Start Time",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldgCI4creSDGInu7",
+            "name": "End Time",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldKJgHOeaNSObtpw",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldZKHTsSLpZ5zsL7",
+            "name": "Affected Categories",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seli3sHdBMa5Ka7bT",
+                  "label": "Dinner",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "sel5pz8KZWeYjiHJE",
+                  "label": "Lunch",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selrK5ymsimX1RTq0",
+                  "label": "Brunch",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selPRGoH3TAXt0XWJ",
+                  "label": "Drinks",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selEjkiOoQLMALQ2c",
+                  "label": "Alcohol",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seldefNiROh77FLFu",
+                  "label": "Desserts",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selVnu0BeUX0nuadl",
+                  "label": "Patio",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selEmjx36s3tp1wUI",
+                  "label": "Walk-ins",
+                  "color": "pinkLight2"
+                },
+                {
+                  "id": "selwDYIJhxnLIrnEr",
+                  "label": "High Margin Item",
+                  "color": "purpleLight2"
+                },
+                {
+                  "id": "selUjQxYwJSJEUfS5",
+                  "label": "Steaks",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selw9jDVpbX5cwzrr",
+                  "label": "Seafood",
+                  "color": "blueLight1"
+                },
+                {
+                  "id": "selbHu1XypBeE60mi",
+                  "label": "Steak",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selOwsBCQfpUfJpoD",
+                  "label": "Dessert",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selYgl90wED7hOqJU",
+                  "label": "Wine",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selUH7o1rEo8YybnZ",
+                  "label": "Cocktails",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selhWLZ5L0RIITXAK",
+                  "label": "Family / Groups",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selI2bemYWdnbIUQ0",
+                  "label": "Bar",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldpU8ueuJMILO8iw",
+            "name": "Active",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldxqqjCUL6dmbgoR",
+            "name": "Factor Label",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldorv7Y7nHglmHHY",
+            "name": "Decision Note",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldAnNGfvDFEeYj2w",
+            "name": "Source Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selmf7zS8XZy6UgaP",
+                  "label": "Weather",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selRMfL5V8OWcdjBL",
+                  "label": "Holiday",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selpRNWp2ro2eiq82",
+                  "label": "Event",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selk6ioF3Pri73TXi",
+                  "label": "Traffic",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selJBc8pRDIcObWFn",
+                  "label": "Closure",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "sel506jqZ0iqXwFzU",
+                  "label": "Manual",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selDXhg1dPcnmeUUl",
+                  "label": "Manual/In-house",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "sel4MNuCwXf2yGFKR",
+                  "label": "Tripleseat",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldVsh2usxLv5YJaX",
+            "name": "Event Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selHEJsgt8pY9vdrY",
+                  "label": "Concert",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selbOmOOyPoppaFdE",
+                  "label": "Sports",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selGlzMe08JVy6V7o",
+                  "label": "Festival",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selewDjxN6Ki9d96B",
+                  "label": "Convention",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "seljzC4F6VkBTOIWk",
+                  "label": "Holiday",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "sel7a1hB1oAMgv90K",
+                  "label": "Nightlife",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selIN6HDt04NpD0GR",
+                  "label": "Parade",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selbGvXAijE4ptWh8",
+                  "label": "Market",
+                  "color": "pinkLight2"
+                },
+                {
+                  "id": "selCWfThKbbfqEXDO",
+                  "label": "Street Closure",
+                  "color": "purpleLight2"
+                },
+                {
+                  "id": "selM3jkBvzn8h0wZz",
+                  "label": "Other",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selL0RmdceEK3Erlo",
+                  "label": "Private Event",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fld7lKcp3FRXi271h",
+            "name": "Event Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldbVVg79U5ccAOCB",
+            "name": "Venue / Area",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldrppoU3WOvgI4hx",
+            "name": "Start DateTime",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldLiELCeQ6d51R8W",
+            "name": "End DateTime",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "flduEBALv2Be69CXB",
+            "name": "All Day",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldgXt5R41B5NV41t",
+            "name": "Estimated Draw",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selZrgapqe7WXZ8pD",
+                  "label": "Low",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "sel50CNIE0Q8xyPBY",
+                  "label": "Medium",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selR8T8nFPuDNX2Nj",
+                  "label": "High",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selRy1Kdz4YWXORIV",
+                  "label": "Very High",
+                  "color": "greenLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldO8IqP5Dt6H9EyY",
+            "name": "Audience Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selQPrhpdvhdk7YmZ",
+                  "label": "Families",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "sel1VG6t2YED2Pl7T",
+                  "label": "Tourists",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "sel1Al3Wlhv2LGL8x",
+                  "label": "Young Adults",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "sell9DdQomQC0BZLh",
+                  "label": "Business",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selFqIFE4nzFITOTl",
+                  "label": "Local Regulars",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selQVDJDKIR8iu6DB",
+                  "label": "Late Night",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selAAtQWOP2HwUjVC",
+                  "label": "Luxury",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selrvMtI29BjOgGyW",
+                  "label": "Mixed",
+                  "color": "pinkLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fld51luKLDlvfIEwi",
+            "name": "Traffic Effect",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selVWYlqQZmTv61WP",
+                  "label": "Low",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selUXkbbpEToeJXMp",
+                  "label": "Medium",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selr5BfpQrGIEuc0Z",
+                  "label": "High",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selDHK0VaOIEHnvxR",
+                  "label": "Very High",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selWMsVYazbQuKfOI",
+                  "label": "High positive",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selXRxkM5cpSiNvOZ",
+                  "label": "Plan around",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selel4ytLuf5k7nyJ",
+                  "label": "Watch timing",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "sel6rMrTGt6goHupG",
+                  "label": "Moderate",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldBYfUAxe64QZGom",
+            "name": "Sales Bias",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selzG0nd1i3JwNWDl",
+                  "label": "Premium Entrees",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selMu1vCpvfEX3OJF",
+                  "label": "Cocktails",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "seldI8hktEBKvdz7R",
+                  "label": "Beer",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selif5aNlrn4KvIdL",
+                  "label": "Wine",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "seljGieT2q3FlKKi5",
+                  "label": "Dessert",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seldzcPwMvFDGnceJ",
+                  "label": "Brunch",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selH4egJeH3KHSj8p",
+                  "label": "Handhelds",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "sel7fmbN4RoWlL2BG",
+                  "label": "Shareables",
+                  "color": "pinkLight2"
+                },
+                {
+                  "id": "sel9OaQAq0bYdPXg1",
+                  "label": "Late Night",
+                  "color": "purpleLight2"
+                },
+                {
+                  "id": "selJYIIfAgne31OKW",
+                  "label": "Fast Casual",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel7UqoXWS0MsyShW",
+                  "label": "Family Meals",
+                  "color": "blueLight1"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldxZqNB3IRRdBSlA",
+            "name": "Operational Risk",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "sel9oZ4xCXwZidmUn",
+                  "label": "Parking",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selA7pjXztafG2Jpl",
+                  "label": "Staffing Pressure",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selXBjvn1BiFAXi89",
+                  "label": "Kitchen Load",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selgEyIlmAbGZ5ere",
+                  "label": "Long Ticket Times",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selkqxnf0ySTGHSaP",
+                  "label": "Delivery Delays",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selxGhPIPoCKARlNe",
+                  "label": "Walk-in Surge",
+                  "color": "orangeLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldfN2yKXjAftY6SO",
+            "name": "Confidence",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selw20agClfU5kOxX",
+                  "label": "Low",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "seleKd3u1I8Mv4oQ4",
+                  "label": "Medium",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selLj2VvmUgwx1V0n",
+                  "label": "High",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selNiTsaQxBrj3iC7",
+                  "label": "Very High",
+                  "color": "greenLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldmM1UGj3PMuL3nM",
+            "name": "Active (Event)",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldbMdQ0Qx673yLrt",
+            "name": "Auto Imported",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldxwAlF1f42JZ7nD",
+            "name": "Needs Review",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldAdlz6oMvg42Ux1",
+            "name": "Priority Score",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldMJT51u1k6meqSA",
+            "name": "Event Summary",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fld3ntnqN9WqX5mZT",
+            "name": "Decision Hint",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld86Sic5Ae47iigv",
+            "name": "Active Now (Event)",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldIve2pdKrukLypR",
+            "name": "Traffic Weight",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld2PxZhCwQcQIjsb",
+            "name": "Draw Weight",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldYIE9kwvGyshc6V",
+            "name": "Confidence Weight",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldrZLTDqDT0Ytloy",
+            "name": "Auto Priority Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldfWK7mu3Jx9BddB",
+            "name": "Event Snapshot",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld0d5WGDpZE4rmvq",
+            "name": "Event Short Signal",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldTgd1N4SCOltNKW",
+            "name": "Event Pressure Label",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldTD9PVxwDDRN0HH",
+            "name": "Calendar Label",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldEL85DTxzU2nLTj",
+            "name": "Distance Weight",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldlK3DoMnNLmkPjH",
+            "name": "External Event ID",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldHcqT6p7ZAAa6DT",
+            "name": "Event Weight",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldJv55Mz7rnAyjs0",
+            "name": "Source",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selxEA5LiMP7y6kz6",
+                  "label": "Ticketmaster",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selE22K2P3sprmrTS",
+                  "label": "Local",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selKGc5aTzh6wfYgo",
+                  "label": "Manual",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "seloabPbGbUL6nOhc",
+                  "label": "Local / Manual",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selzapu9DMwcWbxXG",
+                  "label": "Tripleseat",
+                  "color": "greenLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldl0jvDYHQU7b8hR",
+            "name": "Decision Driving Event",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldzGAxrWJ8dGPB8G",
+            "name": "Event Display Date",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldLFVpT52MRRY5Id",
+            "name": "Event Board Column",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldKQi83sWqrxQFTB",
+            "name": "Event Sort Date",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "DATETIME",
+                "vendorSideFieldType": "date",
+                "options": {
+                  "precision": "DATE",
+                  "useRelativeDatetimeFormat": false,
+                  "timezoneType": "FIXED",
+                  "timezone": "DEFAULT",
+                  "format": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld5vBZjBJZYbYbUq",
+            "name": "Event Board Sort Rank",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld2Lkcz5BnFkEa3K",
+            "name": "Event Card Date Label",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldZkGlQ5bWLH0WxS",
+            "name": "Show on Service Pressure",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldKq4tAYKNSSfzTD",
+            "name": "Show on Home Alert",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldMy8s8k16NIpIPk",
+            "name": "Home Alert Window",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld2JdyCifcFU63w6",
+            "name": "Demand Adjustments",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Demand Adjustments"
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 8,
+    "returned": 8,
+    "versions": [
+      {
+        "versionId": "165a57ee-54f4-4df8-b7e2-1cb7af6efe51",
+        "versionNumber": 8,
+        "title": "Refactor Tripleseat Leads UI/components",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n    Flame,\\n    Clock,\\n    TrendingUp,\\n    Users,\\n    CalendarDays,\\n    DollarSign,\\n    Use",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:54:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7f4a8f01-fa64-4765-81c3-9d5fcea0ffc3",
+        "versionNumber": 7,
+        "title": "Refactor LeadCard Styling and Layout",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n    Flame,\\n    Clock,\\n    TrendingUp,\\n    Users,\\n    CalendarDays,\\n    DollarSign,\\n    Use",
+        "promptTruncated": true,
+        "createdAt": "2026-05-31T00:08:56",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f463dee1-2013-4def-9b81-15647cafa9c6",
+        "versionNumber": 6,
+        "title": "Summarize React TripleSeat code changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n    Flame,\\n    Clock,\\n    TrendingUp,\\n    Users,\\n    CalendarDays,\\n    DollarSign,\\n    Use",
+        "promptTruncated": true,
+        "createdAt": "2026-05-26T18:19:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ed1e0306-2477-44c0-bee0-6bfa6f5734c9",
+        "versionNumber": 5,
+        "title": "Normalize and Enhance Lead Display",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n    Flame,\\n    Clock,\\n    TrendingUp,\\n    Users,\\n    CalendarDays,\\n    DollarSign,\\n    Use",
+        "promptTruncated": true,
+        "createdAt": "2026-05-26T18:11:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "b8af1d57-3be9-4a33-9c4a-c388c9ee5f5e",
+        "versionNumber": 4,
+        "title": "Refactor: Preserve potentialDemand filtering",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n    Flame,\\n    Clock,\\n    TrendingUp,\\n    Users,\\n    CalendarDays,\\n    DollarSign,\\n    Use",
+        "promptTruncated": true,
+        "createdAt": "2026-05-20T05:58:53",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1addc177-2a45-45f7-9b6a-8edf66a57798",
+        "versionNumber": 3,
+        "title": "Filter out duplicate leads from lists",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n    Flame,\\n    Clock,\\n    TrendingUp,\\n    Users,\\n    CalendarDays,\\n    DollarSign,\\n    Use",
+        "promptTruncated": true,
+        "createdAt": "2026-05-20T05:51:14",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8f3af65e-063c-4193-8aeb-b056df1fdcc9",
+        "versionNumber": 2,
+        "title": "Convert placeholder to Tripleseat dashboard block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-20T05:14:02",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ecc03e20-83c8-4898-b962-52d1d862ceb7",
+        "versionNumber": 1,
+        "title": "Initial Draft Prompt",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-20T05:13:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

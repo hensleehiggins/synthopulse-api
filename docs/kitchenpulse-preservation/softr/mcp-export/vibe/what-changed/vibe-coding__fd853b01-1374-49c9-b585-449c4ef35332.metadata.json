@@ -1,0 +1,773 @@
+{
+  "page": {
+    "id": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "name": "What Changed",
+    "path": "/what-changed"
+  },
+  "block": {
+    "id": "fd853b01-1374-49c9-b585-449c4ef35332",
+    "name": "vibe-coding",
+    "title": "Centered text with video",
+    "category": "Hero"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/what-changed/vibe-coding__fd853b01-1374-49c9-b585-449c4ef35332.jsx",
+  "current": {
+    "blockId": "fd853b01-1374-49c9-b585-449c4ef35332",
+    "settings": [
+      {
+        "name": "eyebrow",
+        "type": "text",
+        "value": "KitchenPulse"
+      },
+      {
+        "name": "brand-descriptor",
+        "type": "text",
+        "value": "AI for restaurant operators"
+      },
+      {
+        "name": "fallback-headline",
+        "type": "text",
+        "value": "What Changed This Run"
+      },
+      {
+        "name": "fallback-subheadline",
+        "type": "text",
+        "value": "Track new risks, recoveries, and momentum shifts from the latest service window."
+      },
+      {
+        "name": "fallback-signal-label",
+        "type": "text",
+        "value": "MOVEMENT SIGNAL"
+      },
+      {
+        "name": "fallback-signal-value",
+        "type": "text",
+        "value": "Where momentum is shifting."
+      },
+      {
+        "name": "fallback-priority-label",
+        "type": "text",
+        "value": "Signal view"
+      },
+      {
+        "name": "fallback-priority-value",
+        "type": "text",
+        "value": "Comparable run"
+      }
+    ],
+    "dataSources": [
+      {
+        "id": "5bed1582-bb5b-4f8d-8e94-bdb0f965dc4c",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Item Movement",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fld0ICNfX8tbFiLmu",
+        "fields": [
+          {
+            "id": "fld0ICNfX8tbFiLmu",
+            "name": "Item",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldfDpMVns51YLgid",
+            "name": "Current Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldJP95P52diSiKcf",
+            "name": "Previous Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldb6siCRbu3Ztajq",
+            "name": "Movement Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selfdGzpuOTzc33pI",
+                  "label": "New Top",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selkYGA7TtOSQHxCn",
+                  "label": "Dropped from Top",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seluGV4azhm3qZ8fJ",
+                  "label": "New Low",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNFxVJxyC1jPSMV",
+                  "label": "Recovered",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selktHMaqcEax3Qlq",
+                  "label": "Declining",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selqXwgfmnmN29GoU",
+                  "label": "Stable",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "sel0YLyHaIeCJGYov",
+                  "label": "Rising",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "seliuTxAtCEVLUU0H",
+                  "label": "Recovered to Top",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel7uUx0re8ctekaP",
+                  "label": "Dropped to Low",
+                  "color": "orangeLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldCAV8lZJXoBBL5K",
+            "name": "List Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selzzlASfSfWhrtNa",
+                  "label": "Top Seller",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selz3qNoW3tNILoXR",
+                  "label": "Low Seller",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldDqcwDPEL9nOfT5",
+            "name": "Current Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldlQPe1eYk7zTKUu",
+            "name": "Previous Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldWOvuWwUrdvtLQ3",
+            "name": "Current Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldtF8MKYXmVWRv9N",
+            "name": "Previous Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldTdxY6bGWvRR9RF",
+            "name": "Qty Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld2tmyk39krp9wZk",
+            "name": "Revenue Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld7lmRTDqDc9zypo",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldC6NaarfoX0nGdP",
+            "name": "Created Time",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld5oRNHsO6Aq49UO",
+            "name": "Impact Level",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seldBvEq1BmvDNdob",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNLBkOGYTTVUH5P",
+                  "label": "Medium",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selGC9uFGyNSI6991",
+                  "label": "Low",
+                  "color": "cyanLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldIS6U0YNqXF2WcP",
+            "name": "Movement Insight",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldCGpksakC7IT4PL",
+            "name": "Current Run Is Latest",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldfDpMVns51YLgid",
+              "lookupFieldId": "fldesMOzM2weZPzyh",
+              "returnedField": {
+                "type": "CHECKBOX",
+                "vendorSideFieldType": "checkbox",
+                "options": {}
+              }
+            }
+          },
+          {
+            "id": "fldFM7LCirkphT9mv",
+            "name": "Latest Movement Flag",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOEqVyhqPXEbE4c",
+            "name": "Movement Priority ",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOjtxqhT2lRB7RE",
+            "name": "Menu Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fld3DfGMCkiO7jR1t",
+            "name": "Decision Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld71k3hOsNb2Us7p",
+            "name": "High Signal",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldWqFBVwuPF8KRSI",
+            "name": "Priority Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldvyOKeLapoKeBxY",
+            "name": "Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldv0H1ndXGghE9G2",
+            "name": "Final Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldcnH871M4Aq83hc",
+            "name": "Display Rank",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldYpjsYjYbgVXA5M",
+            "name": "Movement Category (Static)",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selksFdA3BGkoxazQ",
+                  "label": "Risk",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selKUqNpslYCP9uQH",
+                  "label": "Opportunity",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selxRpPlOPAUI4dYD",
+                  "label": "Neutral",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldW6qxdtuFt02raQ",
+            "name": "Is Latest Movement",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldGlnkRXa2HByoGG",
+            "name": "Current Run ID Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldpHOuGjE55DLBAp",
+            "name": "Is POS Movement",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldB0L7rtmPv7YTC5",
+            "name": "Is Latest Movement Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldLw5G3SB4eq6NPr",
+            "name": "Effective Unit Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldz0fxPl3quBCbwK",
+            "name": "Current Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld56QulhRxVd05Qq",
+            "name": "Previous Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldOnEWkxyqAcEaMt",
+            "name": "Profit Change",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld3uCcloe5AYL8hR",
+            "name": "Current Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldeGStuSWUsbwxBr",
+            "name": "Previous Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldBp38XBVXgjSYhb",
+            "name": "Margin Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 17,
+    "returned": 17,
+    "versions": [
+      {
+        "versionId": "18caada5-fcfc-427a-920d-efe08c4c241c",
+        "versionNumber": 17,
+        "title": "Refactor Movement Hero Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:00:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ea4d5ac0-a06d-46d5-ba9d-82ff47fc59ff",
+        "versionNumber": 16,
+        "title": "Refactor movement hero selection logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T20:01:11",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "44c4859b-6d23-49fd-ae77-5c58052762bb",
+        "versionNumber": 15,
+        "title": "Dynamic Movement Hero Component Update",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T19:58:23",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "110716ec-e5e7-4442-aeb0-ee6fc06f339a",
+        "versionNumber": 14,
+        "title": "Update React component priority display",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T19:28:34",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "92b4d4bb-00fc-42fc-aee7-d661d018d606",
+        "versionNumber": 13,
+        "title": "Compact Priority Label Fallback Update",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T19:27:42",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "32d16f3d-5403-4337-8215-37bba4721ec4",
+        "versionNumber": 12,
+        "title": "Refactor Hero Block Layout and Styles",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T19:25:33",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3643cd17-98a6-4b5d-a2cb-8faa3325c413",
+        "versionNumber": 11,
+        "title": "Refactor hero layout grid classes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T19:19:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "90ec0051-60c9-423f-8497-d5a3f96e26c6",
+        "versionNumber": 10,
+        "title": "Update grid breakpoint classes in component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T19:12:19",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7ba5913d-c688-4829-b024-6a08e3e8e077",
+        "versionNumber": 9,
+        "title": "Update component spacing and indentation",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T19:09:51",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "323b1b77-c450-4b35-a0f8-498d7f7895c4",
+        "versionNumber": 8,
+        "title": "Refactor hero layout spacing and wrapping",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T19:09:16",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "994b8a21-1bf9-4ce6-9c2d-a01d511a6a1a",
+        "versionNumber": 7,
+        "title": "Update fallback priority text and copy",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T04:53:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "48870735-0602-4d91-8140-c34278697458",
+        "versionNumber": 6,
+        "title": "Update hero block fallback text and styles",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T04:49:43",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f9f7cc5a-c184-418d-895e-596f8290bf0f",
+        "versionNumber": 5,
+        "title": "Update fallback signal text in component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T23:01:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3e0f8517-772e-46bb-a4f9-b92621b12d3b",
+        "versionNumber": 4,
+        "title": "Update fallback signal text in component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T22:37:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ef4c056a-0654-404a-83a4-e90ad4c25d2c",
+        "versionNumber": 3,
+        "title": "Adjust grid layout classes in Block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-02T22:04:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6d895eeb-71bf-4063-a045-8d92d8490187",
+        "versionNumber": 2,
+        "title": "Refactor hero block to personalized variant",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `\\nimport { useState } from \\\"react\\\";\\nimport { Button } from \\\"@/components/ui/button\\\";\\nimport { useTextSetting, useNavigationSetting, useImageSetting, useVideoSetting } from \\\"@/lib/editable-settings\\\";\\nimport { NavigationAction } from \\\"@/components/navigatio",
+        "promptTruncated": true,
+        "createdAt": "2026-04-25T20:36:50",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "52483be8-789f-4756-b32f-5766a329f1a2",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-25T20:32:59",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

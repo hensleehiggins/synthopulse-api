@@ -1,0 +1,424 @@
+{
+  "page": {
+    "id": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "name": "Cost Center",
+    "path": "/cost-center"
+  },
+  "block": {
+    "id": "d0da7132-2bad-4f00-981a-10a2e1ea10fc",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/cost-center/vibe-coding__d0da7132-2bad-4f00-981a-10a2e1ea10fc.jsx",
+  "current": {
+    "blockId": "d0da7132-2bad-4f00-981a-10a2e1ea10fc",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "1434451a-f518-40cd-952d-c3f817f1a77d",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Cost Movement",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldJEbKfznts1bZli",
+        "fields": [
+          {
+            "id": "fldJEbKfznts1bZli",
+            "name": "Movement Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldoiOaFWdvZT6pQD",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldBFbZ2lVjCVIcna",
+            "name": "Source Cost Proposal",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Receipt Cost Proposals"
+            }
+          },
+          {
+            "id": "fldEWS8K3ES8JymC4",
+            "name": "Receipt Line",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Vendor Receipt Lines"
+            }
+          },
+          {
+            "id": "fldrrAjUUTvfPgqNR",
+            "name": "Inventory Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Inventory Items"
+            }
+          },
+          {
+            "id": "fldQm9oR7NCaDCjX2",
+            "name": "Cost Source Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Cost Source Items"
+            }
+          },
+          {
+            "id": "fld9olyCQOawVGBUD",
+            "name": "Related Menu Items",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fldLypvG46G0m3EDZ",
+            "name": "Related Menu Components",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Item Ingredients"
+            }
+          },
+          {
+            "id": "fldp2mDXFUqAXkCyM",
+            "name": "Vendor",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldR6ue6PnpWGErfR",
+            "name": "Cost Item Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldLaJEJVcXDYiRmL",
+            "name": "Vendor Line Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldI5qZmL4FCtGFRv",
+            "name": "Previous Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldYjqopqSgT82D70",
+            "name": "Latest Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldzrAqTOZieB1Gmk",
+            "name": "Cost Change $",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldhLiA9HmOnKYkW2",
+            "name": "Cost Change %",
+            "type": "PERCENT",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldpVAh3ihF7TirUV",
+            "name": "Direction",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selX5E0T0RdSr1UIF",
+                  "label": "Increase",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selDoEo7pQFRJKOMM",
+                  "label": "Decrease",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selAFHW2sAYSSi44j",
+                  "label": "Flat",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldRLI2genevJtJVd",
+            "name": "Severity",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selLbhY6JY62vwTSC",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "sel3ZKy8GRwUHgYX8",
+                  "label": "Medium",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selUshNmZqqwTJKFI",
+                  "label": "Low",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selWYze9UWHft2WrK",
+                  "label": "Watch",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldNi2qMbGFz042a9",
+            "name": "Review Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seltSxG4Wz7mqLBVw",
+                  "label": "Active",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selnAojRygPuJJMjg",
+                  "label": "Needs Review",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selNQ9qiypWvUzjl6",
+                  "label": "Resolved",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selgGeEWyCPLi58BY",
+                  "label": "Ignored",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldKpWYzCjZzIvIOw",
+            "name": "Signal Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldLC9rQlJ4VBHZbA",
+            "name": "Latest Receipt Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld0HgPTimnsx5uuQ",
+            "name": "Is Latest",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld6hC7owAfx1o3us",
+            "name": "Show on What Changed",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldGLmR9Tntta94Qy",
+            "name": "Show on Home",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldwgCG4QqJsoc3l6",
+            "name": "Decision Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld8z55qo97r5Sl7a",
+            "name": "Margin Pressure",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldiBQobIqAOGCGBi",
+            "name": "Suggested Action",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldNQkSbNBnyPfflr",
+            "name": "Formatted Cost Brief",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldWhzCxDaMYG0Zvg",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 8,
+    "returned": 8,
+    "versions": [
+      {
+        "versionId": "508bad3c-bc8b-40e9-b5ea-a6767bd8b2db",
+        "versionNumber": 8,
+        "title": "Refactor UI styling and components",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardList,\\n  LineChart,\\n  RefreshCw,\\n  Search,\\n  ShieldCheck,\\n  TrendingDown,\\n  Trending",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T21:03:26",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5068a18e-998f-49c3-b8ac-69ae7aea041e",
+        "versionNumber": 7,
+        "title": "Refactor UI card styles and gradients",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardList,\\n  LineChart,\\n  RefreshCw,\\n  Search,\\n  ShieldCheck,\\n  TrendingDown,\\n  Trending",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T14:50:11",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e4481150-a0fe-49e7-8392-017f4b0e0b02",
+        "versionNumber": 6,
+        "title": "Refactor UI card tones and styles",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardList,\\n  LineChart,\\n  RefreshCw,\\n  Search,\\n  ShieldCheck,\\n  TrendingDown,\\n  Trending",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T14:45:25",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "332e9e3d-b20a-4167-8d2a-173854e7e1e5",
+        "versionNumber": 5,
+        "title": "Refactor SummaryCard Styling and Tones",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardList,\\n  LineChart,\\n  RefreshCw,\\n  Search,\\n  ShieldCheck,\\n  TrendingDown,\\n  Trending",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T14:41:45",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f7ba5db1-23fe-4dd1-bd93-113ca26e8f38",
+        "versionNumber": 4,
+        "title": "Reduce pressure/relief item limits",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardList,\\n  LineChart,\\n  RefreshCw,\\n  Search,\\n  ShieldCheck,\\n  TrendingDown,\\n  Trending",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T04:59:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f03de6ec-e6cd-4e57-8b4d-4e962bfdd3f1",
+        "versionNumber": 3,
+        "title": "Refactor: Deduplicate and Limit Records",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardList,\\n  LineChart,\\n  RefreshCw,\\n  Search,\\n  ShieldCheck,\\n  TrendingDown,\\n  Trending",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T04:58:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d67fd194-d25c-4074-93cc-8f9f5eadf16d",
+        "versionNumber": 2,
+        "title": "Replace placeholder with Cost Center block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-22T22:28:46",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "08b8e8de-096a-4208-9e70-62b3dd6fe468",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-22T22:26:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "page": {
+    "id": "c39b1da7-0061-49c7-a065-ccbc6c7e7e52",
+    "name": "Billing",
+    "path": "/billing"
+  },
+  "block": {
+    "id": "11cdca04-1d0c-4f83-8bab-26d44b4ea47a",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP_REDACTED_SENSITIVE_LITERAL",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/billing/vibe-coding__11cdca04-1d0c-4f83-8bab-26d44b4ea47a.jsx",
+  "current": {
+    "blockId": "11cdca04-1d0c-4f83-8bab-26d44b4ea47a",
+    "settings": [],
+    "dataSources": [],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 5,
+    "returned": 5,
+    "versions": [
+      {
+        "versionId": "3caf4ee6-78cb-4ec8-b203-8dcc93858a39",
+        "versionNumber": 5,
+        "title": "Update React billing secret initialization",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  ArrowUpRight,\\n  BadgeDollarSign,\\n  Building2,\\n  CalendarClock,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  FilePlus2,\\n  HandCoins,\\n  Loader2,\\n  Mail,\\n  Plus,\\n  ReceiptT",
+        "promptTruncated": true,
+        "createdAt": "2026-06-29T05:09:16",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f4c9636d-b7a0-4888-a7ee-01ee417ed454",
+        "versionNumber": 4,
+        "title": "Remove hardcoded admin secret",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  ArrowUpRight,\\n  BadgeDollarSign,\\n  Building2,\\n  CalendarClock,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  FilePlus2,\\n  HandCoins,\\n  Loader2,\\n  Mail,\\n  Plus,\\n  ReceiptT",
+        "promptTruncated": true,
+        "createdAt": "2026-06-29T05:08:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6b3b1d49-1020-44bd-9c90-d58cbe7c4bd2",
+        "versionNumber": 3,
+        "title": "Billing command center React component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-06-29T05:03:59",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "081203d3-b577-4792-a3f0-2b0d4a48e4c8",
+        "versionNumber": 2,
+        "title": "Initial Version Prompt Summary",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-06-29T05:03:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "198482ee-4f27-4c91-a9c1-ae3ffaeceabf",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-06-29T05:03:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

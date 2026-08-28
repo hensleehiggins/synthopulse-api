@@ -1,0 +1,57 @@
+{
+  "page": {
+    "id": "c39b1da7-0061-49c7-a065-ccbc6c7e7e52",
+    "name": "Billing",
+    "path": "/billing"
+  },
+  "block": {
+    "id": "b26daa47-0360-4142-b5d9-b583d1a8f922",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/billing/vibe-coding__b26daa47-0360-4142-b5d9-b583d1a8f922.jsx",
+  "current": {
+    "blockId": "b26daa47-0360-4142-b5d9-b583d1a8f922",
+    "settings": [],
+    "dataSources": [],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 3,
+    "returned": 3,
+    "versions": [
+      {
+        "versionId": "bbbcec5f-afb5-4145-9865-417d572f6dc7",
+        "versionNumber": 3,
+        "title": "Replace placeholder with billing hero component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-06-29T05:03:41",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6bcced05-7e29-4320-bba6-44eb64937b95",
+        "versionNumber": 2,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-06-29T05:03:29",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ab9c3a57-6304-417e-99a7-e402f1f14724",
+        "versionNumber": 1,
+        "title": "Initial Version Prompt Creation",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-06-29T05:03:29",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

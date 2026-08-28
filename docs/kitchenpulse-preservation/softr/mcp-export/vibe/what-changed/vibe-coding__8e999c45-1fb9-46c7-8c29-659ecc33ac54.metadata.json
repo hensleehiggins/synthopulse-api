@@ -1,0 +1,682 @@
+{
+  "page": {
+    "id": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "name": "What Changed",
+    "path": "/what-changed"
+  },
+  "block": {
+    "id": "8e999c45-1fb9-46c7-8c29-659ecc33ac54",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/what-changed/vibe-coding__8e999c45-1fb9-46c7-8c29-659ecc33ac54.jsx",
+  "current": {
+    "blockId": "8e999c45-1fb9-46c7-8c29-659ecc33ac54",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "b10e73e1-fb14-49a2-9893-c82dee906188",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Item Movement",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fld0ICNfX8tbFiLmu",
+        "fields": [
+          {
+            "id": "fld0ICNfX8tbFiLmu",
+            "name": "Item",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldfDpMVns51YLgid",
+            "name": "Current Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldJP95P52diSiKcf",
+            "name": "Previous Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldb6siCRbu3Ztajq",
+            "name": "Movement Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selfdGzpuOTzc33pI",
+                  "label": "New Top",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selkYGA7TtOSQHxCn",
+                  "label": "Dropped from Top",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seluGV4azhm3qZ8fJ",
+                  "label": "New Low",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNFxVJxyC1jPSMV",
+                  "label": "Recovered",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selktHMaqcEax3Qlq",
+                  "label": "Declining",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selqXwgfmnmN29GoU",
+                  "label": "Stable",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "sel0YLyHaIeCJGYov",
+                  "label": "Rising",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "seliuTxAtCEVLUU0H",
+                  "label": "Recovered to Top",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel7uUx0re8ctekaP",
+                  "label": "Dropped to Low",
+                  "color": "orangeLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldCAV8lZJXoBBL5K",
+            "name": "List Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selzzlASfSfWhrtNa",
+                  "label": "Top Seller",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selz3qNoW3tNILoXR",
+                  "label": "Low Seller",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldDqcwDPEL9nOfT5",
+            "name": "Current Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldlQPe1eYk7zTKUu",
+            "name": "Previous Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldWOvuWwUrdvtLQ3",
+            "name": "Current Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldtF8MKYXmVWRv9N",
+            "name": "Previous Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldTdxY6bGWvRR9RF",
+            "name": "Qty Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld2tmyk39krp9wZk",
+            "name": "Revenue Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld7lmRTDqDc9zypo",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldC6NaarfoX0nGdP",
+            "name": "Created Time",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld5oRNHsO6Aq49UO",
+            "name": "Impact Level",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seldBvEq1BmvDNdob",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNLBkOGYTTVUH5P",
+                  "label": "Medium",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selGC9uFGyNSI6991",
+                  "label": "Low",
+                  "color": "cyanLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldIS6U0YNqXF2WcP",
+            "name": "Movement Insight",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldCGpksakC7IT4PL",
+            "name": "Current Run Is Latest",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldfDpMVns51YLgid",
+              "lookupFieldId": "fldesMOzM2weZPzyh",
+              "returnedField": {
+                "type": "CHECKBOX",
+                "vendorSideFieldType": "checkbox",
+                "options": {}
+              }
+            }
+          },
+          {
+            "id": "fldFM7LCirkphT9mv",
+            "name": "Latest Movement Flag",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOEqVyhqPXEbE4c",
+            "name": "Movement Priority ",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOjtxqhT2lRB7RE",
+            "name": "Menu Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fld3DfGMCkiO7jR1t",
+            "name": "Decision Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld71k3hOsNb2Us7p",
+            "name": "High Signal",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldWqFBVwuPF8KRSI",
+            "name": "Priority Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldvyOKeLapoKeBxY",
+            "name": "Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldv0H1ndXGghE9G2",
+            "name": "Final Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldcnH871M4Aq83hc",
+            "name": "Display Rank",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldYpjsYjYbgVXA5M",
+            "name": "Movement Category (Static)",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selksFdA3BGkoxazQ",
+                  "label": "Risk",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selKUqNpslYCP9uQH",
+                  "label": "Opportunity",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selxRpPlOPAUI4dYD",
+                  "label": "Neutral",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldW6qxdtuFt02raQ",
+            "name": "Is Latest Movement",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldGlnkRXa2HByoGG",
+            "name": "Current Run ID Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldpHOuGjE55DLBAp",
+            "name": "Is POS Movement",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldB0L7rtmPv7YTC5",
+            "name": "Is Latest Movement Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldLw5G3SB4eq6NPr",
+            "name": "Effective Unit Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldz0fxPl3quBCbwK",
+            "name": "Current Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld56QulhRxVd05Qq",
+            "name": "Previous Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldOnEWkxyqAcEaMt",
+            "name": "Profit Change",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld3uCcloe5AYL8hR",
+            "name": "Current Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldeGStuSWUsbwxBr",
+            "name": "Previous Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldBp38XBVXgjSYhb",
+            "name": "Margin Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 12,
+    "returned": 12,
+    "versions": [
+      {
+        "versionId": "764ec90e-df0d-4e94-9cf0-b79381873246",
+        "versionNumber": 12,
+        "title": "Update Movement Deep Dive Styles and Gradients",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowUpRight,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Search,\\n  Sparkles,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  moveme",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:48:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "19de24e8-23ec-4f10-8759-d89991e092c6",
+        "versionNumber": 11,
+        "title": "Refactor Movement UI with Icons",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  currentQty: \\\"Current Qty\\\",\\n  previousQty: \\\"Previous Qty\\\",\\n  currentRevenue: \\\"Current ",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:40:15",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c438d69c-7e8c-425c-bc81-a7f2506383ae",
+        "versionNumber": 10,
+        "title": "Add deduplication and prioritization logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  currentQty: \\\"Current Qty\\\",\\n  previousQty: \\\"Previous Qty\\\",\\n  currentRevenue: \\\"Current ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T02:19:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "691dd1c4-3055-4f9a-8b84-9f340dca040d",
+        "versionNumber": 9,
+        "title": "Refactor movement UI to deep-dive",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  impactLevel: \\\"",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T05:10:36",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "fdd0e769-fad8-45f3-a80e-c34a039cbf17",
+        "versionNumber": 8,
+        "title": "Update component: increase record count",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  impactLevel: \\\"",
+        "promptTruncated": true,
+        "createdAt": "2026-04-29T00:26:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "943c8c29-4bcb-4a12-9f5c-d94fa70275bc",
+        "versionNumber": 7,
+        "title": "Refactor UI Movement Card Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  impactLevel: \\\"",
+        "promptTruncated": true,
+        "createdAt": "2026-04-29T00:21:52",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "81e87961-498b-417b-bcc0-80363dac859b",
+        "versionNumber": 6,
+        "title": "Refine Bottom Exploration Preview Section",
+        "prompt": "{\"prompt\":\"Refine the bottom exploration section with the following updates:\\n\\n1. Limit results:\\n\\n* Show a maximum of 5 items only\\n* Do not paginate\\n* Do not load additional pages\\n\\n2. Strengthen purpose:\\n\\n* Set section title to:\\n  “Explore All Movement”\\n* Add subtext under the title:\\n  “",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:42:39",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "24d4307f-d6d3-4693-841f-4512f37f54f8",
+        "versionNumber": 5,
+        "title": "Polish Movement Card UI for Clarity",
+        "prompt": "{\"prompt\":\"Final polish for Movement Card component:\\n\\n1. Emphasize current values:\\n\\n* Make current quantity (e.g., “0 orders”) slightly bolder\\n* Make previous values (e.g., “was 82”) slightly muted\\n\\n2. Improve readability:\\n\\n* Reduce line width for better scanning\\n* Ensure text does not str",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:13:29",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a1558c8b-389d-4344-bd97-15a955c74ec7",
+        "versionNumber": 4,
+        "title": "Refine Movement Card UI and Copy",
+        "prompt": "{\"prompt\":\"Refine the Movement Card component further with these improvements:\\n\\n1. Improve quantity phrasing:\\n\\n* If previous qty = 0:\\n  show “X orders (new this run)”\\n* If current qty = 0:\\n  show “0 orders (was X)”\\n* Otherwise:\\n  show “X vs Y orders”\\n\\n2. Improve action lines to be more sp",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:11:47",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "bfcfd5c2-3174-4b21-8bc4-8e5bdc5ee4fc",
+        "versionNumber": 3,
+        "title": "Movement Card Refinement Guidelines",
+        "prompt": "{\"prompt\":\"Refine the existing Movement Card component with the following improvements:\\n\\n1. Remove redundancy:\\n\\n* Do NOT repeat the same meaning across pill, description, and action line\\n* Keep:\\n\\n  * Pill = Movement Type\\n  * Middle text = interpretation (short, unique)\\n  * Bottom text = act",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:09:18",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "381dade1-b3a9-41eb-baad-27504d91607b",
+        "versionNumber": 2,
+        "title": "Movement Card Component Design Specs",
+        "prompt": "{\"prompt\":\"Build a reusable “Movement Card” component for the What Changed page.\\n\\nGoal:\\nTurn each Item Movement record into a polished operator signal card, not a raw list item.\\n\\nUse these fields from the Item Movement data:\\n\\n* Item\\n* Movement Type\\n* Impact Level\\n* Current Qty\\n* Previous ",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:06:45",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "bba323d9-f5b4-4238-a5ac-92343616df03",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T18:05:31",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

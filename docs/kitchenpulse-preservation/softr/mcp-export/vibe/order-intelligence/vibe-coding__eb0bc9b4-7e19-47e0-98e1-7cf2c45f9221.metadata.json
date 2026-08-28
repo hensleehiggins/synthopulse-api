@@ -1,0 +1,77 @@
+{
+  "page": {
+    "id": "97ac6f46-2864-44b2-aa8d-5817ab5b97f5",
+    "name": "Order Intelligence",
+    "path": "/order-intelligence"
+  },
+  "block": {
+    "id": "eb0bc9b4-7e19-47e0-98e1-7cf2c45f9221",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/order-intelligence/vibe-coding__eb0bc9b4-7e19-47e0-98e1-7cf2c45f9221.jsx",
+  "current": {
+    "blockId": "eb0bc9b4-7e19-47e0-98e1-7cf2c45f9221",
+    "settings": [
+      {
+        "name": "brand-descriptor",
+        "type": "text",
+        "value": "AI for restaurant operators"
+      },
+      {
+        "name": "headline",
+        "type": "text",
+        "value": "Order Intelligence"
+      },
+      {
+        "name": "subheadline",
+        "type": "text",
+        "value": "Know what to order, what can wait, and what is likely to squeeze service before the rush hits. KitchenPulse turns PAR, receipts, sales movement, weather, events, and vendor rhythm into owner-ready reorder guidance."
+      }
+    ],
+    "dataSources": [
+      {
+        "id": "2197854e-a9c7-488a-86b0-a76694b419c8",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "sortOptions": [],
+        "condition": {
+          "expressions": [],
+          "logicalOperator": "AND"
+        }
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 2,
+    "returned": 2,
+    "versions": [
+      {
+        "versionId": "13f6a4b2-037e-447c-8d24-8b4a7b4a3c59",
+        "versionNumber": 2,
+        "title": "Convert Placeholder to KitchenPulse UI Block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-06-05T22:33:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "964ac0bb-623c-4bd8-b86a-fbc92602ebed",
+        "versionNumber": 1,
+        "title": "Initial Version Draft",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-06-05T22:32:44",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

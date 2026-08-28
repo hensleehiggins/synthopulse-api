@@ -1,0 +1,86 @@
+{
+  "page": {
+    "id": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "name": "Today’s Brief",
+    "path": "/todays-brief"
+  },
+  "block": {
+    "id": "0e192eb0-d16a-4000-bb5c-4aec7c389303",
+    "name": "vibe-coding",
+    "title": "Time aware 1",
+    "category": "Welcome"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/today-s-brief/vibe-coding__0e192eb0-d16a-4000-bb5c-4aec7c389303.jsx",
+  "current": {
+    "blockId": "0e192eb0-d16a-4000-bb5c-4aec7c389303",
+    "settings": [
+      {
+        "name": "morning-greeting",
+        "type": "text",
+        "value": "Good morning, {user_softr_user_first_name|there}"
+      },
+      {
+        "name": "morning-subtitle",
+        "type": "text",
+        "value": "Here’s today’s KitchenPulse brief — quick signals and what to do next."
+      },
+      {
+        "name": "afternoon-greeting",
+        "type": "text",
+        "value": "Good afternoon, {user_softr_user_first_name|there}"
+      },
+      {
+        "name": "afternoon-subtitle",
+        "type": "text",
+        "value": "Here’s today’s KitchenPulse brief — quick signals and what to do next."
+      },
+      {
+        "name": "evening-greeting",
+        "type": "text",
+        "value": "Good evening, {user_softr_user_first_name|there}"
+      },
+      {
+        "name": "evening-subtitle",
+        "type": "text",
+        "value": "Here’s today’s KitchenPulse brief — quick signals and what to do next."
+      },
+      {
+        "name": "fallback-avatar",
+        "type": "image",
+        "value": {
+          "src": "https://assets.softr-files.com/applications/bd94ae5e-6d9d-4b3f-9a19-c52758d99cf8/assets/9ec88c19-401a-4874-9664-f7f9a3a2429a.webp",
+          "alt": "KitchenPulse operator"
+        }
+      }
+    ],
+    "dataSources": [
+      {
+        "id": "e0a6e129-e9cc-4516-a3e7-bf73f7fc1921",
+        "type": "SOFTR_TABLES",
+        "resourceIdentifier": {
+          "tablespaceId": "7e1d6eb3-4550-4fe1-a329-c37ab373eba4",
+          "tableName": "KitchenPulse Operator Portal"
+        },
+        "name": "Softr databases"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 1,
+    "returned": 1,
+    "versions": [
+      {
+        "versionId": "8a31c5ae-0adb-4ec2-8a80-929e70b28298",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-09T23:11:18",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

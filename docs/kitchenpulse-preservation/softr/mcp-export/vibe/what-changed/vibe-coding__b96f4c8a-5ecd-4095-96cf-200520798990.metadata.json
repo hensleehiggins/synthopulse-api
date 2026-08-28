@@ -1,0 +1,662 @@
+{
+  "page": {
+    "id": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "name": "What Changed",
+    "path": "/what-changed"
+  },
+  "block": {
+    "id": "b96f4c8a-5ecd-4095-96cf-200520798990",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/what-changed/vibe-coding__b96f4c8a-5ecd-4095-96cf-200520798990.jsx",
+  "current": {
+    "blockId": "b96f4c8a-5ecd-4095-96cf-200520798990",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "a02d963a-3d96-4f41-80ea-1f1accebb73a",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Item Movement",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fld0ICNfX8tbFiLmu",
+        "fields": [
+          {
+            "id": "fld0ICNfX8tbFiLmu",
+            "name": "Item",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldfDpMVns51YLgid",
+            "name": "Current Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldJP95P52diSiKcf",
+            "name": "Previous Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldb6siCRbu3Ztajq",
+            "name": "Movement Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selfdGzpuOTzc33pI",
+                  "label": "New Top",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selkYGA7TtOSQHxCn",
+                  "label": "Dropped from Top",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seluGV4azhm3qZ8fJ",
+                  "label": "New Low",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNFxVJxyC1jPSMV",
+                  "label": "Recovered",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selktHMaqcEax3Qlq",
+                  "label": "Declining",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selqXwgfmnmN29GoU",
+                  "label": "Stable",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "sel0YLyHaIeCJGYov",
+                  "label": "Rising",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "seliuTxAtCEVLUU0H",
+                  "label": "Recovered to Top",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel7uUx0re8ctekaP",
+                  "label": "Dropped to Low",
+                  "color": "orangeLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldCAV8lZJXoBBL5K",
+            "name": "List Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selzzlASfSfWhrtNa",
+                  "label": "Top Seller",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selz3qNoW3tNILoXR",
+                  "label": "Low Seller",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldDqcwDPEL9nOfT5",
+            "name": "Current Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldlQPe1eYk7zTKUu",
+            "name": "Previous Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldWOvuWwUrdvtLQ3",
+            "name": "Current Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldtF8MKYXmVWRv9N",
+            "name": "Previous Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldTdxY6bGWvRR9RF",
+            "name": "Qty Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld2tmyk39krp9wZk",
+            "name": "Revenue Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld7lmRTDqDc9zypo",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldC6NaarfoX0nGdP",
+            "name": "Created Time",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld5oRNHsO6Aq49UO",
+            "name": "Impact Level",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seldBvEq1BmvDNdob",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNLBkOGYTTVUH5P",
+                  "label": "Medium",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selGC9uFGyNSI6991",
+                  "label": "Low",
+                  "color": "cyanLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldIS6U0YNqXF2WcP",
+            "name": "Movement Insight",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldCGpksakC7IT4PL",
+            "name": "Current Run Is Latest",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldfDpMVns51YLgid",
+              "lookupFieldId": "fldesMOzM2weZPzyh",
+              "returnedField": {
+                "type": "CHECKBOX",
+                "vendorSideFieldType": "checkbox",
+                "options": {}
+              }
+            }
+          },
+          {
+            "id": "fldFM7LCirkphT9mv",
+            "name": "Latest Movement Flag",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOEqVyhqPXEbE4c",
+            "name": "Movement Priority ",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOjtxqhT2lRB7RE",
+            "name": "Menu Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fld3DfGMCkiO7jR1t",
+            "name": "Decision Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld71k3hOsNb2Us7p",
+            "name": "High Signal",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldWqFBVwuPF8KRSI",
+            "name": "Priority Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldvyOKeLapoKeBxY",
+            "name": "Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldv0H1ndXGghE9G2",
+            "name": "Final Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldcnH871M4Aq83hc",
+            "name": "Display Rank",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldYpjsYjYbgVXA5M",
+            "name": "Movement Category (Static)",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selksFdA3BGkoxazQ",
+                  "label": "Risk",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selKUqNpslYCP9uQH",
+                  "label": "Opportunity",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selxRpPlOPAUI4dYD",
+                  "label": "Neutral",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldW6qxdtuFt02raQ",
+            "name": "Is Latest Movement",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldGlnkRXa2HByoGG",
+            "name": "Current Run ID Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldpHOuGjE55DLBAp",
+            "name": "Is POS Movement",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldB0L7rtmPv7YTC5",
+            "name": "Is Latest Movement Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldLw5G3SB4eq6NPr",
+            "name": "Effective Unit Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldz0fxPl3quBCbwK",
+            "name": "Current Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld56QulhRxVd05Qq",
+            "name": "Previous Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldOnEWkxyqAcEaMt",
+            "name": "Profit Change",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld3uCcloe5AYL8hR",
+            "name": "Current Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldeGStuSWUsbwxBr",
+            "name": "Previous Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldBp38XBVXgjSYhb",
+            "name": "Margin Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 10,
+    "returned": 10,
+    "versions": [
+      {
+        "versionId": "8fb17cb9-b324-47c7-933a-465b3baeb2e5",
+        "versionNumber": 10,
+        "title": "Refactor UI layout spacing and alignment",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Sparkles,\\n  Target,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  item: \\\"",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T22:20:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c31cacfb-608f-498c-a7ab-c6f5f54a1bbc",
+        "versionNumber": 9,
+        "title": "Refactor UI styles and tones",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowDownRight,\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Sparkles,\\n  Target,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:33:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6ef86827-43bd-4657-81e3-a0ba91dc4040",
+        "versionNumber": 8,
+        "title": "Update component color and tone mappings",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowDownRight,\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Sparkles,\\n  Target,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:27:27",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "063f02f7-9fc4-4069-9940-10e943d997bd",
+        "versionNumber": 7,
+        "title": "Refactor run labels and comparison text",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowDownRight,\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Sparkles,\\n  Target,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:13:19",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6784c72b-1d03-4c29-a055-fe76ed0e2bd0",
+        "versionNumber": 6,
+        "title": "Refactor Movement Dashboard UI Styles",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowDownRight,\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Sparkles,\\n  Target,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:09:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e6d21156-3833-420e-85d0-74be7576ffbf",
+        "versionNumber": 5,
+        "title": "Refactor UI: Enhance Movement Card UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  movementCategory: \\\"Movement Category (Static)\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  currentQty: \\\"Current Qty\\\",\\n  previou",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:06:51",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "19e8214d-2495-41a3-a910-6e251cacd438",
+        "versionNumber": 4,
+        "title": "Refactor Movement Context UI Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  movementCategory: \\\"Movement Category (Static)\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  currentQty: \\\"Current Qty\\\",\\n  previou",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T06:33:58",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "37062dd0-0371-4c5a-abc7-d8741e48eca1",
+        "versionNumber": 3,
+        "title": "Refactor Movement Context for Dinner",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  movementCategory: \\\"Movement Category (Static)\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  currentQty: \\\"Current Qty\\\",\\n  previou",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T06:24:42",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a7adb498-9db6-4f02-9dc7-e748f0ec6dcc",
+        "versionNumber": 2,
+        "title": "Refactor React Block to Data-Driven Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `export default function Block() {\\n  return (\\n    <div className=\\\"container py-8\\\">\\n      <div className=\\\"content\\\">\\n        {/* Your code here */}\\n      </div>\\n    </div>\\n  );\\n}`\\n\\nTo:import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T05:53:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "199c1279-b4e7-4da0-a6f7-a2242bb384fc",
+        "versionNumber": 1,
+        "title": "Blank Code Block for Pasting Code",
+        "prompt": "{\"prompt\":\"i need a blank code block so i can paste my own code here\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-09T05:52:44",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

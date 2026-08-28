@@ -1,0 +1,121 @@
+{
+  "groups": [
+    {
+      "id": "08da9dc6-6eb2-488e-8009-0e9b060297c5",
+      "name": "Logged in users",
+      "type": "PREDEFINED",
+      "userEmails": []
+    },
+    {
+      "id": "568c8f9e-7e80-4b2e-9622-166acd411341",
+      "name": "Admin",
+      "type": "CUSTOM",
+      "userEmails": []
+    },
+    {
+      "id": "203542f1-2f70-4d08-b360-8febd21be929",
+      "name": "All users",
+      "type": "PREDEFINED",
+      "userEmails": []
+    },
+    {
+      "id": "0255614a-43bb-4fa1-b2a0-08728179d11a",
+      "name": "Manager",
+      "type": "CUSTOM",
+      "userEmails": [
+        "jorge.diazramirez@gmail.com",
+        "pancakesforeveryone@proton.me",
+        "henslee.higgins@gmail.com",
+        "PaytonL@chloessteakhouse.com",
+        "gilgameshruiz11@gmail.com",
+        "m.dorsey1992@gmail.com",
+        "david.mheryan@softr.io",
+        "oscarm@multiglaservices.com",
+        "emil@softr.io",
+        "mcnicholasam@gmail.com",
+        "info@synthopulse.ai",
+        "Jorgediasramirez@gmail.com"
+      ]
+    },
+    {
+      "id": "b0d87082-f5ea-4c2a-a58b-22a94f48fca9",
+      "name": "Non Logged in users",
+      "type": "PREDEFINED",
+      "userEmails": []
+    },
+    {
+      "id": "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+      "name": "Operator",
+      "type": "CUSTOM",
+      "userEmails": [
+        "henslee.higgins@gmail.com",
+        "david.mheryan@softr.io",
+        "oscarm@multiglaservices.com",
+        "emil@softr.io",
+        "info@synthopulse.ai"
+      ]
+    }
+  ],
+  "accessControl": {
+    "userGroups": [
+      {
+        "id": "08da9dc6-6eb2-488e-8009-0e9b060297c5",
+        "name": "Logged in users",
+        "type": "PREDEFINED",
+        "userEmails": []
+      },
+      {
+        "id": "568c8f9e-7e80-4b2e-9622-166acd411341",
+        "name": "Admin",
+        "type": "CUSTOM",
+        "userEmails": []
+      },
+      {
+        "id": "203542f1-2f70-4d08-b360-8febd21be929",
+        "name": "All users",
+        "type": "PREDEFINED",
+        "userEmails": []
+      },
+      {
+        "id": "0255614a-43bb-4fa1-b2a0-08728179d11a",
+        "name": "Manager",
+        "type": "CUSTOM",
+        "userEmails": [
+          "jorge.diazramirez@gmail.com",
+          "pancakesforeveryone@proton.me",
+          "henslee.higgins@gmail.com",
+          "PaytonL@chloessteakhouse.com",
+          "gilgameshruiz11@gmail.com",
+          "m.dorsey1992@gmail.com",
+          "david.mheryan@softr.io",
+          "oscarm@multiglaservices.com",
+          "emil@softr.io",
+          "mcnicholasam@gmail.com",
+          "info@synthopulse.ai",
+          "Jorgediasramirez@gmail.com"
+        ]
+      },
+      {
+        "id": "b0d87082-f5ea-4c2a-a58b-22a94f48fca9",
+        "name": "Non Logged in users",
+        "type": "PREDEFINED",
+        "userEmails": []
+      },
+      {
+        "id": "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+        "name": "Operator",
+        "type": "CUSTOM",
+        "userEmails": [
+          "henslee.higgins@gmail.com",
+          "david.mheryan@softr.io",
+          "oscarm@multiglaservices.com",
+          "emil@softr.io",
+          "info@synthopulse.ai"
+        ]
+      }
+    ],
+    "userGroupRedirectionsCount": 4,
+    "signUpBasedRedirectionsCount": 0,
+    "dataRestrictionsCount": 0
+  }
+}

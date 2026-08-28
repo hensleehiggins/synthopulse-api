@@ -1,0 +1,107 @@
+{
+  "page": {
+    "id": "f11c4dee-ec1c-42b7-9446-6fb063dad0cd",
+    "name": "Staffing",
+    "path": "/staffing"
+  },
+  "block": {
+    "id": "b731a7fc-d566-459a-99fd-8da07bfc658a",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/staffing/vibe-coding__b731a7fc-d566-459a-99fd-8da07bfc658a.jsx",
+  "current": {
+    "blockId": "b731a7fc-d566-459a-99fd-8da07bfc658a",
+    "settings": [
+      {
+        "name": "eyebrow",
+        "type": "text",
+        "value": "KitchenPulse"
+      },
+      {
+        "name": "brand-descriptor",
+        "type": "text",
+        "value": "AI for restaurant operators"
+      },
+      {
+        "name": "fallback-headline",
+        "type": "text",
+        "value": "Staffing & Floor Coverage"
+      },
+      {
+        "name": "fallback-subheadline",
+        "type": "text",
+        "value": "See who is scheduled, where coverage is thin, and what staffing risks may affect service."
+      }
+    ],
+    "dataSources": [
+      {
+        "id": "5e3ff8c2-60b4-48b8-84ba-f2737b753455",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 5,
+    "returned": 5,
+    "versions": [
+      {
+        "versionId": "f0d8a279-125c-4408-b0cd-330ecc7afbc1",
+        "versionNumber": 5,
+        "title": "Refactor hero block and lockup",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nconst STAFFING_API_URL = \\\"https://project-1csz2.vercel.app/api/staffing-board\\\"",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:03:36",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "b4fd838e-ec99-4a3d-a6a9-c14d9c3e8bbf",
+        "versionNumber": 4,
+        "title": "Refactor hero block to fetch staffing",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Button } from \\\"@/components/ui/button\\\";\\n\\nexport default function Block(props) {\\n    const user = useCurrentUser();\\n\\n    con",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T22:16:55",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f4deee40-9692-41b7-8afc-0260302a6228",
+        "versionNumber": 3,
+        "title": "Change hero pill text to Connecteam",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Button } from \\\"@/components/ui/button\\\";\\n\\nexport default function Block(props) {\\n    const user = useCurrentUser();\\n\\n    con",
+        "promptTruncated": true,
+        "createdAt": "2026-05-20T23:31:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a7585edf-d938-4cbd-928e-ebabf0549bd0",
+        "versionNumber": 2,
+        "title": "Convert placeholder to hero user block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T20:41:14",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "411aa681-adfe-4553-b1fe-75b8f2643912",
+        "versionNumber": 1,
+        "title": "Initial Draft Prompt Version",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-07T20:40:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

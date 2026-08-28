@@ -35,6 +35,16 @@ Use `softr/vibe-code/history/<page-slug>__<route-slug>__block-<order>-<block-slu
 
 Capture any data binding, filter, permission, block setting, theme asset, domain setting, workflow, integration, or provider configuration that is not represented in the eventual Git source. Mark it `UNKNOWN` until evidence is attached.
 
+## Latest read-only MCP export — 2026-08-28
+
+The current Softr state is archived in [mcp-export/APPLICATION_MANIFEST.md](mcp-export/APPLICATION_MANIFEST.md): application/page/block/access-control/data-source/workflow JSON plus individual Vibe sources and metadata.
+
+- App: `KitchenPulse Operator Portal` (`bd94ae5e-6d9d-4b3f-9a19-c52758d99cf8`), `portal.synthopulse.ai`.
+- 26 pages listed; 25 readable. `/link-expired` is listed but returns `NOT_FOUND`.
+- 97 readable blocks; 47 Vibe blocks; 45 unredacted current sources; 1 redacted; 1 unavailable.
+- 0 Softr workflows returned in the workspace listing.
+
+No write-capable Softr operation was invoked.
 
 
 

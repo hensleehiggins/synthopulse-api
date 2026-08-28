@@ -1,0 +1,354 @@
+{
+  "page": {
+    "id": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "name": "Cost Center",
+    "path": "/cost-center"
+  },
+  "block": {
+    "id": "42ba4200-2462-45cb-8bf8-b8303efd2f69",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/cost-center/vibe-coding__42ba4200-2462-45cb-8bf8-b8303efd2f69.jsx",
+  "current": {
+    "blockId": "42ba4200-2462-45cb-8bf8-b8303efd2f69",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "20a88121-1df9-420f-926e-ef27a1da8b3e",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Cost Source Items",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldM6FnlIy3kV1m4E",
+        "fields": [
+          {
+            "id": "fldM6FnlIy3kV1m4E",
+            "name": "Source Item Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld5Ama8MX0c7WYnZ",
+            "name": "Source Sheet",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldjgBFaN0YXAacAO",
+            "name": "Supplier",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldeHTscE6dGX7Xmo",
+            "name": "SKU",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldTJ1sEMKv0yer15",
+            "name": "Category",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldMxijvJCYq2jMSh",
+            "name": "Unit",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldEzXaAEKkdCV3ou",
+            "name": "Package Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld9GNjnDb3VXqLG6",
+            "name": "Price",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "flduzLxDj7aYfkcTQ",
+            "name": "Unit Price",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 4,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldfaavvEyWOjsKym",
+            "name": "Final Price",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 4,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldSVjKjNZqXYqQYK",
+            "name": "Cost Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldj7jXoSEtSEzDvq",
+            "name": "Match Key",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldqL5tpbvxD8wy4e",
+            "name": "Vendor Receipt Lines",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Vendor Receipt Lines"
+            }
+          },
+          {
+            "id": "fldq9BXyvo42cOXgP",
+            "name": "Receipt Cost Proposals",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Receipt Cost Proposals"
+            }
+          },
+          {
+            "id": "fld0SzRIMBBfCEvz1",
+            "name": "Menu Item Ingredients",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Item Ingredients"
+            }
+          },
+          {
+            "id": "fldLgQCJ9F8pBUo66",
+            "name": "Cost Movement",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Cost Movement"
+            }
+          },
+          {
+            "id": "fldXoVDRFHNoi9G6M",
+            "name": "Order Draft Lines",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Order Draft Lines"
+            }
+          },
+          {
+            "id": "fldDLPMJawyH4MvMA",
+            "name": "Item Lookup Events",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Item Lookup Events"
+            }
+          },
+          {
+            "id": "fldiuEdWJL4tfVxqx",
+            "name": "Stock Count Lines",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Stock Count Lines"
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 14,
+    "returned": 14,
+    "versions": [
+      {
+        "versionId": "8b5a2445-d233-4634-814c-71cabbb70d85",
+        "versionNumber": 14,
+        "title": "Update VendorCostLedger table layout",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardList,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  Sparkles,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nc",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T21:14:47",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f7294240-a0a9-45c3-86e3-7ce440ab92f3",
+        "versionNumber": 13,
+        "title": "Refactor Movement Metrics Display",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardList,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  Sparkles,\\n  TrendingDown,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nc",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T21:10:39",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d20c8e65-00a0-414f-9b8b-6c2d88729efa",
+        "versionNumber": 12,
+        "title": "Refactor VendorCostLedger UI Styles",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction numberOrNull(value) {\\n  if (value === null || value === undefined || value === \\\"\\\") return null;\\n\\n  if (Array.isArray(value)) {\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T21:08:45",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "02bbce50-785d-433e-9aa2-364f72e9466e",
+        "versionNumber": 11,
+        "title": "Normalize vendors, add movement filter and sorting",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction numberOrNull(value) {\\n    if (value === null || value === undefined || value === \\\"\\\") return null;\\n\\n    if (Array.isArray(value)",
+        "promptTruncated": true,
+        "createdAt": "2026-06-03T19:12:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "be618e2c-adbb-4a58-bfb9-7dd2376909c8",
+        "versionNumber": 10,
+        "title": "Refactor Vendor Ledger with Movement",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction money(value) {\\n    const numberValue = Number(value);\\n    if (!Number.isFinite(numberValue)) return \\\"—\\\";\\n\\n    return numberVal",
+        "promptTruncated": true,
+        "createdAt": "2026-06-03T18:54:21",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1cae97c4-3ca0-48ed-a006-2ce88e3413b1",
+        "versionNumber": 9,
+        "title": "Update VendorCostLedger metrics and labels",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction money(value) {\\n    const numberValue = Number(value);\\n    if (!Number.isFinite(numberValue)) return \\\"—\\\";\\n\\n    return numberVal",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T16:48:22",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5c7dc764-0993-4f5b-9328-1a4899df6788",
+        "versionNumber": 8,
+        "title": "Fix duplicated MetricCard and cleanup",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction money(value) {\\n    const numberValue = Number(value);\\n    if (!Number.isFinite(numberValue)) return \\\"—\\\";\\n\\n    return numberVal",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T16:47:46",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "18e148dc-e179-4c84-8db3-3ae72950331b",
+        "versionNumber": 7,
+        "title": "Add receipt-backed MetricCard and label changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction money(value) {\\n    const numberValue = Number(value);\\n    if (!Number.isFinite(numberValue)) return \\\"—\\\";\\n\\n    return numberVal",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T16:46:31",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "38af9357-83b7-4d66-8111-94960ac83258",
+        "versionNumber": 6,
+        "title": "Refactor Vendor Cost Ledger JSX",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction money(value) {\\n    const numberValue = Number(value);\\n    if (!Number.isFinite(numberValue)) return \\\"—\\\";\\n\\n    return numberVal",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T16:45:17",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f64b9ed0-64c9-45e9-8a52-3a1b1aa9c35c",
+        "versionNumber": 5,
+        "title": "Update VendorCostLedger table layout",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction money(value) {\\n    const numberValue = Number(value);\\n    if (!Number.isFinite(numberValue)) return \\\"—\\\";\\n\\n    return numberVal",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T16:43:42",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7ad19661-9cb6-4f9b-bcd9-3f105fa74d30",
+        "versionNumber": 4,
+        "title": "Summarize VendorCostLedger code changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction money(value) {\\n    const numberValue = Number(value);\\n    if (!Number.isFinite(numberValue)) return \\\"—\\\";\\n\\n    return numberVal",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T14:24:23",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "aaa547b7-8f58-46f4-ac0e-a01ae2fa172f",
+        "versionNumber": 3,
+        "title": "Refactor Vendor Cost Ledger UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\n\\nconst API_BASE = \\\"https://project-1csz2.vercel.app\\\";\\n\\nfunction money(value) {\\n    const numberValue = Number(value);\\n    if (!Number.isFinite(numberValue)) return \\\"—\\\";\\n\\n    return numberVal",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T14:08:12",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "74063812-d96d-465f-8ecc-8f035e520605",
+        "versionNumber": 2,
+        "title": "Convert placeholder to Vendor Ledger component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T05:16:03",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "93ebb34e-3401-4829-952b-850d54283d1a",
+        "versionNumber": 1,
+        "title": "Initial Draft Prompt",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-27T05:11:44",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,671 @@
+{
+  "page": {
+    "id": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "name": "Tripleseat",
+    "path": "/tripleseat"
+  },
+  "block": {
+    "id": "cfa6a747-6062-4084-ad8c-286f765af303",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/tripleseat/vibe-coding__cfa6a747-6062-4084-ad8c-286f765af303.jsx",
+  "current": {
+    "blockId": "cfa6a747-6062-4084-ad8c-286f765af303",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "026f615d-34e3-4ae0-a8d4-581e420a803a",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Event Intake Queue",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldxS6Gti85zEf8lo",
+        "fields": [
+          {
+            "id": "fldxS6Gti85zEf8lo",
+            "name": "Event Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldQIPxi99JN89lpu",
+            "name": "Start DateTime",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldX9nGpcBrbFr4xv",
+            "name": "End DateTime",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldPIO0dYl100gk5V",
+            "name": "Venue / Area",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldvIbo6BntGXiR5b",
+            "name": "City",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "flds1Gyc3pJujWdRT",
+            "name": "Source",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selxoUUsh0sFu254G",
+                  "label": "Manual",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "sel0pHoXI2G9iSUny",
+                  "label": "Facebook",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selUqMiqxW48HliXO",
+                  "label": "Eventbrite",
+                  "color": "purpleLight2"
+                },
+                {
+                  "id": "selk1HiEfmTPjVRvS",
+                  "label": "School",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selD6OD7gRBgDkLO0",
+                  "label": "City / Chamber",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel2KUEwKNLoNwBhU",
+                  "label": "Ticketmaster",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "seldgQJkqLZ3n2TC2",
+                  "label": "Other",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seloJwM34NNQmMQTD",
+                  "label": "Tripleseat",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selUQmNMamgRtxpZg",
+                  "label": "Google Business",
+                  "color": "redLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fld88mqs26pYLQeHH",
+            "name": "Source URL",
+            "type": "URL",
+            "options": {}
+          },
+          {
+            "id": "fldmp9L20aFcZUji6",
+            "name": "Source Event ID",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldzwXbJK2qaqSCHG",
+            "name": "Raw Source",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldfhvvWhYtVxQe2o",
+            "name": "Local Confidence",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldTUkF5yzWFXJfNP",
+            "name": "Suggested Event Weight",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldbYn7FOQauLr3iw",
+            "name": "Promote to Decision",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldFXlG91lShBWFpS",
+            "name": "Needs Review",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldL30ReNbpdyryjo",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldkEBzoPv1AdMWdy",
+            "name": "External Event ID",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld9XL73bEBdEzEWL",
+            "name": "Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selyR6wPG9Z9O0C3s",
+                  "label": "New",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selWbbl1b5vGav4L1",
+                  "label": "Processed",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selvp3rEjIctqSawS",
+                  "label": "Ignored",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel6mhmey577p96fm",
+                  "label": "Needs Review",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seltJQVZuUNe29HcP",
+                  "label": "Error",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selwh4VqHMYtbWVSH",
+                  "label": "Pending",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldBYRea3DLJdEKxm",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldDw9OPrXjBZwYmO",
+            "name": "Tripleseat Event ID",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldcDP6GiPTE2AY0h",
+            "name": "Tripleseat Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selUin2phRoFwYOiv",
+                  "label": "Definite",
+                  "color": "greenBright"
+                },
+                {
+                  "id": "sel4Hu6oHtOnm2Vzf",
+                  "label": "Tentative",
+                  "color": "yellowBright"
+                },
+                {
+                  "id": "sel9H8VlFxPL35ww6",
+                  "label": "Prospect",
+                  "color": "blueBright"
+                },
+                {
+                  "id": "selMCpOI5DcN6NNoY",
+                  "label": "Lost",
+                  "color": "grayBright"
+                },
+                {
+                  "id": "selU1CSeQ0gNJH1Ar",
+                  "label": "Cancelled",
+                  "color": "redBright"
+                },
+                {
+                  "id": "sellvKBCAbYs3P8OJ",
+                  "label": "Confirmed",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldGM4JCMmvIdC719",
+            "name": "Guest Count",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldf1axFWVyjIJgHC",
+            "name": "Event Type / Meal Period",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldSPQc0B3yvdXn5M",
+            "name": "Room / Space",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldvfUiRCyAHfmwoK",
+            "name": "Contact / Account",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldXk9oVNnxE8pDsL",
+            "name": "Tripleseat Record Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seljpFQej7i5YwbRJ",
+                  "label": "Event",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selDtOQ6ZpqgDdkg4",
+                  "label": "Lead",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selijg7DyHl22WkCu",
+                  "label": "Booking",
+                  "color": "purpleLight2"
+                },
+                {
+                  "id": "sel6A7qbsPDOW0lt0",
+                  "label": "Account",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "sel3PDh74ukh81M5R",
+                  "label": "Contact",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selSqKc1Y1A0g17mm",
+                  "label": "Other",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldtEFkYbezmu2YtP",
+            "name": "Booked Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldPkc09jLZCHISX8",
+            "name": "Estimated Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldkmE4I5Hli9IBJc",
+            "name": "Deposit Paid",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld1ADJxIoYqaq3jB",
+            "name": "Balance Due",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldXYx0V145gR2Tpy",
+            "name": "Lead Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selaPEamckImjQGKa",
+                  "label": "New",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selw3bxYkUxmBEZdQ",
+                  "label": "Tentative",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selHMRwKMNgRQ6L0S",
+                  "label": "Proposal Sent",
+                  "color": "purpleLight2"
+                },
+                {
+                  "id": "sel6a15liFIK1Fzau",
+                  "label": "Definite",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selSM5rHjyMn1qUC7",
+                  "label": "Lost",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "seldjESQe5RKHhThz",
+                  "label": "Cancelled",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "seli9DsZYYwMZRbDo",
+                  "label": "Completed",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "seljqLh0XPzUzlxRK",
+                  "label": "Unknown",
+                  "color": "grayLight1"
+                },
+                {
+                  "id": "seltksEZJgHWxXJh1",
+                  "label": "Booked",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldPoIjPoCKdW8tER",
+            "name": "Event Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "flduCOiwtrBudGucf",
+            "name": "Booked At",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldt3fulYWGruJbAh",
+            "name": "Updated At",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldk8YTgQrqFMSEuf",
+            "name": "Owner / Event Manager",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld06n9VamZJ9zYwZ",
+            "name": "Revenue Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selDqO4bKgsZsD2Yd",
+                  "label": "Estimated",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seldWSZ68ZOk1MjGG",
+                  "label": "Contracted",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selB1hQnoPEoD2qzs",
+                  "label": "Paid",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel9VslFoozmhoPnM",
+                  "label": "Partial",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selgTyKFw6cejNaG2",
+                  "label": "Unknown",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selqHoRYEu2YKxUlH",
+                  "label": "Booked",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 9,
+    "returned": 9,
+    "versions": [
+      {
+        "versionId": "f14309ef-8daa-4f69-89ad-5eec45595f65",
+        "versionNumber": 9,
+        "title": "Refactor Tripleseat UI Styling and Layout",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  DollarSign,\\n  CalendarDays,\\n  TrendingUp,\\n  AlertTriangle,\\n  CheckCircle2,\\n  Clock,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:52:45",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6414775b-16b8-4118-b6cc-ed197d999f81",
+        "versionNumber": 8,
+        "title": "Summarize Code Changes Into Title",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  DollarSign,\\n  CalendarDays,\\n  TrendingUp,\\n  AlertTriangle,\\n  CheckCircle2,\\n  Clock,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-31T00:12:19",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d4b7e48e-f2e9-4c7d-b625-54f907206aa3",
+        "versionNumber": 7,
+        "title": "Refactor EventMoneyCard Styles and Layout",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  DollarSign,\\n  CalendarDays,\\n  TrendingUp,\\n  AlertTriangle,\\n  CheckCircle2,\\n  Clock,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-31T00:07:58",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e0bfd899-c24e-446e-87a0-71ad106efce6",
+        "versionNumber": 6,
+        "title": "Add status note UI and wording changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  DollarSign,\\n  CalendarDays,\\n  TrendingUp,\\n  AlertTriangle,\\n  CheckCircle2,\\n  Clock,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-26T18:02:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c735d4c5-b7e1-44b7-a033-c3741ff9e7d5",
+        "versionNumber": 5,
+        "title": "Add status note UI and wording adjustments",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  DollarSign,\\n  CalendarDays,\\n  TrendingUp,\\n  AlertTriangle,\\n  CheckCircle2,\\n  Clock,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-26T17:57:27",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7adb0b87-6e40-41b8-8083-c165d28e5603",
+        "versionNumber": 4,
+        "title": "Add cleanOperatorNote and display cleaned notes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  DollarSign,\\n  CalendarDays,\\n  TrendingUp,\\n  AlertTriangle,\\n  CheckCircle2,\\n  Clock,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-21T02:51:57",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "06d7a1c8-0432-4418-9e11-c189b1f894cb",
+        "versionNumber": 3,
+        "title": "Remove final informational Card and footer",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  DollarSign,\\n  CalendarDays,\\n  TrendingUp,\\n  AlertTriangle,\\n  CheckCircle2,\\n  Clock,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-20T05:03:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1a428f52-88d0-42c9-8879-708687153e47",
+        "versionNumber": 2,
+        "title": "Replace placeholder with Tripleseat dashboard",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-20T04:45:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5c4ebf4d-7986-45ae-a505-7ef49bb6fd35",
+        "versionNumber": 1,
+        "title": "Initial Draft Prompt",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-20T04:45:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

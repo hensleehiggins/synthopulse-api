@@ -1,0 +1,390 @@
+{
+  "page": {
+    "id": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "name": "Cost Center",
+    "path": "/cost-center"
+  },
+  "block": {
+    "id": "1229b7f2-5000-44e1-bd10-78e3a16c1924",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/cost-center/vibe-coding__1229b7f2-5000-44e1-bd10-78e3a16c1924.jsx",
+  "current": {
+    "blockId": "1229b7f2-5000-44e1-bd10-78e3a16c1924",
+    "settings": [
+      {
+        "name": "brand-descriptor",
+        "type": "text",
+        "value": "AI for restaurant operators"
+      },
+      {
+        "name": "headline",
+        "type": "text",
+        "value": "Cost Center"
+      },
+      {
+        "name": "subheadline",
+        "type": "text",
+        "value": "Track vendor cost movement, margin pressure, and ingredient-level changes from approved receipt signals before they become hidden profit leaks."
+      }
+    ],
+    "dataSources": [
+      {
+        "id": "cb34b141-1873-4dfe-9ac6-05007c8f58bd",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Cost Movement",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldJEbKfznts1bZli",
+        "fields": [
+          {
+            "id": "fldJEbKfznts1bZli",
+            "name": "Movement Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldoiOaFWdvZT6pQD",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldBFbZ2lVjCVIcna",
+            "name": "Source Cost Proposal",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Receipt Cost Proposals"
+            }
+          },
+          {
+            "id": "fldEWS8K3ES8JymC4",
+            "name": "Receipt Line",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Vendor Receipt Lines"
+            }
+          },
+          {
+            "id": "fldrrAjUUTvfPgqNR",
+            "name": "Inventory Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Inventory Items"
+            }
+          },
+          {
+            "id": "fldQm9oR7NCaDCjX2",
+            "name": "Cost Source Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Cost Source Items"
+            }
+          },
+          {
+            "id": "fld9olyCQOawVGBUD",
+            "name": "Related Menu Items",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fldLypvG46G0m3EDZ",
+            "name": "Related Menu Components",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Item Ingredients"
+            }
+          },
+          {
+            "id": "fldp2mDXFUqAXkCyM",
+            "name": "Vendor",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldR6ue6PnpWGErfR",
+            "name": "Cost Item Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldLaJEJVcXDYiRmL",
+            "name": "Vendor Line Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldI5qZmL4FCtGFRv",
+            "name": "Previous Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldYjqopqSgT82D70",
+            "name": "Latest Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldzrAqTOZieB1Gmk",
+            "name": "Cost Change $",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldhLiA9HmOnKYkW2",
+            "name": "Cost Change %",
+            "type": "PERCENT",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldpVAh3ihF7TirUV",
+            "name": "Direction",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selX5E0T0RdSr1UIF",
+                  "label": "Increase",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selDoEo7pQFRJKOMM",
+                  "label": "Decrease",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selAFHW2sAYSSi44j",
+                  "label": "Flat",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldRLI2genevJtJVd",
+            "name": "Severity",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selLbhY6JY62vwTSC",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "sel3ZKy8GRwUHgYX8",
+                  "label": "Medium",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selUshNmZqqwTJKFI",
+                  "label": "Low",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selWYze9UWHft2WrK",
+                  "label": "Watch",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldNi2qMbGFz042a9",
+            "name": "Review Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seltSxG4Wz7mqLBVw",
+                  "label": "Active",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selnAojRygPuJJMjg",
+                  "label": "Needs Review",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selNQ9qiypWvUzjl6",
+                  "label": "Resolved",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selgGeEWyCPLi58BY",
+                  "label": "Ignored",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldKpWYzCjZzIvIOw",
+            "name": "Signal Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldLC9rQlJ4VBHZbA",
+            "name": "Latest Receipt Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld0HgPTimnsx5uuQ",
+            "name": "Is Latest",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld6hC7owAfx1o3us",
+            "name": "Show on What Changed",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldGLmR9Tntta94Qy",
+            "name": "Show on Home",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldwgCG4QqJsoc3l6",
+            "name": "Decision Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld8z55qo97r5Sl7a",
+            "name": "Margin Pressure",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldiBQobIqAOGCGBi",
+            "name": "Suggested Action",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldNQkSbNBnyPfflr",
+            "name": "Formatted Cost Brief",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldWhzCxDaMYG0Zvg",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 3,
+    "returned": 3,
+    "versions": [
+      {
+        "versionId": "35d06447-546e-465a-aa9b-8c7565db6c01",
+        "versionNumber": 3,
+        "title": "Refactor Hero Block with Lockup",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  TrendingUp,\\n  ShieldCheck,\\n  CircleDollarSign,\\n  ClipboardCheck,\\n  Sparkles",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:08:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "fa6a0d5b-1361-45ee-9045-41803ce5a374",
+        "versionNumber": 2,
+        "title": "Refactor Placeholder to Feature Block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-22T22:26:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6ec7dbb2-69ad-4664-ab57-1de573a39a71",
+        "versionNumber": 1,
+        "title": "Initial Version Prompt Title",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-22T22:25:44",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

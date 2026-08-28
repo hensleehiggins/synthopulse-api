@@ -1,0 +1,61 @@
+{
+  "page": {
+    "id": "cd42ee50-a41c-4407-8c6b-1528e2f67973",
+    "name": "KitchenPulse Receipt Capture",
+    "path": "/mobile-receipt"
+  },
+  "block": {
+    "id": "21a127f3-f15b-4a39-97aa-15862837f30b",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/kitchenpulse-receipt-capture/vibe-coding__21a127f3-f15b-4a39-97aa-15862837f30b.jsx",
+  "current": {
+    "blockId": "21a127f3-f15b-4a39-97aa-15862837f30b",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "810547e8-6679-43a8-a69c-7565ff34fb7f",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "sortOptions": [],
+        "condition": {
+          "expressions": [],
+          "logicalOperator": "AND"
+        }
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 2,
+    "returned": 2,
+    "versions": [
+      {
+        "versionId": "31507d48-7696-470a-ba58-8a2a8337268c",
+        "versionNumber": 2,
+        "title": "Update placeholder with receipt UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-31T20:09:28",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f7aa9c08-b285-41c7-a1c8-c6cbe92b3f54",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-31T20:09:12",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

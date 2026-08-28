@@ -1,0 +1,86 @@
+{
+  "page": {
+    "id": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "name": "Tripleseat",
+    "path": "/tripleseat"
+  },
+  "block": {
+    "id": "b2923fc6-4137-4336-897b-a798d2ee523f",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/tripleseat/vibe-coding__b2923fc6-4137-4336-897b-a798d2ee523f.jsx",
+  "current": {
+    "blockId": "b2923fc6-4137-4336-897b-a798d2ee523f",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "927f055f-469f-423d-8033-f7f5a1f4dab1",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 5,
+    "returned": 5,
+    "versions": [
+      {
+        "versionId": "9321900f-13a2-480a-8447-93a914e9ba1d",
+        "versionNumber": 5,
+        "title": "Refactor Tripleseat Board UI Components",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Clock, MapPin, Users, AlertCircle, CalendarDays, TrendingUp } from \\\"lucide-react\\\";\\n\\nconst API",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:51:24",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "25f66dc7-c424-4de8-a5f4-f315b6bc1d1e",
+        "versionNumber": 4,
+        "title": "Limit and deduplicate Tripleseat events display",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Clock, MapPin, Users, AlertCircle, CalendarDays, TrendingUp } from \\\"lucide-react\\\";\\n\\nconst API",
+        "promptTruncated": true,
+        "createdAt": "2026-05-20T04:51:28",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "54b0dbb3-f339-4a36-bdfe-8522eb799241",
+        "versionNumber": 3,
+        "title": "Refactor Static Block to Dynamic Card",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `export default function Block() {\\n  return (\\n    <div className=\\\"container py-8\\\">\\n      <div className=\\\"content bg-card border rounded-lg min-h-[200px]\\\">\\n      </div>\\n    </div>\\n  );\\n}`\\n\\nTo:import { useEffect, useState } from \\\"react\\\";\\nimport { Card,",
+        "promptTruncated": true,
+        "createdAt": "2026-05-06T00:59:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d4cffd34-ca03-42d2-bc24-a522ab8aaa3e",
+        "versionNumber": 2,
+        "title": "Blank Box Request",
+        "prompt": "{\"prompt\":\"just need a blank box\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-06T00:57:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6b801bec-d7ee-4028-b2e8-443f8523413c",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-06T00:57:31",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

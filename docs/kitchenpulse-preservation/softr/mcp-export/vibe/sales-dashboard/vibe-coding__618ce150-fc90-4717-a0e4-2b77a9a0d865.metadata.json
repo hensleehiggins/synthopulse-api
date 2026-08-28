@@ -1,0 +1,355 @@
+{
+  "page": {
+    "id": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "name": "Sales Dashboard",
+    "path": "/sales-dashboard"
+  },
+  "block": {
+    "id": "618ce150-fc90-4717-a0e4-2b77a9a0d865",
+    "name": "vibe-coding",
+    "title": "Centered text with video",
+    "category": "Hero"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/sales-dashboard/vibe-coding__618ce150-fc90-4717-a0e4-2b77a9a0d865.jsx",
+  "current": {
+    "blockId": "618ce150-fc90-4717-a0e4-2b77a9a0d865",
+    "settings": [
+      {
+        "name": "eyebrow",
+        "type": "text",
+        "value": "KitchenPulse"
+      },
+      {
+        "name": "brand-descriptor",
+        "type": "text",
+        "value": "AI for restaurant operators"
+      },
+      {
+        "name": "fallback-headline",
+        "type": "text",
+        "value": "Sales Dashboard"
+      },
+      {
+        "name": "fallback-subheadline",
+        "type": "text",
+        "value": "See what’s moving, what’s leaking margin, and what deserves attention today."
+      },
+      {
+        "name": "fallback-signal-label",
+        "type": "text",
+        "value": "PERFORMANCE SIGNAL"
+      },
+      {
+        "name": "fallback-signal-value",
+        "type": "text",
+        "value": "What’s driving performance right now."
+      },
+      {
+        "name": "fallback-priority-label",
+        "type": "text",
+        "value": "Focus"
+      },
+      {
+        "name": "fallback-priority-value",
+        "type": "text",
+        "value": "Performance"
+      }
+    ],
+    "dataSources": [
+      {
+        "id": "f00e635e-aa53-459f-af48-c0388a0aa03a",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Dashboard Metrics",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldlPxP994vyD0RcQ",
+        "fields": [
+          {
+            "id": "fldlPxP994vyD0RcQ",
+            "name": "Metric Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldLNtaR6wQ34RXAE",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldMB2dRAsJPWsrPf",
+            "name": "Metric Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldWEY0nl55hKL9g4",
+            "name": "Metric Value",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldz0FpzbrUPyBCUr",
+            "name": "Metric Number",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld9b6Xhn7z3nr1uE",
+            "name": "Metric Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selhEiouLSJbo0ieR",
+                  "label": "Currency",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "seliTw9r0BLiEIe7P",
+                  "label": "Percent",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "sel9mRFlWaJXiNLGP",
+                  "label": "Text",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selGQrqCK74GXlaP4",
+                  "label": "Count",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selcGZSSqdrk20srg",
+                  "label": "Alert",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldzXlRyoqZnSrNa0",
+            "name": "Display Order",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldaybHMV8P1WIVsS",
+            "name": "Is Latest",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldp6bw1FAoBQKcOW",
+            "name": "Source Run ID",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldOzBzsMjEFruXTJ",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldqPeu3ifqWaDtJy",
+            "name": "Restaurant ID",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldLNtaR6wQ34RXAE",
+              "lookupFieldId": "fldQGL648TpDkcFwE",
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 14,
+    "returned": 14,
+    "versions": [
+      {
+        "versionId": "a75bfe5e-c978-43f9-9246-3e2a0e343d8f",
+        "versionNumber": 14,
+        "title": "Refactor Hero Block: UI and Content Updates",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  metricN",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:02:44",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6e41456e-cc38-418d-9a74-602496248c2d",
+        "versionNumber": 13,
+        "title": "Generate Dynamic Hero Content Title",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n  const [isPhon",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T19:50:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "76a33360-f042-4114-99ba-e6e5f2bdf6cf",
+        "versionNumber": 12,
+        "title": "Update fallback signal text in component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n  const [isPhon",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T23:02:18",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "55102801-1a34-4fa1-9da0-df04fc9eebfe",
+        "versionNumber": 11,
+        "title": "Update fallback text and signal copy",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n  const [isPhon",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T22:38:14",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "de62df1f-3c84-48ad-a331-d8e613632aa4",
+        "versionNumber": 10,
+        "title": "Refine responsive detection and copy",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n  const [isPhon",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T22:31:18",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "fe79265f-3f1b-4326-bed7-a982ba3ca8e1",
+        "versionNumber": 9,
+        "title": "Update fallback headline text",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n  const [isPhon",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T22:25:54",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e4d5285b-0a6b-43e9-9216-fcb506e35496",
+        "versionNumber": 8,
+        "title": "Add word-break and break-words styling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n  const [isPhon",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T21:52:21",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5af0ab48-ba68-4199-bff4-72317aa8e475",
+        "versionNumber": 7,
+        "title": "Add responsive isPhone with useEffect",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T21:50:23",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a6e27470-d5d5-4af2-af18-9ce396303434",
+        "versionNumber": 6,
+        "title": "Refactor responsive grid columns",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T21:48:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "56a4b4f5-d554-4697-abb3-cfa1e17d44f4",
+        "versionNumber": 5,
+        "title": "Adjust avatar container and styles",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T21:47:28",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7d003eba-9cab-4556-8b20-156169419980",
+        "versionNumber": 4,
+        "title": "Refactor hero block layout spacing",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T21:46:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "32b1525b-e1a4-4c2c-b4cd-b2b15a9314b4",
+        "versionNumber": 3,
+        "title": "Update grid layout to responsive columns",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useCurrentUser } from \\\"@/lib/user\\\";\\nimport { useImageSetting, useTextSetting } from \\\"@/lib/editable-settings\\\";\\n\\nexport default function Block(props) {\\n  const user = useCurrentUser();\\n\\n  const avatar = useImageSetting({\\n    name: \\\"avatar\\\",\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-03T21:40:15",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3b5fce84-de45-49bb-8807-9f3eff10b3c9",
+        "versionNumber": 2,
+        "title": "Convert hero block to dashboard hero",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `\\nimport { useState } from \\\"react\\\";\\nimport { Button } from \\\"@/components/ui/button\\\";\\nimport { useTextSetting, useNavigationSetting, useImageSetting, useVideoSetting } from \\\"@/lib/editable-settings\\\";\\nimport { NavigationAction } from \\\"@/components/navigatio",
+        "promptTruncated": true,
+        "createdAt": "2026-04-25T20:42:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5f47ba73-505c-4f27-bb97-a203c21848f2",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-25T20:37:21",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

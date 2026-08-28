@@ -39,3 +39,9 @@
 - Receipt parsing and review rely on Vendor Receipt/Line relationships, attachments, processing/review states, item/cost fields, and proposal links.
 
 Field names are source labels, not durable field IDs. Field IDs, field types, formulas, rollups, lookups, views, interfaces, automations, sync configuration, permissions, and attachment files are not available in Git and require Airtable export/capture. No live schema/data was queried.
+
+## Softr MCP schema overlay — 2026-08-28
+
+A read-only Softr MCP archive now preserves the connected Airtable integration `422dc0ab-2509-4ef2-9930-2de87a8c902a` and base `appD303evZM2SlvMR` (`KitchenPulse`): 42 tables and 899 fields, with durable IDs, types, primary fields, select options, and linked-record metadata. See [Softr data-source export](../softr/mcp-export/data-sources.json).
+
+This supplements the source-backed dependency map above; it does not replace source-derived route/relationship evidence. Records, attachment binaries, automations, scripts, views, interfaces, permissions, and provider history remain outside this schema capture.

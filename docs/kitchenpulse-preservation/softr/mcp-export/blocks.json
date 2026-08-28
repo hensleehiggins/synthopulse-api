@@ -1,0 +1,3277 @@
+[
+  {
+    "pageId": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "pageName": "Receipt Intake",
+    "path": "/receipt-intake",
+    "blockId": "e4ad99e0-2b7f-41a3-baf4-520b58ced520",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "e4ad99e0-2b7f-41a3-baf4-520b58ced520",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "pageName": "Receipt Intake",
+    "path": "/receipt-intake",
+    "blockId": "16b08a12-4fee-4e0c-911e-772e0f7579ab",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "16b08a12-4fee-4e0c-911e-772e0f7579ab",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "pageName": "Receipt Intake",
+    "path": "/receipt-intake",
+    "blockId": "59cebdda-55a6-4d18-84aa-a07d4924d9a8",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "59cebdda-55a6-4d18-84aa-a07d4924d9a8",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "pageName": "Receipt Intake",
+    "path": "/receipt-intake",
+    "blockId": "88376645-0908-48d1-b180-6a983bbdaa0c",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "88376645-0908-48d1-b180-6a983bbdaa0c",
+      "hrid": "ai4",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "pageName": "Receipt Intake",
+    "path": "/receipt-intake",
+    "blockId": "8671b647-a32d-416c-90e5-f9a91141bca2",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "8671b647-a32d-416c-90e5-f9a91141bca2",
+      "hrid": "ai5",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "pageName": "Receipt Intake",
+    "path": "/receipt-intake",
+    "blockId": "de4d8a5b-ad2a-44d3-a47c-ba410c88d205",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "de4d8a5b-ad2a-44d3-a47c-ba410c88d205",
+      "hrid": "ai6",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "pageName": "Receipt Intake",
+    "path": "/receipt-intake",
+    "blockId": "d82e2d4c-8350-461d-ac8d-c926bbc67d3a",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "d82e2d4c-8350-461d-ac8d-c926bbc67d3a",
+      "hrid": "custom-code1",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "1603a120-ad20-454a-877b-99d756354614",
+    "pageName": "Onboarding flow",
+    "path": "/onboarding",
+    "blockId": "a40e68f0-9887-40b4-b58a-68456a986126",
+    "blockName": "onboarding",
+    "title": "Onboarding",
+    "category": "Form",
+    "block": {
+      "id": "a40e68f0-9887-40b4-b58a-68456a986126",
+      "hrid": "onboarding-flow",
+      "name": "onboarding",
+      "title": "Onboarding",
+      "type": "DYNAMIC",
+      "category": "Form",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "2ae74abe-273d-4ef3-96d7-ddfe3dec42da",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "2ae74abe-273d-4ef3-96d7-ddfe3dec42da",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "0e192eb0-d16a-4000-bb5c-4aec7c389303",
+    "blockName": "vibe-coding",
+    "title": "Time aware 1",
+    "category": "Welcome",
+    "block": {
+      "id": "0e192eb0-d16a-4000-bb5c-4aec7c389303",
+      "hrid": "welcome1",
+      "name": "vibe-coding",
+      "title": "Time aware 1",
+      "type": "STATIC",
+      "category": "Welcome",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "c07caf74-67bc-45c9-ae02-6f96beb1dfea",
+    "blockName": "block-container",
+    "title": "Column container",
+    "category": "Container",
+    "block": {
+      "id": "c07caf74-67bc-45c9-ae02-6f96beb1dfea",
+      "hrid": "column-container1",
+      "name": "block-container",
+      "title": "Column container",
+      "type": "CONTAINER",
+      "category": "Container",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "49bc69df-ba9b-4538-89e6-08d5e2116807",
+    "blockName": "tab-container",
+    "title": "Tab container",
+    "category": "Container",
+    "block": {
+      "id": "49bc69df-ba9b-4538-89e6-08d5e2116807",
+      "hrid": "tab-container1",
+      "name": "tab-container",
+      "title": "Tab container",
+      "type": "CONTAINER",
+      "category": "Container",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "389f4fd8-15bb-4787-8e54-dc6b9c012532",
+    "blockName": "chart",
+    "title": "Chart",
+    "category": "Chart",
+    "block": {
+      "id": "389f4fd8-15bb-4787-8e54-dc6b9c012532",
+      "hrid": "chart1",
+      "name": "chart",
+      "title": "Chart",
+      "type": "DYNAMIC",
+      "category": "Chart",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "d830a16b-512b-40b3-a4d0-6df7359895f4",
+    "blockName": "chart",
+    "title": "Chart",
+    "category": "Chart",
+    "block": {
+      "id": "d830a16b-512b-40b3-a4d0-6df7359895f4",
+      "hrid": "chart2",
+      "name": "chart",
+      "title": "Chart",
+      "type": "DYNAMIC",
+      "category": "Chart",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "9167a5dc-e76b-4c6d-bb93-7e33ba8915b6",
+    "blockName": "tab",
+    "title": "Tab",
+    "category": "Container",
+    "block": {
+      "id": "9167a5dc-e76b-4c6d-bb93-7e33ba8915b6",
+      "hrid": "tab1",
+      "name": "tab",
+      "title": "Tab",
+      "type": "CONTAINER",
+      "category": "Container",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "d4942d8d-b01c-4c61-8e1b-0d01deec0c4f",
+    "blockName": "tab",
+    "title": "Tab",
+    "category": "Container",
+    "block": {
+      "id": "d4942d8d-b01c-4c61-8e1b-0d01deec0c4f",
+      "hrid": "tab2",
+      "name": "tab",
+      "title": "Tab",
+      "type": "CONTAINER",
+      "category": "Container",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "edec3a30-d611-4ca3-a197-9171f9e5cc35",
+    "blockName": "list",
+    "title": "List",
+    "category": "List",
+    "block": {
+      "id": "edec3a30-d611-4ca3-a197-9171f9e5cc35",
+      "hrid": "list1",
+      "name": "list",
+      "title": "List",
+      "type": "DYNAMIC",
+      "category": "List",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "17ff068d-4da8-48fc-bad8-4dcd8e47aa08",
+    "pageName": "Today’s Brief",
+    "path": "/todays-brief",
+    "blockId": "185bb8b0-1ee2-4f00-96dc-0aedf8004462",
+    "blockName": "list",
+    "title": "List",
+    "category": "List",
+    "block": {
+      "id": "185bb8b0-1ee2-4f00-96dc-0aedf8004462",
+      "hrid": "list2",
+      "name": "list",
+      "title": "List",
+      "type": "DYNAMIC",
+      "category": "List",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "224e6efa-e6f0-46c8-ae77-daaa56054f03",
+    "pageName": "Account settings",
+    "path": "/account",
+    "blockId": "01a2958a-7559-424c-8e76-940b4ca3b351",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "01a2958a-7559-424c-8e76-940b4ca3b351",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "224e6efa-e6f0-46c8-ae77-daaa56054f03",
+    "pageName": "Account settings",
+    "path": "/account",
+    "blockId": "3dcc2f41-b145-4589-a772-a15f630cd193",
+    "blockName": "account-settings",
+    "title": "Account Settings",
+    "category": "User Accounts",
+    "block": {
+      "id": "3dcc2f41-b145-4589-a772-a15f630cd193",
+      "hrid": "user-accounts1",
+      "name": "account-settings",
+      "title": "Account Settings",
+      "type": "DYNAMIC",
+      "category": "User Accounts",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "2be66c32-fde6-44fa-a81d-ba008b3482d1",
+    "pageName": "Operator Accounts",
+    "path": "/operator-accounts",
+    "blockId": "62701578-30ec-4744-a1de-c5e6c4922521",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "62701578-30ec-4744-a1de-c5e6c4922521",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "2be66c32-fde6-44fa-a81d-ba008b3482d1",
+    "pageName": "Operator Accounts",
+    "path": "/operator-accounts",
+    "blockId": "f4deec64-8efd-4743-ad10-343a2149d7a2",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "f4deec64-8efd-4743-ad10-343a2149d7a2",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "2be66c32-fde6-44fa-a81d-ba008b3482d1",
+    "pageName": "Operator Accounts",
+    "path": "/operator-accounts",
+    "blockId": "f60e054f-ce54-4bda-822f-cf428d92e229",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "f60e054f-ce54-4bda-822f-cf428d92e229",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "30dc92d9-fdb7-4180-95c5-58acebfd28e4",
+    "pageName": "Sign up",
+    "path": "/sign-up",
+    "blockId": "86c112c5-43c5-4ba4-8731-42df942a4700",
+    "blockName": "signUp",
+    "title": "Sign Up",
+    "category": "User Accounts",
+    "block": {
+      "id": "86c112c5-43c5-4ba4-8731-42df942a4700",
+      "hrid": "user-accounts1",
+      "name": "signUp",
+      "title": "Sign Up",
+      "type": "DYNAMIC",
+      "category": "User Accounts",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "NON_LOGGED_IN_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "37f11de8-2142-448e-b135-f07dfdf8e067",
+    "pageName": "Home",
+    "path": "/",
+    "blockId": "56a9e7d1-7522-4050-a1e6-dfba69612f93",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "56a9e7d1-7522-4050-a1e6-dfba69612f93",
+      "hrid": "home-header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "37f11de8-2142-448e-b135-f07dfdf8e067",
+    "pageName": "Home",
+    "path": "/",
+    "blockId": "39e5d018-7c7d-45c3-b279-fac116e41f15",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "39e5d018-7c7d-45c3-b279-fac116e41f15",
+      "hrid": "ai4",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "37f11de8-2142-448e-b135-f07dfdf8e067",
+    "pageName": "Home",
+    "path": "/",
+    "blockId": "bcda15d2-3d2e-4b56-8133-62211ee866e1",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "bcda15d2-3d2e-4b56-8133-62211ee866e1",
+      "hrid": "ai7",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "37f11de8-2142-448e-b135-f07dfdf8e067",
+    "pageName": "Home",
+    "path": "/",
+    "blockId": "83ea451d-8820-4c46-b687-3d9ed9c12b02",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "83ea451d-8820-4c46-b687-3d9ed9c12b02",
+      "hrid": "ai5",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "37f11de8-2142-448e-b135-f07dfdf8e067",
+    "pageName": "Home",
+    "path": "/",
+    "blockId": "5fce4bce-1447-434b-a779-ae26f2e8089b",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "5fce4bce-1447-434b-a779-ae26f2e8089b",
+      "hrid": "ai6",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "37f11de8-2142-448e-b135-f07dfdf8e067",
+    "pageName": "Home",
+    "path": "/",
+    "blockId": "41a3a4db-cf6b-47fc-bdd8-7d0dd9222129",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "41a3a4db-cf6b-47fc-bdd8-7d0dd9222129",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "37f11de8-2142-448e-b135-f07dfdf8e067",
+    "pageName": "Home",
+    "path": "/",
+    "blockId": "d9b2e445-415e-4cc5-be9e-42f8a3d4fc7e",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "d9b2e445-415e-4cc5-be9e-42f8a3d4fc7e",
+      "hrid": "custom-code4",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "38850aa5-1f74-4c1e-a21e-9f80d1709a6f",
+    "pageName": "Page not found",
+    "path": "/404",
+    "blockId": "008c893b-ed3e-47e3-aa1d-a833d12e22c1",
+    "blockName": "404-not-found",
+    "title": "Page not found",
+    "category": "Utility",
+    "block": {
+      "id": "008c893b-ed3e-47e3-aa1d-a833d12e22c1",
+      "hrid": "utility1",
+      "name": "404-not-found",
+      "title": "Page not found",
+      "type": "STATIC",
+      "category": "Utility",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "4d168ae5-ff7e-488d-88e5-be87c0c94a30",
+    "pageName": "Reset password",
+    "path": "/reset-password",
+    "blockId": "ef4350c3-bbc9-4697-8b9c-82a5e06498e7",
+    "blockName": "reset-password",
+    "title": "Reset password",
+    "category": "User Accounts",
+    "block": {
+      "id": "ef4350c3-bbc9-4697-8b9c-82a5e06498e7",
+      "hrid": "user-accounts1",
+      "name": "reset-password",
+      "title": "Reset password",
+      "type": "DYNAMIC",
+      "category": "User Accounts",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "pageName": "What Changed",
+    "path": "/what-changed",
+    "blockId": "70980d75-3129-4bd6-ab79-d2308c73b14f",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "70980d75-3129-4bd6-ab79-d2308c73b14f",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "pageName": "What Changed",
+    "path": "/what-changed",
+    "blockId": "fd853b01-1374-49c9-b585-449c4ef35332",
+    "blockName": "vibe-coding",
+    "title": "Centered text with video",
+    "category": "Hero",
+    "block": {
+      "id": "fd853b01-1374-49c9-b585-449c4ef35332",
+      "hrid": "hero1",
+      "name": "vibe-coding",
+      "title": "Centered text with video",
+      "type": "STATIC",
+      "category": "Hero",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "pageName": "What Changed",
+    "path": "/what-changed",
+    "blockId": "b96f4c8a-5ecd-4095-96cf-200520798990",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "b96f4c8a-5ecd-4095-96cf-200520798990",
+      "hrid": "ai3",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "pageName": "What Changed",
+    "path": "/what-changed",
+    "blockId": "24c507cb-b81b-4843-87d3-187de487c4f5",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "24c507cb-b81b-4843-87d3-187de487c4f5",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "pageName": "What Changed",
+    "path": "/what-changed",
+    "blockId": "9300a904-ce20-4ca3-99a6-424fd7a443fe",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "9300a904-ce20-4ca3-99a6-424fd7a443fe",
+      "hrid": "ai4",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "pageName": "What Changed",
+    "path": "/what-changed",
+    "blockId": "8e999c45-1fb9-46c7-8c29-659ecc33ac54",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "8e999c45-1fb9-46c7-8c29-659ecc33ac54",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "pageName": "What Changed",
+    "path": "/what-changed",
+    "blockId": "7116c336-8add-4aa9-8311-2a1420b93836",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "7116c336-8add-4aa9-8311-2a1420b93836",
+      "hrid": "custom-code1",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "pageName": "Cost Center",
+    "path": "/cost-center",
+    "blockId": "dc351038-6853-487b-ae6e-2f8ea7605bf8",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "dc351038-6853-487b-ae6e-2f8ea7605bf8",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "pageName": "Cost Center",
+    "path": "/cost-center",
+    "blockId": "1229b7f2-5000-44e1-bd10-78e3a16c1924",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "1229b7f2-5000-44e1-bd10-78e3a16c1924",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "pageName": "Cost Center",
+    "path": "/cost-center",
+    "blockId": "d0da7132-2bad-4f00-981a-10a2e1ea10fc",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "d0da7132-2bad-4f00-981a-10a2e1ea10fc",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "pageName": "Cost Center",
+    "path": "/cost-center",
+    "blockId": "d9a71e64-9809-4138-96cc-312536bc0ee9",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "d9a71e64-9809-4138-96cc-312536bc0ee9",
+      "hrid": "ai3",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "pageName": "Cost Center",
+    "path": "/cost-center",
+    "blockId": "42ba4200-2462-45cb-8bf8-b8303efd2f69",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "42ba4200-2462-45cb-8bf8-b8303efd2f69",
+      "hrid": "ai4",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "pageName": "Cost Center",
+    "path": "/cost-center",
+    "blockId": "747e7dec-2b2e-45b0-bb63-e3be3634a3ec",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "747e7dec-2b2e-45b0-bb63-e3be3634a3ec",
+      "hrid": "custom-code1",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "81d05baf-4d1b-4260-b576-44b61c712206",
+    "pageName": "9136419c-df18-45f2-8821-ed6fa6993b3a",
+    "path": "/c7cdf289-efa8-4e65-b64b-847b9b60db22",
+    "blockId": "24441644-f8d6-4b67-a972-9f26b34cb70c",
+    "blockName": "navigation",
+    "title": "Navigation",
+    "category": "Header",
+    "block": {
+      "id": "24441644-f8d6-4b67-a972-9f26b34cb70c",
+      "hrid": "header3",
+      "name": "navigation",
+      "title": "Navigation",
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "81d05baf-4d1b-4260-b576-44b61c712206",
+    "pageName": "9136419c-df18-45f2-8821-ed6fa6993b3a",
+    "path": "/c7cdf289-efa8-4e65-b64b-847b9b60db22",
+    "blockId": "b1c5f003-eac7-4384-a7f0-68aa8ac2f50b",
+    "blockName": "navigation",
+    "title": "Navigation",
+    "category": "Header",
+    "block": {
+      "id": "b1c5f003-eac7-4384-a7f0-68aa8ac2f50b",
+      "hrid": "header2",
+      "name": "navigation",
+      "title": "Navigation",
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "81d05baf-4d1b-4260-b576-44b61c712206",
+    "pageName": "9136419c-df18-45f2-8821-ed6fa6993b3a",
+    "path": "/c7cdf289-efa8-4e65-b64b-847b9b60db22",
+    "blockId": "492356d1-9a34-4f86-978b-aa82c91a2133",
+    "blockName": "navigation",
+    "title": "Navigation",
+    "category": "Header",
+    "block": {
+      "id": "492356d1-9a34-4f86-978b-aa82c91a2133",
+      "hrid": "home-header3",
+      "name": "navigation",
+      "title": "Navigation",
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "2fcb6ef1-2f5e-477e-9aec-74f2333d0c23",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "2fcb6ef1-2f5e-477e-9aec-74f2333d0c23",
+      "hrid": "home-header3",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "efbc44ea-361b-452e-a8fc-119b63518973",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "efbc44ea-361b-452e-a8fc-119b63518973",
+      "hrid": "ai4",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "84d5c122-6db6-473e-bae5-85ad8ce683ce",
+    "blockName": "list",
+    "title": "List",
+    "category": "List",
+    "block": {
+      "id": "84d5c122-6db6-473e-bae5-85ad8ce683ce",
+      "hrid": "list2",
+      "name": "list",
+      "title": "List",
+      "type": "DYNAMIC",
+      "category": "List",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "e334cf51-20f9-4921-81c8-4a6c618ff72b",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "e334cf51-20f9-4921-81c8-4a6c618ff72b",
+      "hrid": "ai3",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "871acef4-e3ae-4401-b3d0-d00a2fbfc6ef",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "871acef4-e3ae-4401-b3d0-d00a2fbfc6ef",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "d12590de-e88b-4447-9949-216107c3d534",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "d12590de-e88b-4447-9949-216107c3d534",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "d5bd7a00-0c5d-4dc5-8071-3ef671e8fdbd",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "d5bd7a00-0c5d-4dc5-8071-3ef671e8fdbd",
+      "hrid": "custom-code1",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "4cd71f08-d973-444e-81a6-ed64359f3af5",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "4cd71f08-d973-444e-81a6-ed64359f3af5",
+      "hrid": "kp-global",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "18175ab0-c7ff-4e71-9c56-2806a6ce2344",
+    "blockName": "list",
+    "title": "List",
+    "category": "List",
+    "block": {
+      "id": "18175ab0-c7ff-4e71-9c56-2806a6ce2344",
+      "hrid": "list1",
+      "name": "list",
+      "title": "List",
+      "type": "DYNAMIC",
+      "category": "List",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "90a379e9-a810-435e-8c1e-a28b693fdfdd",
+    "pageName": "Hero Template - Stable",
+    "path": "/home-copy",
+    "blockId": "031d0131-2f9f-4259-8614-c4a4d40bf492",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "031d0131-2f9f-4259-8614-c4a4d40bf492",
+      "hrid": "custom-code3",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "96839638-9ae9-489d-a7c4-890553aa809e",
+    "pageName": "Permission denied",
+    "path": "/401",
+    "blockId": "63aeb58d-1a62-43a0-8453-d65c0df3784f",
+    "blockName": "permission-denied",
+    "title": "Permission denied",
+    "category": "Utility",
+    "block": {
+      "id": "63aeb58d-1a62-43a0-8453-d65c0df3784f",
+      "hrid": "utility1",
+      "name": "permission-denied",
+      "title": "Permission denied",
+      "type": "STATIC",
+      "category": "Utility",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "97ac6f46-2864-44b2-aa8d-5817ab5b97f5",
+    "pageName": "Order Intelligence",
+    "path": "/order-intelligence",
+    "blockId": "14143391-425c-4b10-9ec6-2bd03b79a250",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "14143391-425c-4b10-9ec6-2bd03b79a250",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "97ac6f46-2864-44b2-aa8d-5817ab5b97f5",
+    "pageName": "Order Intelligence",
+    "path": "/order-intelligence",
+    "blockId": "eb0bc9b4-7e19-47e0-98e1-7cf2c45f9221",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "eb0bc9b4-7e19-47e0-98e1-7cf2c45f9221",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "97ac6f46-2864-44b2-aa8d-5817ab5b97f5",
+    "pageName": "Order Intelligence",
+    "path": "/order-intelligence",
+    "blockId": "fcec3bec-5db9-4e90-87b0-d01affbb2f0d",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "fcec3bec-5db9-4e90-87b0-d01affbb2f0d",
+      "hrid": "ai3",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "97ac6f46-2864-44b2-aa8d-5817ab5b97f5",
+    "pageName": "Order Intelligence",
+    "path": "/order-intelligence",
+    "blockId": "2f8183de-2d9a-4bc1-a64b-2ce4756a8504",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "2f8183de-2d9a-4bc1-a64b-2ce4756a8504",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "97ac6f46-2864-44b2-aa8d-5817ab5b97f5",
+    "pageName": "Order Intelligence",
+    "path": "/order-intelligence",
+    "blockId": "ea6cf85d-b2ca-4607-8fc4-0ba12b1722bd",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "ea6cf85d-b2ca-4607-8fc4-0ba12b1722bd",
+      "hrid": "custom-code1",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "a724f269-71e2-4d2e-afcb-e2d43de80aa1",
+    "pageName": "Forgot password",
+    "path": "/forgot-password",
+    "blockId": "9153d579-f145-4f7c-abb8-b39aac0d7660",
+    "blockName": "forgot-password",
+    "title": "Forgot password",
+    "category": "User Accounts",
+    "block": {
+      "id": "9153d579-f145-4f7c-abb8-b39aac0d7660",
+      "hrid": "user-accounts1",
+      "name": "forgot-password",
+      "title": "Forgot password",
+      "type": "DYNAMIC",
+      "category": "User Accounts",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "ac0bbc6f-7358-4837-b606-aeafe4a20a7a",
+    "pageName": "Log in",
+    "path": "/login",
+    "blockId": "c6be377b-a7dd-4809-b32b-5a64d17263a8",
+    "blockName": "signIn",
+    "title": "Sign In",
+    "category": "User Accounts",
+    "block": {
+      "id": "c6be377b-a7dd-4809-b32b-5a64d17263a8",
+      "hrid": "user-accounts1",
+      "name": "signIn",
+      "title": "Sign In",
+      "type": "DYNAMIC",
+      "category": "User Accounts",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "NON_LOGGED_IN_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "pageName": "Sales Dashboard",
+    "path": "/sales-dashboard",
+    "blockId": "478c48ee-c8c7-4472-a3b8-33e4f5ee256e",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "478c48ee-c8c7-4472-a3b8-33e4f5ee256e",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "pageName": "Sales Dashboard",
+    "path": "/sales-dashboard",
+    "blockId": "618ce150-fc90-4717-a0e4-2b77a9a0d865",
+    "blockName": "vibe-coding",
+    "title": "Centered text with video",
+    "category": "Hero",
+    "block": {
+      "id": "618ce150-fc90-4717-a0e4-2b77a9a0d865",
+      "hrid": "hero1",
+      "name": "vibe-coding",
+      "title": "Centered text with video",
+      "type": "STATIC",
+      "category": "Hero",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "pageName": "Sales Dashboard",
+    "path": "/sales-dashboard",
+    "blockId": "20078005-c95b-4c6d-b51b-6745bcca8161",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "20078005-c95b-4c6d-b51b-6745bcca8161",
+      "hrid": "ai5",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "pageName": "Sales Dashboard",
+    "path": "/sales-dashboard",
+    "blockId": "ebc4ba22-a1db-4511-a19b-f66516f9d673",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "ebc4ba22-a1db-4511-a19b-f66516f9d673",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "pageName": "Sales Dashboard",
+    "path": "/sales-dashboard",
+    "blockId": "a98b151a-5849-4c22-acbf-37d64ab60e11",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "a98b151a-5849-4c22-acbf-37d64ab60e11",
+      "hrid": "ai6",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "pageName": "Sales Dashboard",
+    "path": "/sales-dashboard",
+    "blockId": "524a383f-c13c-4122-a83f-c310502516b5",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "524a383f-c13c-4122-a83f-c310502516b5",
+      "hrid": "ai3",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "pageName": "Sales Dashboard",
+    "path": "/sales-dashboard",
+    "blockId": "ba4cc04c-a936-4f27-8d36-f74b74c27cb5",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "ba4cc04c-a936-4f27-8d36-f74b74c27cb5",
+      "hrid": "custom-code1",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "c39b1da7-0061-49c7-a065-ccbc6c7e7e52",
+    "pageName": "Billing",
+    "path": "/billing",
+    "blockId": "69163928-2677-4a4f-b559-441976cce2df",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "69163928-2677-4a4f-b559-441976cce2df",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "c39b1da7-0061-49c7-a065-ccbc6c7e7e52",
+    "pageName": "Billing",
+    "path": "/billing",
+    "blockId": "b26daa47-0360-4142-b5d9-b583d1a8f922",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "b26daa47-0360-4142-b5d9-b583d1a8f922",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "c39b1da7-0061-49c7-a065-ccbc6c7e7e52",
+    "pageName": "Billing",
+    "path": "/billing",
+    "blockId": "11cdca04-1d0c-4f83-8bab-26d44b4ea47a",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "11cdca04-1d0c-4f83-8bab-26d44b4ea47a",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "cd42ee50-a41c-4407-8c6b-1528e2f67973",
+    "pageName": "KitchenPulse Receipt Capture",
+    "path": "/mobile-receipt",
+    "blockId": "a8d9c30a-a2b9-476e-8237-97db2cde71bb",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "a8d9c30a-a2b9-476e-8237-97db2cde71bb",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "cd42ee50-a41c-4407-8c6b-1528e2f67973",
+    "pageName": "KitchenPulse Receipt Capture",
+    "path": "/mobile-receipt",
+    "blockId": "21a127f3-f15b-4a39-97aa-15862837f30b",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "21a127f3-f15b-4a39-97aa-15862837f30b",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "d2a43adf-e6de-4c3f-923d-2f367072ace8",
+    "pageName": "Add / Edit Local Event",
+    "path": "/external-factors-details",
+    "blockId": "af03865c-fb01-436d-8026-1e0420c6693d",
+    "blockName": "list-details",
+    "title": "Item details",
+    "category": "Item Details",
+    "block": {
+      "id": "af03865c-fb01-436d-8026-1e0420c6693d",
+      "hrid": "item-details1",
+      "name": "list-details",
+      "title": "Item details",
+      "type": "DYNAMIC",
+      "category": "Item Details",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "pageName": "Tripleseat",
+    "path": "/tripleseat",
+    "blockId": "0babdb52-978e-4e22-a5e2-10721aadf02e",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "0babdb52-978e-4e22-a5e2-10721aadf02e",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "pageName": "Tripleseat",
+    "path": "/tripleseat",
+    "blockId": "34dbb6a4-875e-43e3-9304-010cd23fecd1",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "34dbb6a4-875e-43e3-9304-010cd23fecd1",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "pageName": "Tripleseat",
+    "path": "/tripleseat",
+    "blockId": "b2923fc6-4137-4336-897b-a798d2ee523f",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "b2923fc6-4137-4336-897b-a798d2ee523f",
+      "hrid": "ai3",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "pageName": "Tripleseat",
+    "path": "/tripleseat",
+    "blockId": "cfa6a747-6062-4084-ad8c-286f765af303",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "cfa6a747-6062-4084-ad8c-286f765af303",
+      "hrid": "ai4",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "pageName": "Tripleseat",
+    "path": "/tripleseat",
+    "blockId": "2718faf7-4978-49f6-b0eb-330b911f2818",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "2718faf7-4978-49f6-b0eb-330b911f2818",
+      "hrid": "ai5",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "pageName": "Tripleseat",
+    "path": "/tripleseat",
+    "blockId": "c8eb0698-db61-4c7b-98c9-bb9347d88cde",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "c8eb0698-db61-4c7b-98c9-bb9347d88cde",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "d764339b-545c-44c1-b3cb-07058aaaaf49",
+    "pageName": "Tripleseat",
+    "path": "/tripleseat",
+    "blockId": "67a2dcdf-f5ce-4400-8c77-bb4943a9abc2",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "67a2dcdf-f5ce-4400-8c77-bb4943a9abc2",
+      "hrid": "custom-code1",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "e2a0e2f1-9954-4577-a0c9-e0f1a3cf8751",
+    "pageName": "Events",
+    "path": "/events",
+    "blockId": "2391d7ca-92c1-4c70-8b81-f77552c1e4f0",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "2391d7ca-92c1-4c70-8b81-f77552c1e4f0",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "e2a0e2f1-9954-4577-a0c9-e0f1a3cf8751",
+    "pageName": "Events",
+    "path": "/events",
+    "blockId": "558a7909-6b7c-4bf9-b38e-fba5d3ca263e",
+    "blockName": "vibe-coding",
+    "title": "Gradient background",
+    "category": "Hero",
+    "block": {
+      "id": "558a7909-6b7c-4bf9-b38e-fba5d3ca263e",
+      "hrid": "hero1",
+      "name": "vibe-coding",
+      "title": "Gradient background",
+      "type": "STATIC",
+      "category": "Hero",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "e2a0e2f1-9954-4577-a0c9-e0f1a3cf8751",
+    "pageName": "Events",
+    "path": "/events",
+    "blockId": "7fbe5083-d5bb-4a7d-a1e0-e2d874a11201",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "7fbe5083-d5bb-4a7d-a1e0-e2d874a11201",
+      "hrid": "ai7",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "e2a0e2f1-9954-4577-a0c9-e0f1a3cf8751",
+    "pageName": "Events",
+    "path": "/events",
+    "blockId": "b9628988-c79c-4513-aacf-88cba1afcd1b",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "b9628988-c79c-4513-aacf-88cba1afcd1b",
+      "hrid": "ai6",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "e2a0e2f1-9954-4577-a0c9-e0f1a3cf8751",
+    "pageName": "Events",
+    "path": "/events",
+    "blockId": "ed6aa0b4-dc3e-40b0-9ad0-b9548bb96ece",
+    "blockName": "custom-code",
+    "title": "Custom code block",
+    "category": "Custom Code",
+    "block": {
+      "id": "ed6aa0b4-dc3e-40b0-9ad0-b9548bb96ece",
+      "hrid": "custom-code2",
+      "name": "custom-code",
+      "title": "Custom code block",
+      "type": "STATIC",
+      "category": "Custom Code",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "f11c4dee-ec1c-42b7-9446-6fb063dad0cd",
+    "pageName": "Staffing",
+    "path": "/staffing",
+    "blockId": "01909928-a9ac-460c-b1a7-bff2e64291db",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "01909928-a9ac-460c-b1a7-bff2e64291db",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "f11c4dee-ec1c-42b7-9446-6fb063dad0cd",
+    "pageName": "Staffing",
+    "path": "/staffing",
+    "blockId": "b731a7fc-d566-459a-99fd-8da07bfc658a",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "b731a7fc-d566-459a-99fd-8da07bfc658a",
+      "hrid": "ai1",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "f11c4dee-ec1c-42b7-9446-6fb063dad0cd",
+    "pageName": "Staffing",
+    "path": "/staffing",
+    "blockId": "592b5fee-126a-47fa-af4a-eef7c9406c8f",
+    "blockName": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI",
+    "block": {
+      "id": "592b5fee-126a-47fa-af4a-eef7c9406c8f",
+      "hrid": "ai2",
+      "name": "vibe-coding",
+      "title": "Vibe coding block",
+      "type": "DYNAMIC",
+      "category": "AI",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "f8ef5505-c52a-46f0-a201-f837449ef011",
+    "pageName": "Forecasts & Insights details",
+    "path": "/forecasts-insights-details",
+    "blockId": "d9b1a91b-d354-4fe1-9d8a-929722d2074a",
+    "blockName": "navigation",
+    "title": null,
+    "category": "Header",
+    "block": {
+      "id": "d9b1a91b-d354-4fe1-9d8a-929722d2074a",
+      "hrid": "header1",
+      "name": "navigation",
+      "title": null,
+      "type": "STATIC",
+      "category": "Header",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "ALL_USERS",
+        "customUserGroupIds": [],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  },
+  {
+    "pageId": "f8ef5505-c52a-46f0-a201-f837449ef011",
+    "pageName": "Forecasts & Insights details",
+    "path": "/forecasts-insights-details",
+    "blockId": "416d6ea6-32b5-43f6-9229-1b65a810c7e4",
+    "blockName": "list-details",
+    "title": "Item details",
+    "category": "Item Details",
+    "block": {
+      "id": "416d6ea6-32b5-43f6-9229-1b65a810c7e4",
+      "hrid": "item-details1",
+      "name": "list-details",
+      "title": "Item details",
+      "type": "DYNAMIC",
+      "category": "Item Details",
+      "enabled": true,
+      "order": null,
+      "visibility": {
+        "predefinedUserGroupType": "LOGGED_IN_USERS",
+        "customUserGroupIds": [
+          "0255614a-43bb-4fa1-b2a0-08728179d11a",
+          "c2627d9e-aa94-4807-bdf3-4ac821fc0afe",
+          "568c8f9e-7e80-4b2e-9622-166acd411341"
+        ],
+        "enabledPredefinedUserGroupTypes": [
+          "ALL_USERS",
+          "LOGGED_IN_USERS",
+          "NON_LOGGED_IN_USERS"
+        ]
+      },
+      "visibleDevices": [
+        "laptop",
+        "tablet",
+        "mobile"
+      ]
+    }
+  }
+]

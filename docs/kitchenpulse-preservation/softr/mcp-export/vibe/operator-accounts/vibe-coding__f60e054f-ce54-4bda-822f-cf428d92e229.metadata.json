@@ -1,0 +1,177 @@
+{
+  "page": {
+    "id": "2be66c32-fde6-44fa-a81d-ba008b3482d1",
+    "name": "Operator Accounts",
+    "path": "/operator-accounts"
+  },
+  "block": {
+    "id": "f60e054f-ce54-4bda-822f-cf428d92e229",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/operator-accounts/vibe-coding__f60e054f-ce54-4bda-822f-cf428d92e229.jsx",
+  "current": {
+    "blockId": "f60e054f-ce54-4bda-822f-cf428d92e229",
+    "settings": [],
+    "dataSources": [],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 15,
+    "returned": 15,
+    "versions": [
+      {
+        "versionId": "0ba66b0a-2ece-433d-922c-f903677b4a96",
+        "versionNumber": 15,
+        "title": "Update operator form: roles and defaults",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  Clock,\\n  KeyRound,\\n  Loader2,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n  XCircle,\\n} from \\\"lucide-",
+        "promptTruncated": true,
+        "createdAt": "2026-06-18T02:03:06",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2f63b208-57ab-4d1e-b651-0f9780f85e78",
+        "versionNumber": 14,
+        "title": "Auto-load Demo Admin Key and Operators",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  Clock,\\n  KeyRound,\\n  Loader2,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n  XCircle,\\n} from \\\"lucide-",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:30:51",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d97f4cf7-cd4b-436e-a510-14671c052977",
+        "versionNumber": 13,
+        "title": "Insert temporary admin key and defaults",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  Clock,\\n  KeyRound,\\n  Loader2,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n  XCircle,\\n} from \\\"lucide-",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:27:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2c279538-a1cd-4f78-a33b-cc33d1820008",
+        "versionNumber": 12,
+        "title": "Convert server code to React admin UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID || \\\"appD303evZM2SlvMR\\\";\\nconst OPERATOR_USERS_TABLE_ID = \\\"tblonO1fBQNB0PhJU\\\";\\n\\nconst DEFAULT_RESTAURANT_NAME =\\n  process.env.KITCHENPULSE_DEFAULT_RESTAURANT_NAME || \\\"Chloe's\\\";\\n\\nconst DEFAULT_RESTAURAN",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:25:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "0df68c9c-4740-4e7e-8837-b8cd2a2440d8",
+        "versionNumber": 11,
+        "title": "Add Airtable-backed operator API integration",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  Clock,\\n  KeyRound,\\n  Loader2,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n  XCircle,\\n} from \\\"lucide-",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:23:31",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6397089f-fa5d-4099-aa8d-08e63aace51c",
+        "versionNumber": 10,
+        "title": "Fix secret key variable and storage name",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  Clock,\\n  KeyRound,\\n  Loader2,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n  XCircle,\\n} from \\\"lucide-",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:22:43",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "105f29b7-749f-4660-9a14-24694f537e6a",
+        "versionNumber": 9,
+        "title": "Add temporary demo admin key and constants",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  Clock,\\n  KeyRound,\\n  Loader2,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n  XCircle,\\n} from \\\"lucide-",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:21:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "63832b38-1ddb-46ef-9502-0b5719aea85f",
+        "versionNumber": 8,
+        "title": "Fix secret key constant and sessionStorage key",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  Clock,\\n  KeyRound,\\n  Loader2,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n  XCircle,\\n} from \\\"lucide-",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:13:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "baecc255-94c2-413e-9d09-75848cb8dd54",
+        "versionNumber": 7,
+        "title": "Fix sessionStorage key usage in React component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  Clock,\\n  KeyRound,\\n  Loader2,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n  XCircle,\\n} from \\\"lucide-",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:12:23",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "68f319d0-d5bb-44b2-9891-83fab3a78620",
+        "versionNumber": 6,
+        "title": "Update SECRET_STORAGE_KEY constant",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  Clock,\\n  KeyRound,\\n  Loader2,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n  XCircle,\\n} from \\\"lucide-",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:11:16",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5f64e082-443c-406c-ac5c-384870ee6f68",
+        "versionNumber": 5,
+        "title": "Add admin key, API, and account UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  KeyRound,\\n  MailPlus,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n} from \\\"lucide-react\\\";\\n\\nfunction SummaryCard({ icon: Icon, label, value, no",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:08:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2c3a983a-caec-4822-a755-be8b91ce3a04",
+        "versionNumber": 4,
+        "title": "Restored: Refactor placeholder to UI dashboard",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-06-15T23:58:37",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "89830926-9311-4e25-ad06-cef09978b17e",
+        "versionNumber": 3,
+        "title": "Refactor Operator Accounts UI to Hero",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  KeyRound,\\n  MailPlus,\\n  ShieldCheck,\\n  Smartphone,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n} from \\\"lucide-react\\\";\\n\\nfunction SummaryCard({ icon: Icon, label, value, no",
+        "promptTruncated": true,
+        "createdAt": "2026-06-15T23:58:28",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "20309159-48a9-4a5c-b461-84ecc9a36be8",
+        "versionNumber": 2,
+        "title": "Refactor placeholder to UI dashboard",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-06-15T23:04:41",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "74add7ee-209c-4ece-ab3d-a535651cd2db",
+        "versionNumber": 1,
+        "title": "Initial Version Prompt Creation",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-06-15T23:03:38",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,530 @@
+{
+  "page": {
+    "id": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "name": "Sales Dashboard",
+    "path": "/sales-dashboard"
+  },
+  "block": {
+    "id": "a98b151a-5849-4c22-acbf-37d64ab60e11",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/sales-dashboard/vibe-coding__a98b151a-5849-4c22-acbf-37d64ab60e11.jsx",
+  "current": {
+    "blockId": "a98b151a-5849-4c22-acbf-37d64ab60e11",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "c7cabd65-4a06-4434-8c49-665e54095a79",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Weekly Item Trends",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldJf3QptdyJXDRIz",
+        "fields": [
+          {
+            "id": "fldJf3QptdyJXDRIz",
+            "name": "Trend Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldTpGyt79nZYHFRK",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldtwecAEE1hQylBW",
+            "name": "Menu Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fldfz0hFvr4vCVCKd",
+            "name": "Item Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldY7hJqXEcjL9oj6",
+            "name": "Trend Window Start",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldrJzK9RLU84hUmJ",
+            "name": "Trend Window End",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldNeFDiZbNuL7ryB",
+            "name": "Prior Window Start",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldSmwQGbtFDvoQq5",
+            "name": "Prior Window End",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldpO7tAv1aJcPhiN",
+            "name": "Current Runs",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldgWV8oxliCS85VZ",
+            "name": "Prior Runs",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldH2CErksoRN1pyI",
+            "name": "Current Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldsYiqCP1oB36Mwq",
+            "name": "Prior Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldYfIkKnYwGUnM8x",
+            "name": "Qty Change",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldAwoSLqfZx6bhFj",
+            "name": "Qty Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld693InXCZqCquli",
+            "name": "Current Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldIUZdgUGUvV9uHg",
+            "name": "Prior Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "flddqCz3YnXkFxvMZ",
+            "name": "Revenue Change",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldCtsPfy4v7MrnI5",
+            "name": "Revenue Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldZn0Y8xyk3iUkT7",
+            "name": "Current Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld2I2BXLmNd9QFM7",
+            "name": "Prior Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldNqZn8BvqlAE6ZD",
+            "name": "Profit Change",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldPmLoelD7KW8Le1",
+            "name": "Profit Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldd8VXEIeN36jekn",
+            "name": "Current Margin",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld84QLUI7dCCWVEw",
+            "name": "Prior Margin",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldOwmebSPyrlW43I",
+            "name": "Margin Change",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldGdvnSqA8H1b6wr",
+            "name": "Trend Direction",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selqSW77xCEZo0CKM",
+                  "label": "Improving",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selOHaQnCcQONzlAN",
+                  "label": "Softening",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selAK2Fqv9rBAJkyo",
+                  "label": "Declining",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "seleYgu05vs9bdhYH",
+                  "label": "Stable",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "sel4GhgeSHzuxA99Z",
+                  "label": "New / Insufficient Baseline",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldlH7Uf8VFqpDvNi",
+            "name": "Trend Strength",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selphi0Lmbvtnrs0O",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selvxcjTl3JxjsVxX",
+                  "label": "Medium",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selkfIRXayuslsuAI",
+                  "label": "Low",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selBwGqarbN71sXmT",
+                  "label": "Watch",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldNRSBidJtX8igDL",
+            "name": "Confidence",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selyRruAfWjnP5ODu",
+                  "label": "High",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel6rMxt8eqNmzu1G",
+                  "label": "Medium",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selg66w13Ejbg4TQ9",
+                  "label": "Low",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "selWVrl7cuIA5CxCj",
+                  "label": "Insufficient Data",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldHFgJ4kWQL1l795",
+            "name": "Owner Summary",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fld6JGQK4rcsZQMj4",
+            "name": "Recommended Action",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldI9SD0hJ0HHSdWx",
+            "name": "Is Active",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldVTHJHN4sajI3IX",
+            "name": "Display Priority",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld06BuYBtg0lSf84",
+            "name": "Last Calculated At",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldMJYf6wjWtxYFCA",
+            "name": "Source Run IDs",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldOODCl3bKvhUjoE",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 7,
+    "returned": 7,
+    "versions": [
+      {
+        "versionId": "66634f55-f438-4eec-b3de-e3770eed1e4d",
+        "versionNumber": 7,
+        "title": "Refactor and Enhance Trend UI Code",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingDown,\\n  TrendingUp,\\n  Activity,\\n  DollarSign,\\n  PackageSearch,\\n  Info,\\n  CalendarDays,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  trendName: \\\"Trend Name\\\",\\n  itemName: \\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T17:08:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f11c56ca-8545-419e-8499-e49183a4e3e2",
+        "versionNumber": 6,
+        "title": "Refactor Multi-Run Trend UI Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingDown,\\n  TrendingUp,\\n  Activity,\\n  ShieldAlert,\\n  DollarSign,\\n  PackageSearch,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  t",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T16:58:39",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "b2cfa302-c858-4901-95f5-615fc37c424a",
+        "versionNumber": 5,
+        "title": "Add isActive filter to trends",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingDown,\\n  TrendingUp,\\n  Activity,\\n  ShieldAlert,\\n  DollarSign,\\n  PackageSearch,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  t",
+        "promptTruncated": true,
+        "createdAt": "2026-06-01T14:25:39",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5e45b524-fcd1-4891-85fb-fdfb83cb98bf",
+        "versionNumber": 4,
+        "title": "Summarize Code Refactor Differences",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingDown,\\n  TrendingUp,\\n  Activity,\\n  ShieldAlert,\\n  DollarSign,\\n  PackageSearch,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  t",
+        "promptTruncated": true,
+        "createdAt": "2026-06-01T14:14:45",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "22541dac-0aec-4865-bcb3-b784c633d183",
+        "versionNumber": 3,
+        "title": "Add data staleness indicator and timestamp",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingDown,\\n  TrendingUp,\\n  Activity,\\n  ShieldAlert,\\n  DollarSign,\\n  PackageSearch,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.select({\\n  t",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T18:31:46",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "018cfb74-a8ac-41c7-a01b-136c5e2c4042",
+        "versionNumber": 2,
+        "title": "Convert placeholder to trend dashboard block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-15T17:13:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d348c4cc-49d2-4db2-9e22-e00a130b8c75",
+        "versionNumber": 1,
+        "title": "Initial Version Prompt Creation",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-15T17:05:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

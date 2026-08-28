@@ -1,0 +1,136 @@
+{
+  "page": {
+    "id": "f11c4dee-ec1c-42b7-9446-6fb063dad0cd",
+    "name": "Staffing",
+    "path": "/staffing"
+  },
+  "block": {
+    "id": "592b5fee-126a-47fa-af4a-eef7c9406c8f",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/staffing/vibe-coding__592b5fee-126a-47fa-af4a-eef7c9406c8f.jsx",
+  "current": {
+    "blockId": "592b5fee-126a-47fa-af4a-eef7c9406c8f",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "619583ef-4602-420c-9c9a-6584164a7451",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 10,
+    "returned": 10,
+    "versions": [
+      {
+        "versionId": "a7a5f03e-09c7-4505-857e-0f100621fec5",
+        "versionNumber": 10,
+        "title": "Refactor SectionShell Header Styles",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  Siren,\\n  Gauge,\\n  CalendarDays,\\n  Clock,\\n  ShieldCheck,\\n  Users,\\n  Utens",
+        "promptTruncated": true,
+        "createdAt": "2026-05-31T00:03:18",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "b6f8a3ed-d472-4aaf-b59f-c8b9ab0273b0",
+        "versionNumber": 9,
+        "title": "Refactor reliability titles and casing",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  Siren,\\n  Gauge,\\n  CalendarDays,\\n  Clock,\\n  ShieldCheck,\\n  Users,\\n  Utens",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:41:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5785d0f8-3170-4669-a4bb-44c64dbc0969",
+        "versionNumber": 8,
+        "title": "Prioritize and dedupe reliability signals",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  Siren,\\n  Gauge,\\n  CalendarDays,\\n  Clock,\\n  ShieldCheck,\\n  Users,\\n  Utens",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T23:40:18",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "19322aa7-ddc9-4266-9f51-6f302a390239",
+        "versionNumber": 7,
+        "title": "Refactor staffing board UI/components",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  Siren,\\n  Gauge,\\n  CalendarDays,\\n  Clock,\\n  ShieldCheck,\\n  Users,\\n  Utens",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T22:11:06",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "bd2d51f4-b769-46c0-b81a-5b5f097c3d1a",
+        "versionNumber": 6,
+        "title": "Add staff reliability signals and UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CalendarDays,\\n  Clock,\\n  ShieldCheck,\\n  Users,\\n  Utensils,\\n  Martini,\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T19:21:26",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "4b24ec38-68a6-43c4-b5a4-a2d3202faa2d",
+        "versionNumber": 5,
+        "title": "Remove syncNotes display and paragraph",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CalendarDays,\\n  Clock,\\n  ShieldCheck,\\n  Users,\\n  Utensils,\\n  Martini,\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-20T23:33:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "43fb52c6-4804-4bd2-accf-a9e23fdf4136",
+        "versionNumber": 4,
+        "title": "Add detailed coverage warning generation",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CalendarDays,\\n  Clock,\\n  ShieldCheck,\\n  Users,\\n  Utensils,\\n  Martini,\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T03:10:14",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d9f48e16-ac7c-4829-a289-afaa86d1c0d5",
+        "versionNumber": 3,
+        "title": "Add demo coverage warnings logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CalendarDays,\\n  Clock,\\n  ShieldCheck,\\n  Users,\\n  Utensils,\\n  Martini,\\n  ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-10T21:46:50",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3e891be1-9865-45a5-bacc-23d469a44279",
+        "versionNumber": 2,
+        "title": "Convert placeholder to staffing board component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T20:42:27",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "983cbb17-6f95-4212-8034-463b37100700",
+        "versionNumber": 1,
+        "title": "Initial Draft Prompt Creation",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-07T20:41:33",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

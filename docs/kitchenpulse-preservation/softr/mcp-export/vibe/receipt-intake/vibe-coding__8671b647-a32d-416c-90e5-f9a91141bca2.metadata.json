@@ -1,0 +1,161 @@
+{
+  "page": {
+    "id": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "name": "Receipt Intake",
+    "path": "/receipt-intake"
+  },
+  "block": {
+    "id": "8671b647-a32d-416c-90e5-f9a91141bca2",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/receipt-intake/vibe-coding__8671b647-a32d-416c-90e5-f9a91141bca2.jsx",
+  "current": {
+    "blockId": "8671b647-a32d-416c-90e5-f9a91141bca2",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "b19d65d7-9019-4e98-bb34-df2540ddc1a5",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "sortOptions": [],
+        "condition": {
+          "expressions": [],
+          "logicalOperator": "AND"
+        }
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 12,
+    "returned": 12,
+    "versions": [
+      {
+        "versionId": "a3072996-d254-4646-b375-754055b75d36",
+        "versionNumber": 12,
+        "title": "Add confirmation modal for removing lines",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText,\\n  Loader2,\\n  Package,\\n  RefreshCw,\\n  RotateCcw,\\n  Save",
+        "promptTruncated": true,
+        "createdAt": "2026-06-18T01:27:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "20ec50fe-6624-4339-ba4b-d71c35d0694d",
+        "versionNumber": 11,
+        "title": "Refactor parsed lines UI styling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:59:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d5b8169f-2f91-436e-a6a8-6798fae369e7",
+        "versionNumber": 10,
+        "title": "Refactor Receipt Lines Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T11:38:37",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8eba213f-34c8-4603-8ec3-b6f04e61646b",
+        "versionNumber": 9,
+        "title": "Update useEffect to add event listener",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T03:37:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c718ad44-3522-4d29-82a9-1d10ac92903c",
+        "versionNumber": 8,
+        "title": "Update UI copy to mention cost tracking",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText",
+        "promptTruncated": true,
+        "createdAt": "2026-05-21T19:20:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "805918b6-f123-4b6a-ba25-47564a613b13",
+        "versionNumber": 7,
+        "title": "Add cost proposals API and retries",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T17:46:12",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d40c7495-0058-465e-83e4-3dbba055f8ad",
+        "versionNumber": 6,
+        "title": "Add review queue filter and receipt filter",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T16:52:58",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3a3507c8-eefd-4226-b6ab-476ee47c6d3a",
+        "versionNumber": 5,
+        "title": "Add cost proposals auto-generation function",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T15:06:39",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6b2c6612-c697-4949-99eb-30705971a8fb",
+        "versionNumber": 4,
+        "title": "Add auto-refresh and visibility handlers",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T15:01:08",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5c073271-dc9f-4052-850f-c51bce79b2e2",
+        "versionNumber": 3,
+        "title": "Add Remove Line Button and Icon",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  DollarSign,\\n  Edit3,\\n  FileText",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T02:51:08",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "9cc079aa-3f9c-455d-bceb-9da588289d5c",
+        "versionNumber": 2,
+        "title": "Replaced placeholder with receipt review UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T02:31:15",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "babf0967-46c1-4312-a06c-74e2b24b4fc1",
+        "versionNumber": 1,
+        "title": "Initial Draft Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-18T02:31:02",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

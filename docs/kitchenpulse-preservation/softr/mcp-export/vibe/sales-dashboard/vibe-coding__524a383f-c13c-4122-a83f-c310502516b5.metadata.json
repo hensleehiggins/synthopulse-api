@@ -1,0 +1,693 @@
+{
+  "page": {
+    "id": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "name": "Sales Dashboard",
+    "path": "/sales-dashboard"
+  },
+  "block": {
+    "id": "524a383f-c13c-4122-a83f-c310502516b5",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/sales-dashboard/vibe-coding__524a383f-c13c-4122-a83f-c310502516b5.jsx",
+  "current": {
+    "blockId": "524a383f-c13c-4122-a83f-c310502516b5",
+    "settings": [
+      {
+        "name": "title",
+        "type": "text",
+        "value": "Watch Closely"
+      },
+      {
+        "name": "subtitle",
+        "type": "longText",
+        "value": "Secondary items worth monitoring after the higher-priority sales, margin, and trend sections."
+      }
+    ],
+    "dataSources": [
+      {
+        "id": "74e3f355-eaee-4f6c-a37a-9d27e4811404",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Item Movement",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fld0ICNfX8tbFiLmu",
+        "fields": [
+          {
+            "id": "fld0ICNfX8tbFiLmu",
+            "name": "Item",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldfDpMVns51YLgid",
+            "name": "Current Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldJP95P52diSiKcf",
+            "name": "Previous Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldb6siCRbu3Ztajq",
+            "name": "Movement Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selfdGzpuOTzc33pI",
+                  "label": "New Top",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selkYGA7TtOSQHxCn",
+                  "label": "Dropped from Top",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seluGV4azhm3qZ8fJ",
+                  "label": "New Low",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNFxVJxyC1jPSMV",
+                  "label": "Recovered",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selktHMaqcEax3Qlq",
+                  "label": "Declining",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selqXwgfmnmN29GoU",
+                  "label": "Stable",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "sel0YLyHaIeCJGYov",
+                  "label": "Rising",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "seliuTxAtCEVLUU0H",
+                  "label": "Recovered to Top",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel7uUx0re8ctekaP",
+                  "label": "Dropped to Low",
+                  "color": "orangeLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldCAV8lZJXoBBL5K",
+            "name": "List Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selzzlASfSfWhrtNa",
+                  "label": "Top Seller",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selz3qNoW3tNILoXR",
+                  "label": "Low Seller",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldDqcwDPEL9nOfT5",
+            "name": "Current Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldlQPe1eYk7zTKUu",
+            "name": "Previous Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldWOvuWwUrdvtLQ3",
+            "name": "Current Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldtF8MKYXmVWRv9N",
+            "name": "Previous Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldTdxY6bGWvRR9RF",
+            "name": "Qty Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld2tmyk39krp9wZk",
+            "name": "Revenue Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld7lmRTDqDc9zypo",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldC6NaarfoX0nGdP",
+            "name": "Created Time",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld5oRNHsO6Aq49UO",
+            "name": "Impact Level",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seldBvEq1BmvDNdob",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNLBkOGYTTVUH5P",
+                  "label": "Medium",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selGC9uFGyNSI6991",
+                  "label": "Low",
+                  "color": "cyanLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldIS6U0YNqXF2WcP",
+            "name": "Movement Insight",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldCGpksakC7IT4PL",
+            "name": "Current Run Is Latest",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldfDpMVns51YLgid",
+              "lookupFieldId": "fldesMOzM2weZPzyh",
+              "returnedField": {
+                "type": "CHECKBOX",
+                "vendorSideFieldType": "checkbox",
+                "options": {}
+              }
+            }
+          },
+          {
+            "id": "fldFM7LCirkphT9mv",
+            "name": "Latest Movement Flag",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOEqVyhqPXEbE4c",
+            "name": "Movement Priority ",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOjtxqhT2lRB7RE",
+            "name": "Menu Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fld3DfGMCkiO7jR1t",
+            "name": "Decision Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld71k3hOsNb2Us7p",
+            "name": "High Signal",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldWqFBVwuPF8KRSI",
+            "name": "Priority Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldvyOKeLapoKeBxY",
+            "name": "Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldv0H1ndXGghE9G2",
+            "name": "Final Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldcnH871M4Aq83hc",
+            "name": "Display Rank",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldYpjsYjYbgVXA5M",
+            "name": "Movement Category (Static)",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selksFdA3BGkoxazQ",
+                  "label": "Risk",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selKUqNpslYCP9uQH",
+                  "label": "Opportunity",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selxRpPlOPAUI4dYD",
+                  "label": "Neutral",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldW6qxdtuFt02raQ",
+            "name": "Is Latest Movement",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldGlnkRXa2HByoGG",
+            "name": "Current Run ID Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldpHOuGjE55DLBAp",
+            "name": "Is POS Movement",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldB0L7rtmPv7YTC5",
+            "name": "Is Latest Movement Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldLw5G3SB4eq6NPr",
+            "name": "Effective Unit Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldz0fxPl3quBCbwK",
+            "name": "Current Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld56QulhRxVd05Qq",
+            "name": "Previous Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldOnEWkxyqAcEaMt",
+            "name": "Profit Change",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld3uCcloe5AYL8hR",
+            "name": "Current Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldeGStuSWUsbwxBr",
+            "name": "Previous Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldBp38XBVXgjSYhb",
+            "name": "Margin Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 12,
+    "returned": 12,
+    "versions": [
+      {
+        "versionId": "2b7ed644-178e-4985-848a-a708a4208f09",
+        "versionNumber": 12,
+        "title": "Update item role and categories",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  Activity,\\n  ArrowUpRight,\\n  CalendarDays,\\n  CheckCircle2,\\n  Eye,\\n  PackageSearch,\\n  RefreshCcw,\\n  TrendingDown,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-05T01:20:53",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8ff29d2f-8025-4102-b6a7-33ffb9d5e983",
+        "versionNumber": 11,
+        "title": "Refactor Watch List UI Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\"",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T17:11:12",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c3b5aee1-e67e-4458-8d40-4df1006f4cd7",
+        "versionNumber": 10,
+        "title": "Refactor movement block to \"Watch\"",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\"",
+        "promptTruncated": true,
+        "createdAt": "2026-05-12T01:55:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a7965712-caef-4ffa-a38f-6fa6a46cbeeb",
+        "versionNumber": 9,
+        "title": "Add seeded variant summaries and styling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\"",
+        "promptTruncated": true,
+        "createdAt": "2026-05-12T01:40:28",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "69d7c78d-e136-4c91-9df8-54497684f500",
+        "versionNumber": 8,
+        "title": "Refactor Gaining Traction Block UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { useTextSetting, useLongTextSetting, useImageSetting } from \\\"@/lib/editable-settings\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: ",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T04:49:46",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e38c1559-d41a-4d5a-9a1f-5e557c78c112",
+        "versionNumber": 7,
+        "title": "Increase font weight for top items",
+        "prompt": "{\"prompt\":\"Slightly increase font weight of the item name on the top 1–2 items only.\\nKeep everything else unchanged.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T03:09:11",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "cd02441e-957d-4026-bdbe-3d90c9f6fcde",
+        "versionNumber": 6,
+        "title": "Warm Subtle Emerald Tone Adjustment",
+        "prompt": "{\"prompt\":\"Slightly warm the green tone used in the \\\"Gaining Traction\\\" section.\\nMove it subtly toward an emerald/teal rather than a pure green.\\nKeep it very soft and professional, not vibrant.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T03:08:33",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "12586555-7630-4eb3-9df9-af7e1b10b41c",
+        "versionNumber": 5,
+        "title": "Soften Top Items' Green Tint",
+        "prompt": "{\"prompt\":\"Reduce the green background tint on top items slightly.\\nRely a bit more on text color and subtle glow than fill.\\nKeep it airy and light.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T03:07:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1a4d7020-e192-4618-8554-9f59db0a872f",
+        "versionNumber": 4,
+        "title": "Uplifted Warmth for Design Section",
+        "prompt": "{\"prompt\":\"Add a subtle positive tone to the design:\\n- Slightly warmer or brighter feel compared to the red section\\n- Maintain consistency, but make it feel more \\\"uplifting\\\"\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T03:06:41",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ac8816df-9cb2-406c-8a6e-12884bba440d",
+        "versionNumber": 3,
+        "title": "Soften Gaining Traction for Opportunity",
+        "prompt": "{\"prompt\":\"Refine the \\\"Gaining Traction\\\" section to feel more opportunity-focused:\\n\\n- Reduce intensity of the green accents:\\n  - Use a softer, more muted green\\n  - Avoid strong or thick borders\\n\\n- Top 1–2 items:\\n  - Keep slight emphasis, but make it lighter than the red section\\n  - Use sub",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T03:06:19",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "239d4545-e3e1-4997-83b5-e09e001b9cec",
+        "versionNumber": 2,
+        "title": "Convert Section to \"Gaining Traction\"",
+        "prompt": "{\"prompt\":\"Duplicate this section and convert it into \\\"Gaining Traction\\\":\\n\\n- Use a subtle green accent instead of red\\n- Keep the exact same layout, spacing, and hierarchy\\n\\n- Top 1–2 items:\\n  - Slightly stronger green accent\\n  - Same emphasis pattern as \\\"Items Needing Attention\\\"\\n\\n- Remai",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T03:04:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8d3121cc-f247-49f1-ac9e-1c987dadbff8",
+        "versionNumber": 1,
+        "title": "Subtle Header Separation Enhancements",
+        "prompt": "{\"prompt\":\"Increase separation between the section header and the list:\\n\\n- Slightly lighten or darken the header background (just a bit)\\nOR\\n- Add a very subtle bottom border under the header\\n\\nKeep it minimal — just enough to create a clear break between header and content.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T03:03:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

@@ -20,3 +20,17 @@
 ## Cancellation gate
 
 **NOT SAFE TO CANCEL Softr.** The API source is now preserved, but Airtable provider export/attachments, Vercel configuration, active scheduled callers, Clerk/provider configuration, and all Softr-only page/block/Vibe/theme/auth/workflow material remain uncaptured. No provider state was changed in this work.
+
+## Read-only Softr MCP checkpoint — 2026-08-28
+
+| Check | Result |
+| --- | --- |
+| App/page/block inventory | PASS — 26 pages listed, 25 detailed page reads, 97 block records |
+| Vibe source/history | PARTIAL — 45 complete sources, 1 redacted-sensitive source, 1 `NOT_FOUND` source; 47 history lists |
+| Access control | PARTIAL — six groups and aggregate counts; four redirection mappings not exposed |
+| Data sources | PASS — Airtable 42 tables/899 fields; Softr database 3 tables/24 fields |
+| Workflows | PASS — workspace listing returned 0 |
+| Secret scan | PASS — no credential-shaped value in archived artifacts |
+| Studio-only configuration/custom code | MANUAL_CAPTURE_REQUIRED |
+
+The MCP calls were read-only; no production application, record, workflow, integration, or permission state changed.

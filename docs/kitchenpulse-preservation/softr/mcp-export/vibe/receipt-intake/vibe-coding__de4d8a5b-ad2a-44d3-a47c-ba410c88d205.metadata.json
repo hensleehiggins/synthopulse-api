@@ -1,0 +1,231 @@
+{
+  "page": {
+    "id": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "name": "Receipt Intake",
+    "path": "/receipt-intake"
+  },
+  "block": {
+    "id": "de4d8a5b-ad2a-44d3-a47c-ba410c88d205",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/receipt-intake/vibe-coding__de4d8a5b-ad2a-44d3-a47c-ba410c88d205.jsx",
+  "current": {
+    "blockId": "de4d8a5b-ad2a-44d3-a47c-ba410c88d205",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "1ac6acd0-4a21-458b-8bed-51278543661e",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "sortOptions": [],
+        "condition": {
+          "expressions": [],
+          "logicalOperator": "AND"
+        }
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 19,
+    "returned": 19,
+    "versions": [
+      {
+        "versionId": "f97a9f9a-78ab-4ebf-b200-d478d545bb3c",
+        "versionNumber": 19,
+        "title": "Refactor proposal action to approve+apply",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\n  Link2,\\n  Loader2,\\n  Lock,\\n  RefreshCw,\\n  RotateCcw,\\n ",
+        "promptTruncated": true,
+        "createdAt": "2026-06-18T01:31:58",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1363244e-7228-4bfd-93af-6b378fbb3032",
+        "versionNumber": 18,
+        "title": "Refactor UI styling and components",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T21:01:16",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "43d81751-957c-49ca-909b-b88151619334",
+        "versionNumber": 17,
+        "title": "Add separate tracked-item option and UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-29T20:41:57",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "74fae58d-653f-4e8a-907f-abc50c9f47e8",
+        "versionNumber": 16,
+        "title": "Refactor cost signals UI enhancements",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T11:58:34",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1c99a7da-c197-4245-bbf4-d3c125e49399",
+        "versionNumber": 15,
+        "title": "Restored: Filter out inventory match suggestions",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T11:53:43",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "cfedb51b-9d60-4199-8d67-dcffd1058003",
+        "versionNumber": 14,
+        "title": "Refactor cost signals component enhancements",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T03:39:53",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "35583c97-0704-4b6f-b642-9e602b4578a4",
+        "versionNumber": 13,
+        "title": "Filter out inventory match suggestions",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T03:08:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ea5bea9c-01d7-4160-b0cb-d5fd8bbc67ff",
+        "versionNumber": 12,
+        "title": "Update cost signal matching UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T03:02:25",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "267987aa-7122-40a5-aa79-3c3209d94430",
+        "versionNumber": 11,
+        "title": "Rename UI text to \"Cost Signals\"",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-21T19:13:06",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5464ce00-010e-4414-b6ac-7890705815e3",
+        "versionNumber": 10,
+        "title": "Simplify React cost proposals UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T18:21:37",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "9190e126-2bb7-4639-b8c8-6c0a3944591c",
+        "versionNumber": 9,
+        "title": "Fix statusFilter 'active' condition typo",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T18:18:25",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a2bd38d8-e332-49d0-bdf3-a714366b562e",
+        "versionNumber": 8,
+        "title": "Refine statusFilter proposal filtering",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T18:09:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "0c8a96c7-de6d-4c36-bc1e-0c6a40a61183",
+        "versionNumber": 7,
+        "title": "Summarize Receipt Cost Proposal Changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T17:57:22",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "10e31531-b504-4264-96e1-3bc68c5fc027",
+        "versionNumber": 6,
+        "title": "Add window event listener for refresh",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T15:07:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8b267350-a496-4478-b759-5b98a28fcc78",
+        "versionNumber": 5,
+        "title": "Add \"alreadyCurrent\" handling and counts",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T04:21:36",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "9f3bd1b1-50ed-442b-b97b-7ea66b94ca36",
+        "versionNumber": 4,
+        "title": "Refine match UI and select styling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T03:39:29",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6ee85a2c-e5b2-4398-9770-129d337dbd5e",
+        "versionNumber": 3,
+        "title": "Add item matching and save UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useMemo, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  AlertCircle,\\n  ArrowRight,\\n  CheckCircle2,\\n  CircleDollarSign,\\n  ClipboardCheck,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T03:29:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5274fe00-3786-454f-ac56-ed1c9d234010",
+        "versionNumber": 2,
+        "title": "Refactor placeholder to proposals UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-18T03:10:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5b221111-d5dc-4df9-8de0-abfcbfda084a",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-18T03:08:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

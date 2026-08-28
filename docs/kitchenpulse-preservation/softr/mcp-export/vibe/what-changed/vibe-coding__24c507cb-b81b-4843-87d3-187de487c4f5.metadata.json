@@ -1,0 +1,822 @@
+{
+  "page": {
+    "id": "5232e863-caa7-4c07-afb5-e043807313b8",
+    "name": "What Changed",
+    "path": "/what-changed"
+  },
+  "block": {
+    "id": "24c507cb-b81b-4843-87d3-187de487c4f5",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/what-changed/vibe-coding__24c507cb-b81b-4843-87d3-187de487c4f5.jsx",
+  "current": {
+    "blockId": "24c507cb-b81b-4843-87d3-187de487c4f5",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "fa3936f7-9f62-47ca-83c0-74d56156c769",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Item Movement",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fld0ICNfX8tbFiLmu",
+        "fields": [
+          {
+            "id": "fld0ICNfX8tbFiLmu",
+            "name": "Item",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldfDpMVns51YLgid",
+            "name": "Current Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldJP95P52diSiKcf",
+            "name": "Previous Run ID",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Runs"
+            }
+          },
+          {
+            "id": "fldb6siCRbu3Ztajq",
+            "name": "Movement Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selfdGzpuOTzc33pI",
+                  "label": "New Top",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selkYGA7TtOSQHxCn",
+                  "label": "Dropped from Top",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seluGV4azhm3qZ8fJ",
+                  "label": "New Low",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNFxVJxyC1jPSMV",
+                  "label": "Recovered",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selktHMaqcEax3Qlq",
+                  "label": "Declining",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selqXwgfmnmN29GoU",
+                  "label": "Stable",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "sel0YLyHaIeCJGYov",
+                  "label": "Rising",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "seliuTxAtCEVLUU0H",
+                  "label": "Recovered to Top",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel7uUx0re8ctekaP",
+                  "label": "Dropped to Low",
+                  "color": "orangeLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldCAV8lZJXoBBL5K",
+            "name": "List Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selzzlASfSfWhrtNa",
+                  "label": "Top Seller",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selz3qNoW3tNILoXR",
+                  "label": "Low Seller",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldDqcwDPEL9nOfT5",
+            "name": "Current Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldlQPe1eYk7zTKUu",
+            "name": "Previous Qty",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldWOvuWwUrdvtLQ3",
+            "name": "Current Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldtF8MKYXmVWRv9N",
+            "name": "Previous Revenue",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldTdxY6bGWvRR9RF",
+            "name": "Qty Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld2tmyk39krp9wZk",
+            "name": "Revenue Change",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fld7lmRTDqDc9zypo",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldC6NaarfoX0nGdP",
+            "name": "Created Time",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld5oRNHsO6Aq49UO",
+            "name": "Impact Level",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "seldBvEq1BmvDNdob",
+                  "label": "High",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selNLBkOGYTTVUH5P",
+                  "label": "Medium",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selGC9uFGyNSI6991",
+                  "label": "Low",
+                  "color": "cyanLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldIS6U0YNqXF2WcP",
+            "name": "Movement Insight",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldCGpksakC7IT4PL",
+            "name": "Current Run Is Latest",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldfDpMVns51YLgid",
+              "lookupFieldId": "fldesMOzM2weZPzyh",
+              "returnedField": {
+                "type": "CHECKBOX",
+                "vendorSideFieldType": "checkbox",
+                "options": {}
+              }
+            }
+          },
+          {
+            "id": "fldFM7LCirkphT9mv",
+            "name": "Latest Movement Flag",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOEqVyhqPXEbE4c",
+            "name": "Movement Priority ",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldOjtxqhT2lRB7RE",
+            "name": "Menu Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Menu Items"
+            }
+          },
+          {
+            "id": "fld3DfGMCkiO7jR1t",
+            "name": "Decision Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld71k3hOsNb2Us7p",
+            "name": "High Signal",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldWqFBVwuPF8KRSI",
+            "name": "Priority Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldvyOKeLapoKeBxY",
+            "name": "Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldv0H1ndXGghE9G2",
+            "name": "Final Sort Score",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldcnH871M4Aq83hc",
+            "name": "Display Rank",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldYpjsYjYbgVXA5M",
+            "name": "Movement Category (Static)",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selksFdA3BGkoxazQ",
+                  "label": "Risk",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selKUqNpslYCP9uQH",
+                  "label": "Opportunity",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selxRpPlOPAUI4dYD",
+                  "label": "Neutral",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldW6qxdtuFt02raQ",
+            "name": "Is Latest Movement",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldGlnkRXa2HByoGG",
+            "name": "Current Run ID Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldpHOuGjE55DLBAp",
+            "name": "Is POS Movement",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldB0L7rtmPv7YTC5",
+            "name": "Is Latest Movement Text",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldLw5G3SB4eq6NPr",
+            "name": "Effective Unit Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldz0fxPl3quBCbwK",
+            "name": "Current Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld56QulhRxVd05Qq",
+            "name": "Previous Profit",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldOnEWkxyqAcEaMt",
+            "name": "Profit Change",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fld3uCcloe5AYL8hR",
+            "name": "Current Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldeGStuSWUsbwxBr",
+            "name": "Previous Margin Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldBp38XBVXgjSYhb",
+            "name": "Margin Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 26,
+    "returned": 26,
+    "versions": [
+      {
+        "versionId": "2ace5d0d-6b55-44a6-aa24-00bbf6314cab",
+        "versionNumber": 26,
+        "title": "Summarize JavaScript component refactor",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  RefreshCcw,\\n  Search,\\n  Sparkles,\\n  Target,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst DISPLAY_LIMIT = 3;\\n\\nconst select = q.select({\\n  item: \\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T21:28:16",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a421f516-0205-48c8-a925-23a49e6f5541",
+        "versionNumber": 25,
+        "title": "Update React movement dashboard UI components",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  RefreshCcw,\\n  Search,\\n  Sparkles,\\n  Target,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst DISPLAY_LIMIT = 3;\\n\\nconst select = q.select({\\n  item: \\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:44:08",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "eda63717-1876-4421-9c66-4d7b67e42505",
+        "versionNumber": 24,
+        "title": "Refactor UI styles and theme constants",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Search,\\n  Sparkles,\\n  Target,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst DISPLAY_LIMIT = 3;\\n\\nconst select = ",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:36:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3e1ac68d-69a4-42ee-a266-348b5632a621",
+        "versionNumber": 23,
+        "title": "Restored: Adjust UI colors/icons and styles in movement component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Search,\\n  Sparkles,\\n  Target,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst DISPLAY_LIMIT = 3;\\n\\nconst select = ",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:35:19",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "4916304f-e2c1-4451-8f6f-44d5401f0e75",
+        "versionNumber": 22,
+        "title": "Refactor UI theme and styling adjustments",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Search,\\n  Sparkles,\\n  Target,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst DISPLAY_LIMIT = 3;\\n\\nconst select = ",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:34:41",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "be9c87a8-b649-42b4-97b0-bce48109285e",
+        "versionNumber": 21,
+        "title": "Adjust UI colors/icons and styles in movement component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  Activity,\\n  ArrowUpRight,\\n  CheckCircle2,\\n  Circle,\\n  Eye,\\n  RefreshCcw,\\n  Search,\\n  Sparkles,\\n  Target,\\n  TrendingUp,\\n} from \\\"lucide-react\\\";\\n\\nconst DISPLAY_LIMIT = 3;\\n\\nconst select = ",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:25:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "dc933e03-f983-4f41-b6a7-29c7ae839835",
+        "versionNumber": 20,
+        "title": "Refactor movement dashboard UI code",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  movementCategory: \\\"Movement Category (Static)\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  movementInsight: \\\"Movement Insight\\\",\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T14:19:39",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7651a38f-bd73-44d0-a10d-fbdd3a5be704",
+        "versionNumber": 19,
+        "title": "Dedupe and prioritize movement items",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  movementCategory: \\\"Movement Category (Static)\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  movementInsight: \\\"Movement Insight\\\",\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T02:46:19",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f9f8e0ef-09e6-481a-8655-c921ed15ca87",
+        "versionNumber": 18,
+        "title": "Summarize and Improve Movement UI Code",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  movementCategory: \\\"Movement Category (Static)\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  movementInsight: \\\"Movement Insight\\\",\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T18:54:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "80dff3c7-b47a-4213-bb24-e7f8d5fddedd",
+        "versionNumber": 17,
+        "title": "Refactor Movement Briefing UI Labels",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  movementCategory: \\\"Movement Category (Static)\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  movementInsight: \\\"Movement Insight\\\",\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T18:40:50",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1ec9a2e2-2695-4c95-9363-a8b1adc39e8f",
+        "versionNumber": 16,
+        "title": "Summarize requested React code changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\n\\nconst select = q.select({\\n  item: \\\"Item\\\",\\n  movementType: \\\"Movement Type\\\",\\n  movementCategory: \\\"Movement Category (Static)\\\",\\n  impactLevel: \\\"Impact Level\\\",\\n  movementInsight: \\\"Movement Insight\\\",\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T05:07:43",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "71c4cc30-4826-4e54-a951-b704c656fa16",
+        "versionNumber": 15,
+        "title": "Refactor Movement Cards to Mini Panels",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Card, CardContent, CardHeader, CardTitle } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Separator } from \\\"@/components/ui/separator\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T05:02:45",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "19bd70e6-78fa-48ba-8b19-83cb5472acde",
+        "versionNumber": 14,
+        "title": "Filter Opportunity Records by Positive Change",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Card, CardContent, CardHeader, CardTitle } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Separator } from \\\"@/components/ui/separator\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-05-08T22:54:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "98c22722-acc6-43f7-9086-6f274b5c2cba",
+        "versionNumber": 13,
+        "title": "Refactor MovementCard UI Text Blocks",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Card, CardContent, CardHeader, CardTitle } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Separator } from \\\"@/components/ui/separator\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-05-04T14:28:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8eba2b9c-aa04-43fb-a96a-34bd886eaa91",
+        "versionNumber": 12,
+        "title": "Add \"vs last service\" labels to cards",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Card, CardContent, CardHeader, CardTitle } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Separator } from \\\"@/components/ui/separator\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-05-04T14:26:23",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2abeadc8-1667-4d98-9e07-18f91f8c238a",
+        "versionNumber": 11,
+        "title": "Refactor Movement Dashboard Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Card, CardContent, CardHeader, CardTitle } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Separator } from \\\"@/components/ui/separator\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-04-29T00:25:52",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a2cc78b1-d662-4de5-bcff-cb61995ef5a0",
+        "versionNumber": 10,
+        "title": "Refactor Movement Feed UI Code",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { Card, CardContent, CardHeader, CardTitle } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Separator } from \\\"@/components/ui/separator\\\";\\n\\nconst select = q.s",
+        "promptTruncated": true,
+        "createdAt": "2026-04-29T00:22:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "bcbe4cd6-cec5-41ff-878b-35f75204ba44",
+        "versionNumber": 9,
+        "title": "Movement Card Color Hierarchy",
+        "prompt": "{\"prompt\":\"Refine the Movement Card styling in the top sections to use color more intentionally:\\n\\n1. Needs Attention (Risk):\\n\\n* Use a strong colored left border (red)\\n* This should be the most visually prominent styling\\n\\n2. Gaining Traction (Opportunity):\\n\\n* Use a softer accent (lighter gre",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:49:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "cd955ca6-a24d-432d-ac04-b0298ecc4294",
+        "versionNumber": 8,
+        "title": "Polished Secondary Explore-All Cards",
+        "prompt": "{\"prompt\":\"Enhance the bottom “Explore All Movement” section to feel more polished and visually engaging, while still remaining secondary to the top sections.\\n\\nDo NOT match the intensity of the top sections — this should feel refined, not dominant.\\n\\n1. Improve color clarity:\\n\\n* Keep colored mo",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:48:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8f571da3-e9a0-458a-b8a5-b2e4677a7714",
+        "versionNumber": 7,
+        "title": "Refine Secondary Exploration Section",
+        "prompt": "{\"prompt\":\"Refine the bottom exploration section to feel purposeful but still secondary.\\n\\nDo NOT increase its importance relative to the top sections.\\n\\n1. Improve header:\\n\\n* Replace “More Movement” with:\\n  “Explore All Movement” (or similar clear, intentional label)\\n\\n2. Add micro-context:\\n",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:37:43",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1caa122e-fac4-4953-a6d4-e55484cffc57",
+        "versionNumber": 6,
+        "title": "Design lightweight \"More Movement\" section",
+        "prompt": "{\"prompt\":\"Fix the bottom exploration section of the page.\\n\\nDo NOT modify or regenerate the top sections (Needs Attention, Gaining Traction, Stabilizing). Those are correct and must remain unchanged.\\n\\nOnly fix the bottom area.\\n\\n1. Create a clearly separated section at the bottom:\\n\\n* Add a he",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:34:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e5845485-dc5f-4095-b3df-2e797750e541",
+        "versionNumber": 5,
+        "title": "Request Fix and Thanks Clarification",
+        "prompt": "{\"prompt\":\"ok please fix. thanks!\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T18:32:33",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "cf8d6edb-0160-4e00-aa2f-ac4eb22bb67d",
+        "versionNumber": 4,
+        "title": "Refine Bottom \"Exploration\" Section",
+        "prompt": "{\"prompt\":\"Refine the bottom “exploration” section of the What Changed page.\\n\\nDo NOT modify the top sections (Needs Attention, Gaining Traction, Stabilizing). Leave those exactly as they are.\\n\\nFocus only on the bottom area that shows additional movement items.\\n\\n1. Define purpose:\\n\\n* This sec",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:28:11",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "63bd78c5-abb9-4f0b-9f1f-15817e7c46c7",
+        "versionNumber": 3,
+        "title": "Single-column What Changed layout",
+        "prompt": "{\"prompt\":\"Refine the section layout for the What Changed page:\\n\\n1. Change layout structure:\\n\\n* Render all Movement Cards in a SINGLE COLUMN\\n* Each card should be full-width\\n* Do NOT use a grid or multi-column layout\\n\\n2. Keep section grouping:\\n\\n* 🚨 Needs Attention\\n* 📈 Gaining Traction\\n",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:24:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2d4d52ad-1ffe-4606-836a-4dbbf1be669a",
+        "versionNumber": 2,
+        "title": "Group What Changed by Movement Type",
+        "prompt": "{\"prompt\":\"Build section grouping for the What Changed page using the existing Movement Card component.\\n\\nCreate three sections:\\n\\n1. 🚨 Needs Attention\\n\\n* Show only Risk items\\n* Limit to top 5 by Impact Level / Priority\\n\\n2. 📈 Gaining Traction\\n\\n* Show Opportunity items\\n* Limit to top 5\\n\\",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T18:21:47",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a9a1b207-e7b3-4ea3-91a6-8b3e66b703cf",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T18:20:26",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

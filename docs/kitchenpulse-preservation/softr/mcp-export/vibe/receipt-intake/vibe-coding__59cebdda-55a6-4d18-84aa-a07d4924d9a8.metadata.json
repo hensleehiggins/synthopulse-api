@@ -1,0 +1,546 @@
+{
+  "page": {
+    "id": "088f12f8-8fd5-4634-a1c9-2ef5b1a47163",
+    "name": "Receipt Intake",
+    "path": "/receipt-intake"
+  },
+  "block": {
+    "id": "59cebdda-55a6-4d18-84aa-a07d4924d9a8",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/receipt-intake/vibe-coding__59cebdda-55a6-4d18-84aa-a07d4924d9a8.jsx",
+  "current": {
+    "blockId": "59cebdda-55a6-4d18-84aa-a07d4924d9a8",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "fa6c747e-2171-46a2-9b0a-45c39ce8c156",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Vendor Receipts",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "sortOptions": [],
+        "condition": {
+          "expressions": [],
+          "logicalOperator": "AND"
+        },
+        "primaryFieldId": "fldDjPm3HqURn2xCp",
+        "fields": [
+          {
+            "id": "fldDjPm3HqURn2xCp",
+            "name": "Receipt Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldlR97cLfN0beS0E",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldiwSezFyDRjPRDE",
+            "name": "Vendor",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldA8trJzZOCAUNcl",
+            "name": "Receipt Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldQMjHhjw0DC85Bl",
+            "name": "Uploaded File",
+            "type": "ATTACHMENT",
+            "options": {
+              "showAs": "PREVIEW",
+              "inferredFileType": "OTHER",
+              "enableFileLinkExpiration": false,
+              "fileLinkExpirationValue": null,
+              "fileLinkExpirationUnit": null
+            }
+          },
+          {
+            "id": "fldtoDdR4YhOi4YoK",
+            "name": "Source",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "sela6zKCn1Qp2a3Ce",
+                  "label": "Owner Upload",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selNLZtAiRKD6Bb1X",
+                  "label": "Email Forward",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selpPF0iELTAGhdE6",
+                  "label": "Manual Entry",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel44P35r90FvsyQ3",
+                  "label": "API",
+                  "color": "purpleLight2"
+                },
+                {
+                  "id": "selhSF1nMazAamLaD",
+                  "label": "Mobile App",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldgOCLHoxo2LSLW6",
+            "name": "Processing Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selMRa8TGDBzWwV2Q",
+                  "label": "Uploaded",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selAa2sH8YvuFccCq",
+                  "label": "Parsing",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "selSrUgpzXRoV2AV2",
+                  "label": "Needs Review",
+                  "color": "orangeLight2"
+                },
+                {
+                  "id": "sel3ATesjHp4OtWjD",
+                  "label": "Parsed",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selmzpkofc9s96U57",
+                  "label": "Approved",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selF8fqUvV7mkSbgD",
+                  "label": "Rejected",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selWbwq01BCWr3HXp",
+                  "label": "Error",
+                  "color": "redBright"
+                },
+                {
+                  "id": "seljmVUmPsOyB5tEE",
+                  "label": "Staged",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldalXfkOpbHBAh4B",
+            "name": "Raw OCR / AI Text",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fld4b6FQUbTO1SSoh",
+            "name": "Parsed JSON",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldmHs1ZcoG4EnaRp",
+            "name": "Total Amount",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldRKIgKph5UXOmnp",
+            "name": "Review Needed",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldFyHgUIcfmgprFv",
+            "name": "Approved",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldx3V0NQZzkfQFMB",
+            "name": "Error Message",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldAXEm4PYq1gJqcK",
+            "name": "Processed At",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "flduYuAlsmmw3eFtz",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldW7YDGbpfxzTW9s",
+            "name": "Vendor Receipt Lines",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Vendor Receipt Lines"
+            }
+          },
+          {
+            "id": "fldKWt7qTemU4ZFH5",
+            "name": "Archived",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldPfR7PAsANF8CeH",
+            "name": "Parser Version",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld5ClMxbinc226k1",
+            "name": "Selected Orientation",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "sel6byjpkBwSFzsaI",
+                  "label": "none",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selNFoxVTf53XwPgR",
+                  "label": "rotate_90_clockwise",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selHx9FsRlhSMm8Vp",
+                  "label": "rotate_90_counterclockwise",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selpdBXCKPE9f2qdA",
+                  "label": "rotate_180",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selG2DjATpMlb9pOt",
+                  "label": "unresolved",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldFuOGveRhgPl5HE",
+            "name": "Transform Applied",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selsDtynXOpz343wq",
+                  "label": "none",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selEDYuG0nHn1MJth",
+                  "label": "rotate_90_clockwise",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selRR68pfXRTjRn5d",
+                  "label": "rotate_90_counterclockwise",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selWw4574lyPiSJOU",
+                  "label": "rotate_180",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel3e7HKqfD6qUSwI",
+                  "label": "unresolved",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "flddGjtE1KhYykMmH",
+            "name": "Orientation Score",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld87c6KUuCxICuyz",
+            "name": "Orientation Line Count",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldb0Adu7W1b1h5Vv",
+            "name": "Orientation Confidence",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "sel1rxVOszX6KYAug",
+                  "label": "High",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selFVb6znF83mn8C5",
+                  "label": "Medium",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selJ4nWTUgRh7hfn3",
+                  "label": "Low",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selnotNlWNNVRhiIf",
+                  "label": "Failed",
+                  "color": "cyanLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldbsIRUbfWguAByP",
+            "name": "Orientation Debug Summary",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldnOaF0ueIb074U9",
+            "name": "Orientation Needs Review",
+            "type": "CHECKBOX",
+            "options": {}
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 14,
+    "returned": 14,
+    "versions": [
+      {
+        "versionId": "89c7b353-90a1-41f9-94bd-17fb3f1eb003",
+        "versionNumber": 14,
+        "title": "Refactor receipt upload UI styling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRef, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T20:55:53",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c70dd8db-9430-4515-9450-80b8a1055beb",
+        "versionNumber": 13,
+        "title": "Add receipt events dispatch after submit",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRef, useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-05-24T04:09:26",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c91e93aa-f100-4bf3-b918-b1ba14eeae7f",
+        "versionNumber": 12,
+        "title": "Refactor receipt uploader to inputs",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\n  Chevr",
+        "promptTruncated": true,
+        "createdAt": "2026-05-19T01:56:11",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "aa25aeef-7d6c-4aa1-bbbc-5768606c7a30",
+        "versionNumber": 11,
+        "title": "Update receipt upload UI text",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\n  Chevr",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T18:37:15",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "b3998a1b-5f99-4cbd-a1c7-d99b9d3ea3bb",
+        "versionNumber": 10,
+        "title": "Convert receipt upload to FormData",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\n  Chevr",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T05:20:17",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "4bda6bd3-7937-4958-8654-7c8cab866d71",
+        "versionNumber": 9,
+        "title": "Update receipt upload button style",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\n  Chevr",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T05:15:25",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a4d957e7-b0f4-4661-ad6e-14065be30679",
+        "versionNumber": 8,
+        "title": "Refine receipt upload UX and states",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\n  Chevr",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T05:14:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ba5d3d41-5b2d-4e34-a35f-40be21ff85f6",
+        "versionNumber": 7,
+        "title": "Change button text to \"Submit Receipt\"",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\n  Chevr",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T05:09:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2bc5df29-b307-48ef-8986-18bf5e00d92e",
+        "versionNumber": 6,
+        "title": "Rename receipt UI: \"Stage a receipt\" to \"Submit a receipt\"",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\n  Chevr",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T05:08:29",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2d2de4fc-89f7-4984-9602-f82beb7bacd2",
+        "versionNumber": 5,
+        "title": "Add API POST and error handling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport {\\n  Upload,\\n  Camera,\\n  FileText,\\n  ShieldCheck,\\n  AlertCircle,\\n  CheckCircle2,\\n  ChevronDown,\\n  Chevr",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T04:42:34",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "38ba7062-6d54-4dcf-a798-9c7118487c3a",
+        "versionNumber": 4,
+        "title": "Refactor receipt upload UI enhancements",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useState } from \\\"react\\\";\\nimport { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { Upload, FileText, ShieldCheck, AlertCircle } from \\\"lucide-react\\\";\\n\\nconst RECEIPT_API = \\\"https://project",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T04:33:33",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d674c138-f9e9-4f98-af04-8b6d9ae4b792",
+        "versionNumber": 3,
+        "title": "Add Receipt Intake Upload UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-16T04:20:18",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1ca31339-5e36-4d58-8a89-d91ba543d858",
+        "versionNumber": 2,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-16T04:20:08",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d7d1376b-876e-49fb-ad11-4d61fd42b55e",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-16T04:20:08",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

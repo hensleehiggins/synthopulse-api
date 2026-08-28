@@ -1,0 +1,1071 @@
+{
+  "page": {
+    "id": "97ac6f46-2864-44b2-aa8d-5817ab5b97f5",
+    "name": "Order Intelligence",
+    "path": "/order-intelligence"
+  },
+  "block": {
+    "id": "2f8183de-2d9a-4bc1-a64b-2ce4756a8504",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/order-intelligence/vibe-coding__2f8183de-2d9a-4bc1-a64b-2ce4756a8504.jsx",
+  "current": {
+    "blockId": "2f8183de-2d9a-4bc1-a64b-2ce4756a8504",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "9d656e5a-9489-49c8-bca8-f784ba78aaa7",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Par Levels",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "sortOptions": [],
+        "condition": {
+          "expressions": [],
+          "logicalOperator": "AND"
+        },
+        "primaryFieldId": "fldD6Sma0efsClTDG",
+        "fields": [
+          {
+            "id": "fldD6Sma0efsClTDG",
+            "name": "Ingredient",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldH1UOTq45SXJ76P",
+            "name": "Inventory Items",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Inventory Items"
+            }
+          },
+          {
+            "id": "fld3toufQShw0N7Xb",
+            "name": "Current Stock",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldxfMVveiHu0CiWg",
+            "name": "Par Target",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldDUJeL5F0r5O49w",
+            "name": "Reorder Point",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldC561rxhUSkq4O8",
+            "name": "Last Checked",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld0dS2nTaOySS07j",
+            "name": "Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "self7kBikRjBqGcuK",
+                  "label": "In Stock",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "sel9k6cWspe5TLT4D",
+                  "label": "Low",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "selwpT92UYVH49eUi",
+                  "label": "Critical",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selBrVzm4e6tZD5JZ",
+                  "label": "Overstock",
+                  "color": "greenLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldqH7DBcS1LKdXRx",
+            "name": "Estimated Daily Usage",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldNM0dMjBsBOrTj0",
+            "name": "Days of Stock Left",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldLOirA4NdLFoTK5",
+            "name": "Suggested Par",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "NUMBER",
+                "vendorSideFieldType": "number",
+                "options": {
+                  "precision": 0,
+                  "min": null,
+                  "max": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldXSi4dqXPCEv7g3",
+            "name": "Status Color",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldUp45NFZsGN5e2A",
+            "name": "Reorder Needed?",
+            "type": "FORMULA",
+            "options": {
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          },
+          {
+            "id": "fldhk37t4Qqx98cH9",
+            "name": "Status Colors",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selW353wD5uTpEMMu",
+                  "label": "Good",
+                  "color": "greenBright"
+                },
+                {
+                  "id": "selEcJzicNa0eF6cu",
+                  "label": "Low",
+                  "color": "orangeBright"
+                },
+                {
+                  "id": "selZdbSo9dv1zJneZ",
+                  "label": "Critical",
+                  "color": "redBright"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldwYIVO4NPTcVvtN",
+            "name": "Order Item Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldIyUVho513ViEZI",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldrlM4zVSIJBnDOk",
+            "name": "Preferred Vendor",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld1k0zUBiD67vsqs",
+            "name": "Vendor Item Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldSR8xyUoSbnmsSt",
+            "name": "Vendor SKU",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldsZTQtEWfagjpRG",
+            "name": "Order Category",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "sel2pvuqKCU37Ufl5",
+                  "label": "Produce",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selCuh1j4EjBd5vIq",
+                  "label": "Meat",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selOke8yRQHCyx1jB",
+                  "label": "Seafood",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel9C9Dcd8dW744FZ",
+                  "label": "Dairy",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "seldktVIzJYEZdtaR",
+                  "label": "Dry Goods",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selKoXh7Dr0orGLFr",
+                  "label": "Bakery",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selyGypaTrj0qCnec",
+                  "label": "Beverage",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selbSahSjELcGvlF0",
+                  "label": "Beer",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel2V0TDTkiQxlX6m",
+                  "label": "Wine",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selSjfggMPnwWF0jw",
+                  "label": "Liquor",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selw9OFPKju4qMaiO",
+                  "label": "Supplies",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel7Ls88Z5JTD4RZg",
+                  "label": "Chemical",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selRwXi80xi2RkZaP",
+                  "label": "Other",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fld1zvwsdFNlc2tQn",
+            "name": "Order Vendor SKU",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldAsupRmgkO4t4fo",
+            "name": "Storage Area",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selsHgY7H2hLfVuoL",
+                  "label": "Walk-in",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selKRztQ4Cc5EsXv4",
+                  "label": "Freezer",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel3jlnnAjluYh25E",
+                  "label": "Dry Storage",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "seljXyhw55Py3xqM4",
+                  "label": "Bar",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selxrgikXNejMG3B7",
+                  "label": "Prep Area",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selB3CMwNdykUVfMB",
+                  "label": "Line",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel2H19abwco4ZAdd",
+                  "label": "Office",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selavd6w3sQ2yLVnA",
+                  "label": "Chemical / Supplies",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selcW4sEtZ3Is13Rs",
+                  "label": "Other",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selva77WhGpABsvzH",
+                  "label": "Dry storage",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldskmyT9QoGLffbt",
+            "name": "Count Unit",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldrnsQreHiu0fHUR",
+            "name": "Order Unit",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldcJX7dJWsCCkIDO",
+            "name": "Vendor Order Unit",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldt93l5CpBt49AIY",
+            "name": "Order Pack Size",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "flddbLtolrSZS2YfG",
+            "name": "Unit Conversion Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldaz28DyWcRW9n9E",
+            "name": "Target Stock",
+            "type": "NUMBER",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldQbD0ePcQgeeNrg",
+            "name": "Safety Stock",
+            "type": "NUMBER",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld9WrXND6ifodaGk",
+            "name": "Lead Time Days",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld2qeNuh5aNaMogl",
+            "name": "Order Days",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selqudsbprzOqh9wM",
+                  "label": "Monday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selugkMv4UsweeuvF",
+                  "label": "Tuesday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selfU3DEhzzNSHavz",
+                  "label": "Wednesday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selCZAy5zxprM0C3G",
+                  "label": "Thursday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selbeZL4XMxOmNluS",
+                  "label": "Friday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selQI5FnLaBfU1k0o",
+                  "label": "Saturday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel6EWsS4guDZmF4K",
+                  "label": "Sunday",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fld3xmHrqG6KqhUof",
+            "name": "OI Pack Size",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld31m5jAi8J5KHwF",
+            "name": "OI Unit Conversion Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldp2M5vdV05F32RZ",
+            "name": "OI Target Stock",
+            "type": "NUMBER",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldTqdjS6GV38elip",
+            "name": "OI Safety Stock",
+            "type": "NUMBER",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldgMb4Xx5EoVVybs",
+            "name": "OI Lead Time Days",
+            "type": "NUMBER",
+            "options": {
+              "precision": 1,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldCTO0ga2Qj7wQ3k",
+            "name": "OI Order Days",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selFvA6lSn4w1nfdI",
+                  "label": "Monday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selfJ2ihIqnOjeGxA",
+                  "label": "Tuesday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selHlRKgCUyApvTtQ",
+                  "label": "Wednesday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selAaWDgQiufDBaGe",
+                  "label": "Thursday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sellVinyrHJOX1Tzq",
+                  "label": "Friday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel1efalByqAtuCfa",
+                  "label": "Saturday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sele5JrSsxkVKV3tq",
+                  "label": "Sunday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selbnLBiYnl4ijkuX",
+                  "label": "As Needed",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldsEFqrDiV3fisgG",
+            "name": "OI Delivery Days",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selbM9sP5glhoCLbI",
+                  "label": "Monday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "seluMPsB4hvr54lx6",
+                  "label": "Tuesday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selk1BMcm0utmBkI7",
+                  "label": "Wednesday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "sel3c9rkH2S8lQHHM",
+                  "label": "Thursday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selZ6vqtTTTSof6Ne",
+                  "label": "Friday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selVSJu4wxqhGZClK",
+                  "label": "Saturday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selFLtiw2vuKLnxWG",
+                  "label": "Sunday",
+                  "color": "grayLight2"
+                },
+                {
+                  "id": "selGXLfk0TYFMsybM",
+                  "label": "Varies",
+                  "color": "grayLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldswoMpV7Rqs8hx2",
+            "name": "OI Vendor Cutoff Time",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldyfoa8RIZMsQvTC",
+            "name": "OI Critical Item",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld0xiIS0Hq195EkG",
+            "name": "OI Emergency Run Risk",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldW3KuKSDhgrn12x",
+            "name": "OI Event Sensitive",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "flddfLgZc2ynmK5kl",
+            "name": "Order Draft Lines",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Order Draft Lines"
+            }
+          },
+          {
+            "id": "fldge5DEROgO47IKs",
+            "name": "Item Lookup Events",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Item Lookup Events"
+            }
+          },
+          {
+            "id": "fldtF1j1cvLZj7VR4",
+            "name": "Operator Alerts",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Operator Alerts"
+            }
+          },
+          {
+            "id": "fldLXBuuMmnEyYa15",
+            "name": "Vendor Ordering Profile",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Vendor Ordering Profiles"
+            }
+          },
+          {
+            "id": "fldQnnWfwh0VvVaVM",
+            "name": "Primary Vendor Contact",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Vendor Contacts"
+            }
+          },
+          {
+            "id": "fldAWkg4vjsKRhWTW",
+            "name": "Order Alert Enabled",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fld2LqnCNQC5Uxejr",
+            "name": "Demand Lift Eligible",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldys1T9ibH7CsQNk",
+            "name": "Item Search Aliases",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldeiktgDnlgh2Oel",
+            "name": "Last Critical Alert At",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATETIME",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fld9HjWyT8SDOrJVF",
+            "name": "Stock Count Lines",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Stock Count Lines"
+            }
+          },
+          {
+            "id": "fldYhDWa0LnvHwg9o",
+            "name": "Demand Adjustments",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Demand Adjustments"
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 27,
+    "returned": 27,
+    "versions": [
+      {
+        "versionId": "bba83947-06fc-40d4-a534-66e6a7a427a5",
+        "versionNumber": 27,
+        "title": "Refactor Order Intelligence UI Text",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useRef, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Set",
+        "promptTruncated": true,
+        "createdAt": "2026-06-08T00:11:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2afd60ec-4844-4593-9013-25c9e69ade6b",
+        "versionNumber": 26,
+        "title": "Summarize React code changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T23:48:22",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8b50f725-aa0a-4683-8c97-0b98eeb098f4",
+        "versionNumber": 25,
+        "title": "Refactor Order Intelligence Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T23:36:58",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "482240ab-b966-4aa7-ab10-e11d6ebd02c0",
+        "versionNumber": 24,
+        "title": "Summarize React order-intelligence diff",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T23:20:03",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6044d546-f356-41e3-8bd3-cc634fb14b51",
+        "versionNumber": 23,
+        "title": "Refactor Order Intelligence UI Changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T23:09:46",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "51d741e3-80e0-4bb0-8ab8-b3c1a2a000df",
+        "versionNumber": 22,
+        "title": "Refactor Order Intelligence UI Layout",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T18:46:37",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "cff15724-78d4-43ea-994a-c12d8f70a1e8",
+        "versionNumber": 21,
+        "title": "Refactor Order Intelligence UI to Cards",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T18:44:06",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a182ab0a-ecb7-4e79-a51c-e00e1af4f782",
+        "versionNumber": 20,
+        "title": "Summarize React order-intelligence changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T18:40:15",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "bb0b90a5-6c62-481a-bd1e-a1f2dc1c521c",
+        "versionNumber": 19,
+        "title": "Summarize React code changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T18:39:36",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "b073d9aa-fc7f-4202-a1bd-ec78efc13b38",
+        "versionNumber": 18,
+        "title": "Refactor Order Intelligence Board Code",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T18:39:06",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "cd0bbc63-fe03-4a5c-aba6-f000b8fdf04f",
+        "versionNumber": 17,
+        "title": "Update table layout and widths",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T18:38:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "cf9385ac-f0c8-4614-8fad-c6e5037842ee",
+        "versionNumber": 16,
+        "title": "Refactor Order Intelligence Table Width",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T18:36:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8110e0be-a327-4f44-9a79-ccda7812b3df",
+        "versionNumber": 15,
+        "title": "Update React Order Intelligence Layout",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Edit3,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T18:32:56",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d86b61e6-2a5a-4750-b9fc-191ffe5d51a8",
+        "versionNumber": 14,
+        "title": "Refactor Order Rule Setup UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\n  ShieldC",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T18:31:23",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "05491bb5-0eac-4f21-8d16-0d0079dd1c1f",
+        "versionNumber": 13,
+        "title": "Restored: Add Order Rule Setup UI and APIs",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Eye,\\n  Filter,\\n  PackageCheck,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldCheck,\\n  Sparkles,\\n  TrendingUp,\\n  Tru",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T07:45:42",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c424a39a-0b47-47e7-a25b-ff1935dad379",
+        "versionNumber": 12,
+        "title": "Restored: Refactor Order Intelligence to Airtable",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\n  ShieldC",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T07:45:33",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "aaea0b8c-2755-42e5-adb1-49c55b57ed04",
+        "versionNumber": 11,
+        "title": "Restored: Refactor Order Intelligence to Airtable",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\n  ShieldC",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T07:45:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ea3aa605-2a33-4ef8-b150-43671f3044c3",
+        "versionNumber": 10,
+        "title": "Restored: Refactor Order Intelligence to Airtable",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\n  ShieldC",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T07:45:05",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "19bd3dae-0655-493b-bd61-42dc857a14ef",
+        "versionNumber": 9,
+        "title": "Restored: Refactor Order Intelligence to Airtable",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\n  ShieldC",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T07:44:51",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "fb75a8ca-5e93-41ee-af86-fe972cb6d641",
+        "versionNumber": 8,
+        "title": "Airtable Matching & Par Logic Update",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `const AIRTABLE_API_KEY =\\n  process.env.AIRTABLE_PAT ||\\n  process.env.AIRTABLE_API_KEY ||\\n  process.env.AIRTABLE_TOKEN ||\\n  process.env.KITCHENPULSE_AIRTABLE_API_KEY;\\n\\nconst AIRTABLE_BASE_ID =\\n  process.env.AIRTABLE_BASE_ID ||\\n  process.env.KITCHENPULSE_AIRT",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T07:43:37",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "407982b8-8d97-44df-a6b9-69367b146562",
+        "versionNumber": 7,
+        "title": "Refactor Order Intelligence to Airtable",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Eye,\\n  Loader2,\\n  PackageCheck,\\n  PackagePlus,\\n  PackageSearch,\\n  RefreshCw,\\n  Save,\\n  Search,\\n  Settings2,\\n  ShieldC",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T07:41:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7f39dd80-b087-406d-b34a-661f60635e9e",
+        "versionNumber": 6,
+        "title": "Add Order Rule Setup UI and APIs",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Eye,\\n  Filter,\\n  PackageCheck,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldCheck,\\n  Sparkles,\\n  TrendingUp,\\n  Tru",
+        "promptTruncated": true,
+        "createdAt": "2026-06-07T07:37:21",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e1bfa878-db56-4117-ac34-2eb6ddc222ce",
+        "versionNumber": 5,
+        "title": "Add array handling to numberOrDash",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CheckCircle2,\\n  ClipboardList,\\n  Clock,\\n  Eye,\\n  Filter,\\n  PackageCheck,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldCheck,\\n  Sparkles,\\n  TrendingUp,\\n  Tru",
+        "promptTruncated": true,
+        "createdAt": "2026-06-06T22:31:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "90312f75-fba2-4b92-a3b6-d531cf6c8f0e",
+        "versionNumber": 4,
+        "title": "Update Order Intelligence Board Code",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React from \\\"react\\\";\\nimport {\\n  AlertTriangle,\\n  CalendarDays,\\n  CheckCircle2,\\n  ClipboardList,\\n  CloudSun,\\n  PackageCheck,\\n  PackageSearch,\\n  Route,\\n  ShieldCheck,\\n  Sparkles,\\n  Store,\\n  TrendingUp,\\n  Truck,\\n} from \\\"lucide-react\\\";\\n\\nfunct",
+        "promptTruncated": true,
+        "createdAt": "2026-06-05T23:14:43",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d4bb1dcc-91f8-456c-933e-b37166c00563",
+        "versionNumber": 3,
+        "title": "Refactor Order Intelligence Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React from \\\"react\\\";\\nimport {\\n    AlertTriangle,\\n    CalendarDays,\\n    CheckCircle2,\\n    ClipboardList,\\n    CloudSun,\\n    PackageCheck,\\n    PackageSearch,\\n    Route,\\n    ShieldCheck,\\n    Sparkles,\\n    Store,\\n    TrendingUp,\\n    Truck,\\n} from ",
+        "promptTruncated": true,
+        "createdAt": "2026-06-05T22:39:36",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "526c5709-f8fb-4e8d-b9a7-6f975361369b",
+        "versionNumber": 2,
+        "title": "Convert placeholder to Order Intelligence UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-06-05T22:36:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f643212d-d212-4f3b-8f58-250afdacf35b",
+        "versionNumber": 1,
+        "title": "Initial Version Prompt Creation",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-06-05T22:35:02",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

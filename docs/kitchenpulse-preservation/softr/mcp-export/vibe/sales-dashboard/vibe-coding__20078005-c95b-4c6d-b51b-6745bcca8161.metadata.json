@@ -1,0 +1,644 @@
+{
+  "page": {
+    "id": "b69ddb30-33e1-4138-a9e1-7a6bc4eed779",
+    "name": "Sales Dashboard",
+    "path": "/sales-dashboard"
+  },
+  "block": {
+    "id": "20078005-c95b-4c6d-b51b-6745bcca8161",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/sales-dashboard/vibe-coding__20078005-c95b-4c6d-b51b-6745bcca8161.jsx",
+  "current": {
+    "blockId": "20078005-c95b-4c6d-b51b-6745bcca8161",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "69241c40-7a49-412c-9f68-f1b865a382ab",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Dashboard Metrics",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fldlPxP994vyD0RcQ",
+        "fields": [
+          {
+            "id": "fldlPxP994vyD0RcQ",
+            "name": "Metric Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldLNtaR6wQ34RXAE",
+            "name": "Restaurant",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Restaurants"
+            }
+          },
+          {
+            "id": "fldMB2dRAsJPWsrPf",
+            "name": "Metric Date",
+            "type": "DATETIME",
+            "options": {
+              "precision": "DATE",
+              "useRelativeDatetimeFormat": false,
+              "timezoneType": "FIXED",
+              "timezone": "DEFAULT",
+              "format": null
+            }
+          },
+          {
+            "id": "fldWEY0nl55hKL9g4",
+            "name": "Metric Value",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldz0FpzbrUPyBCUr",
+            "name": "Metric Number",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld9b6Xhn7z3nr1uE",
+            "name": "Metric Type",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selhEiouLSJbo0ieR",
+                  "label": "Currency",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "seliTw9r0BLiEIe7P",
+                  "label": "Percent",
+                  "color": "cyanLight2"
+                },
+                {
+                  "id": "sel9mRFlWaJXiNLGP",
+                  "label": "Text",
+                  "color": "tealLight2"
+                },
+                {
+                  "id": "selGQrqCK74GXlaP4",
+                  "label": "Count",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "selcGZSSqdrk20srg",
+                  "label": "Alert",
+                  "color": "yellowLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fldzXlRyoqZnSrNa0",
+            "name": "Display Order",
+            "type": "NUMBER",
+            "options": {
+              "precision": 0,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fldaybHMV8P1WIVsS",
+            "name": "Is Latest",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldp6bw1FAoBQKcOW",
+            "name": "Source Run ID",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldOzBzsMjEFruXTJ",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldqPeu3ifqWaDtJy",
+            "name": "Restaurant ID",
+            "type": "LOOKUP",
+            "options": {
+              "linkedRecordFieldId": "fldLNtaR6wQ34RXAE",
+              "lookupFieldId": "fldQGL648TpDkcFwE",
+              "returnedField": {
+                "type": "SINGLE_LINE_TEXT",
+                "vendorSideFieldType": "singleLineText",
+                "options": {
+                  "minLength": null,
+                  "maxLength": null
+                }
+              }
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 47,
+    "returned": 47,
+    "versions": [
+      {
+        "versionId": "0e02b2e9-ec62-4e02-8551-ef76a6fcf943",
+        "versionNumber": 47,
+        "title": "Refactor dashboard copy and UI tweaks",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  CalendarDays,\\n  ShieldCheck,\\n  Clock,\\n  Sparkles,\\n  Circle,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.selec",
+        "promptTruncated": true,
+        "createdAt": "2026-06-05T02:19:56",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8156525e-1ea0-4aba-af85-5e4a606d826b",
+        "versionNumber": 46,
+        "title": "Refactor Dashboard UI Styles and Logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  CalendarDays,\\n  ShieldCheck,\\n  Clock,\\n  Sparkles,\\n  Circle,\\n} from \\\"lucide-react\\\";\\n\\nconst select = q.selec",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T16:49:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "148788a0-438d-4c34-9886-f487bbd833b7",
+        "versionNumber": 45,
+        "title": "Refactor Dashboard Component Styling and Logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T16:40:26",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3bdd2be0-a53c-4bd1-ab84-3f01aef3c93b",
+        "versionNumber": 44,
+        "title": "Fix Profit Display Bug in Header",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-06-01T13:34:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e3bf1922-8dbe-4ec6-9bc6-e51cd83f7224",
+        "versionNumber": 43,
+        "title": "Update dashboard MTD formatting and helpers",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-06-01T13:32:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "21effd9b-0ec5-4674-b82f-b20ae79a610c",
+        "versionNumber": 42,
+        "title": "Prefer flagged verified run first",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-31T17:40:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "cd1b1d35-c96a-4bf1-8f93-0f694fa9197f",
+        "versionNumber": 41,
+        "title": "Update MTD catchup revenue handling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-31T17:37:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "633111c3-43fc-4b05-8d4c-23de13cc99a9",
+        "versionNumber": 40,
+        "title": "Refactor Dashboard Debug Output Removal",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T17:13:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "61c5a7b1-7297-4a4e-a1bd-0a1fcc0687a0",
+        "versionNumber": 39,
+        "title": "Refactor Dashboard Metric Matching Functions",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T17:10:23",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "bb350b22-d5b0-4450-897d-b18a34bab69f",
+        "versionNumber": 38,
+        "title": "Summarize requested code changes",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T17:05:45",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6b900955-30c2-43bf-b088-4e4edb6b7713",
+        "versionNumber": 37,
+        "title": "Refactor dashboard run-selection logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T17:04:48",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "83aa3422-a466-4861-b6c6-eb918b556b1c",
+        "versionNumber": 36,
+        "title": "Update logic to prefer financial complete run",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T17:03:53",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "57c2df30-16a3-4595-8993-94b8139f9f84",
+        "versionNumber": 35,
+        "title": "Add debug panel and rows preview",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T17:02:34",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "49e842dc-b9f4-4ab0-94eb-0eab976114a3",
+        "versionNumber": 34,
+        "title": "Update code: increase useRecords count to 5000",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T17:00:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "b1a6141a-70f5-42cb-9672-14c1d08e4ab9",
+        "versionNumber": 33,
+        "title": "Update run selection and flags",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-30T16:58:36",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "443fcaa3-d893-4ffd-b2a8-27ae7fa4c9e9",
+        "versionNumber": 32,
+        "title": "Add May POS catch-up revenue adjustment",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-25T10:49:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "c0b9c38f-488c-450d-8f3d-3a04d32334f5",
+        "versionNumber": 31,
+        "title": "Update dashboard metrics text and labels",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-25T09:08:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "38ae459f-6de6-42f7-9afd-8d6db6e22f83",
+        "versionNumber": 30,
+        "title": "Refactor POS/Dinner Run Filtering and Labels",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-25T08:22:39",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3291f876-5ccb-4edb-9e46-482899b008aa",
+        "versionNumber": 29,
+        "title": "Refactor dashboard run-summary logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-25T08:03:24",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "54bf0624-5621-4703-b51d-ae8605da3208",
+        "versionNumber": 28,
+        "title": "Refactor dashboard metrics for robustness",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T04:02:57",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d454af74-6b4b-453d-9a9e-c7a920b0a2b6",
+        "versionNumber": 27,
+        "title": "Refactor metric parsing and guards",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-17T03:50:33",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "44630820-a8ec-427d-8d88-986bf97fe752",
+        "versionNumber": 26,
+        "title": "Refactor: Update Top Item Labels",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-15T16:39:27",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "efab7546-19e3-469f-acbf-886fa3e7a157",
+        "versionNumber": 25,
+        "title": "Refactor Top Item selection logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-15T16:37:42",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "f74d8596-da6a-4e50-8210-f858b5178f15",
+        "versionNumber": 24,
+        "title": "Refine Top Item Selection Logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-15T16:34:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8832fd3d-5a4f-4075-a4eb-5e11e8db67f4",
+        "versionNumber": 23,
+        "title": "Update priorSummary selection by date",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T00:07:38",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "34df3459-10b0-4c0a-bccb-5be9f641f996",
+        "versionNumber": 22,
+        "title": "Refactor MTD computation and run summaries",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T00:06:26",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "270081e7-1d12-49bb-8ffd-126d3f10d4e3",
+        "versionNumber": 21,
+        "title": "Adjust profit/margin calculation logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T00:05:55",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3879de8d-1c1c-40a4-b327-e0bf5e7949dd",
+        "versionNumber": 20,
+        "title": "Refactor getMetric and summary logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T00:04:40",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "46392486-90bc-4018-bd17-ae7f7b69f1f9",
+        "versionNumber": 19,
+        "title": "Refine latest run selection logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T00:02:13",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "4328b4d2-f3fd-4ba8-9a13-5866941357d6",
+        "versionNumber": 18,
+        "title": "Refactor latestRunId selection logic",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-11T00:00:58",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "fc0def9a-db4d-4a1b-b638-05c80169b89d",
+        "versionNumber": 17,
+        "title": "Update dashboard text: \"profit\" to \"workbook-adjusted profit\"",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T19:51:42",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3b7f41ac-cb36-4075-89fd-d859709baf84",
+        "versionNumber": 16,
+        "title": "Add latest-per-run MTD deduplication",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  TrendingDown,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  Cale",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T07:13:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "7ba300e2-ff69-46cf-bb8b-70d32912504f",
+        "versionNumber": 15,
+        "title": "Refactor dashboard to owner-focused UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  CalendarDays,\\n} from",
+        "promptTruncated": true,
+        "createdAt": "2026-05-09T07:00:04",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "fab2b51a-8101-4506-8a3d-b5044049bc7c",
+        "versionNumber": 14,
+        "title": "Filter reporting runs and exclude tests",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  TrendingUp,\\n  DollarSign,\\n  Percent,\\n  Utensils,\\n  Activity,\\n  CalendarDays,\\n} from",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T04:30:44",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a9640795-a43e-4bf5-8d9f-037929956ced",
+        "versionNumber": 13,
+        "title": "Refactor dashboard metrics component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { TrendingUp, DollarSign, Percent, Utensils, Activity } from \\\"lucide-react\\\";\\n\\nconst select",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T04:10:15",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "786a4af4-2ae2-4557-b01e-2529c388bf34",
+        "versionNumber": 12,
+        "title": "Select latest metric group by completeness",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { TrendingUp, DollarSign, Percent, Utensils, Activity } from \\\"lucide-react\\\";\\n\\nconst select",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T02:05:11",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "3ddddda2-23ce-4a46-904a-5e81b8ab7f67",
+        "versionNumber": 11,
+        "title": "Filter metrics by latest revenue run",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { TrendingUp, DollarSign, Percent, Utensils, Activity } from \\\"lucide-react\\\";\\n\\nconst select",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T01:59:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5f72d769-e9dd-4674-b4b0-2a29aec40191",
+        "versionNumber": 10,
+        "title": "Convert brief UI to sales metrics component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport { TrendingUp, AlertTriangle, CheckCircle2 } from \\\"lucide-react\\\";\\n\\nconst select = q.select(",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T01:19:36",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "5ab9d558-eef0-44be-9d1d-1554787ff967",
+        "versionNumber": 9,
+        "title": "Convert static settings block to datasource-driven",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent, CardHeader } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useTextSetting, useLongTextSetting, useArraySetting, useImageSetting } from \\\"@/lib/editable-settings\\\";\\nimport { TrendingUp, Lightb",
+        "promptTruncated": true,
+        "createdAt": "2026-05-07T01:18:06",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "ba404c2a-98f4-46c7-aaf9-90dc08914d9f",
+        "versionNumber": 8,
+        "title": "Update Card layout and styling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { Card, CardContent, CardHeader } from \\\"@/components/ui/card\\\";\\nimport { Badge } from \\\"@/components/ui/badge\\\";\\nimport { useTextSetting, useLongTextSetting, useArraySetting, useImageSetting } from \\\"@/lib/editable-settings\\\";\\nimport { TrendingUp, Lightb",
+        "promptTruncated": true,
+        "createdAt": "2026-05-04T00:45:58",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "9fc97853-104c-4f70-846a-6128418cac0a",
+        "versionNumber": 7,
+        "title": "Increase spacing above Opportunity section",
+        "prompt": "{\"prompt\":\"Add slightly more spacing above the Opportunity section.\\n\\nGoal:\\nCreate a small visual pause so it feels like a next step, not just another bullet.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T04:50:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "fceefe2b-a316-45bc-aa26-ce3983ada949",
+        "versionNumber": 6,
+        "title": "Transform Card: Headline-First Layout",
+        "prompt": "{\"prompt\":\"Remove the \\\"Operator Brief\\\" title completely.\\n\\nPromote the Key Insight text (e.g., \\\"Protect margin before it slips\\\") to be the primary header:\\n- Largest text in the card\\n- Bold and prominent\\n\\nRemove the \\\"Key Insight\\\" label as well.\\n\\nKeep:\\n- Supporting points (bullet-style)\\",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T04:47:50",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "a543881a-3301-4496-9a33-90b9c4a1688c",
+        "versionNumber": 5,
+        "title": "Integrate Title as Native Dashboard Header",
+        "prompt": "{\"prompt\":\"Remove the visible \\\"Operator Brief\\\" label.\\n\\nLet the title (e.g., \\\"Protect margin before it slips\\\") serve as the header.\\n\\nGoal:\\nMake this feel like a native part of the dashboard, not a labeled component.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T04:46:54",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d4a73d81-8ac1-4df5-97e2-ad5a4fec3b13",
+        "versionNumber": 4,
+        "title": "Refine Operator Brief Card Design",
+        "prompt": "{\"prompt\":\"Refine the Operator Brief layout:\\n\\n- Increase the max width so it aligns with the KPI strip below\\n- Left-align the card with the rest of the page content (do not center it)\\n- Ensure consistent horizontal margins with KPI cards\\n\\nHierarchy:\\n- Make the title slightly larger and bolder",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T04:46:30",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "63167bdc-ce2b-47a9-8eb7-5f928cc7c103",
+        "versionNumber": 3,
+        "title": "Limit Key Insight to Two Lines",
+        "prompt": "{\"prompt\":\"Limit the Key Insight to a maximum of 2 lines.\\nTruncate anything longer.\\n\\nGoal:\\nMake this feel like a headline, not a paragraph.\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T04:45:27",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "44d9026b-a81e-471b-bc9d-17e29bcf2b42",
+        "versionNumber": 2,
+        "title": "Operator Brief Card Design Guidelines",
+        "prompt": "{\"prompt\":\"Refactor this top insight section into a structured \\\"Operator Brief\\\" card.\\n\\nDo NOT display as a long paragraph.\\n\\nBreak it into clear sections:\\n\\n1. Title (large, bold)\\n2. Key Insight (1–2 sentence summary)\\n3. Supporting Points (short bullet-style lines, not a paragraph)\\n4. Oppor",
+        "promptTruncated": true,
+        "createdAt": "2026-04-27T04:44:42",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "4d8f72c7-aabd-4619-be60-8bfaca861de9",
+        "versionNumber": 1,
+        "title": "Initial Version Prompt Creation",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-04-27T04:43:31",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

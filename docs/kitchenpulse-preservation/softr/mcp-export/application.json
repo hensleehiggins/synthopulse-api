@@ -1,0 +1,19 @@
+{
+  "workspace": {
+    "id": "cbb15c96-86a7-427a-a5ee-5b0fea720149",
+    "name": "Hank"
+  },
+  "application": {
+    "id": "bd94ae5e-6d9d-4b3f-9a19-c52758d99cf8",
+    "name": "KitchenPulse Operator Portal",
+    "description": null,
+    "workspaceId": "cbb15c96-86a7-427a-a5ee-5b0fea720149",
+    "applicationType": "REGULAR_APPLICATION",
+    "domain": "portal.synthopulse.ai",
+    "subdomain": "tawnya81906.softr.app",
+    "homePageId": "37f11de8-2142-448e-b135-f07dfdf8e067",
+    "created": "2026-04-09T23:10:18",
+    "updated": "2026-08-28T15:15:51",
+    "published": "2026-08-28T15:15:51"
+  }
+}

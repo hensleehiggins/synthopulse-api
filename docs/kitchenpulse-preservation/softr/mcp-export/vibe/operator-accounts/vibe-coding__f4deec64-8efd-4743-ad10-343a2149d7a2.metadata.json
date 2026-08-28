@@ -1,0 +1,77 @@
+{
+  "page": {
+    "id": "2be66c32-fde6-44fa-a81d-ba008b3482d1",
+    "name": "Operator Accounts",
+    "path": "/operator-accounts"
+  },
+  "block": {
+    "id": "f4deec64-8efd-4743-ad10-343a2149d7a2",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/operator-accounts/vibe-coding__f4deec64-8efd-4743-ad10-343a2149d7a2.jsx",
+  "current": {
+    "blockId": "f4deec64-8efd-4743-ad10-343a2149d7a2",
+    "settings": [],
+    "dataSources": [],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 5,
+    "returned": 5,
+    "versions": [
+      {
+        "versionId": "5d6684ed-ea93-4f3f-9a20-cfc542c2e05d",
+        "versionNumber": 5,
+        "title": "Refactor OperatorAccountsHero layout and text",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { MailPlus, ShieldCheck, UserPlus } from \\\"lucide-react\\\";\\n\\nfunction KitchenPulseLockup() {\\n  return (\\n    <div className=\\\"min-w-0\\\">\\n      <div className=\\\"flex items-baseline\\\">\\n        <span\\n        ",
+        "promptTruncated": true,
+        "createdAt": "2026-06-16T00:07:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "64d0bf80-6ab0-4cc6-ba6d-2b61bdfd69bd",
+        "versionNumber": 4,
+        "title": "Refactor Operator Accounts Hero UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useEffect, useState } from \\\"react\\\";\\nimport { useTextSetting } from \\\"@/lib/editable-settings\\\";\\nimport {\\n  ClipboardCheck,\\n  KeyRound,\\n  Lock,\\n  MailPlus,\\n  ShieldCheck,\\n  Sparkles,\\n  UserCheck,\\n  UserPlus,\\n  Users,\\n} from \\\"lucide-react\\\";\\n",
+        "promptTruncated": true,
+        "createdAt": "2026-06-15T23:58:49",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "92bf7427-9a25-47ce-a21c-5cab37570bb4",
+        "versionNumber": 3,
+        "title": "Refactor Operator Invite to Block",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import React, { useEffect, useMemo, useState } from \\\"react\\\";\\nimport {\\n  AlertCircle,\\n  CheckCircle2,\\n  ClipboardCheck,\\n  KeyRound,\\n  Loader2,\\n  Lock,\\n  MailPlus,\\n  RefreshCw,\\n  ShieldCheck,\\n  Sparkles,\\n  UserPlus,\\n  Users,\\n} from \\\"lucide-react\\\";\\n",
+        "promptTruncated": true,
+        "createdAt": "2026-06-15T23:01:43",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "39dff6a2-9cca-4d6a-8682-42ee06c2ea38",
+        "versionNumber": 2,
+        "title": "Replace placeholder with Operator Invite UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-06-15T21:03:59",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "49175cfe-3ace-4e58-a7e3-e97544e4e62a",
+        "versionNumber": 1,
+        "title": "Initial Draft of Prompt",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-06-15T21:03:43",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}

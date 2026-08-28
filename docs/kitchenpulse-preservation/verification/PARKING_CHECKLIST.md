@@ -22,3 +22,12 @@
 - [ ] Create and verify an authorized internal Softr safety copy; check custom-domain and add-on billing.
 - [ ] Review `PRESERVATION_VERIFICATION.md`; obtain explicit accountable-owner acceptance for any remaining critical unknowns.
 - [ ] Only then: an authorized human may cancel/downgrade Softr. This repository does not do so.
+
+## MCP capture checkpoint — 2026-08-28
+
+- [x] Read-only app/page/block/access/data-source/workflow inventory archived in `softr/mcp-export/`.
+- [x] 45 complete Vibe sources archived without detected credentials; all 47 version histories inventoried.
+- [x] Airtable base schema captured: 42 tables / 899 fields; Softr tables: 3 / 24 fields.
+- [ ] Recover `/link-expired`, missing Tripleseat source, redacted Billing literal, 11 Custom Code blocks, and Studio-only global configuration.
+
+**Current result remains: `NOT_SAFE_TO_ALLOW_SOFTR_DOWNGRADE`.**

@@ -1,0 +1,382 @@
+{
+  "page": {
+    "id": "71944de6-e78e-414c-9c8c-aebc6a973e58",
+    "name": "Cost Center",
+    "path": "/cost-center"
+  },
+  "block": {
+    "id": "d9a71e64-9809-4138-96cc-312536bc0ee9",
+    "name": "vibe-coding",
+    "title": "Vibe coding block",
+    "category": "AI"
+  },
+  "sourceStatus": "PRESERVED_MCP",
+  "sourcePath": "docs/kitchenpulse-preservation/softr/mcp-export/vibe/cost-center/vibe-coding__d9a71e64-9809-4138-96cc-312536bc0ee9.jsx",
+  "current": {
+    "blockId": "d9a71e64-9809-4138-96cc-312536bc0ee9",
+    "settings": [],
+    "dataSources": [
+      {
+        "id": "723ac56d-3b59-4121-98dc-2889693cfcd0",
+        "type": "AIRTABLE",
+        "resourceIdentifier": {
+          "table": "Receipt Cost Proposals",
+          "base": "appD303evZM2SlvMR"
+        },
+        "name": "Hank Higgins (henslee.higgins@gmail.com) #1",
+        "primaryFieldId": "fld7WmWHSWje9UwsK",
+        "fields": [
+          {
+            "id": "fld7WmWHSWje9UwsK",
+            "name": "Proposal Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldRKdO91HINuAHxj",
+            "name": "Receipt Line",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Vendor Receipt Lines"
+            }
+          },
+          {
+            "id": "fldTwzE11jNV8r8BC",
+            "name": "Matched Inventory Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Inventory Items"
+            }
+          },
+          {
+            "id": "fldcbZoowfDawck0B",
+            "name": "Matched Cost Source Item",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Cost Source Items"
+            }
+          },
+          {
+            "id": "fldrmUCKXYunsesJp",
+            "name": "Vendor",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fld0jVdxkB8HaQYgd",
+            "name": "Parsed Item Name",
+            "type": "SINGLE_LINE_TEXT",
+            "options": {
+              "minLength": null,
+              "maxLength": null
+            }
+          },
+          {
+            "id": "fldycKWPHomMhtrI9",
+            "name": "Current Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldU9ITsi9uWaFHT9",
+            "name": "Proposed Cost",
+            "type": "CURRENCY",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null,
+              "isoCode": null,
+              "customSymbol": "$"
+            }
+          },
+          {
+            "id": "fldE1EmQwkHQr7g9F",
+            "name": "Change Percent",
+            "type": "PERCENT",
+            "options": {
+              "precision": 2,
+              "min": null,
+              "max": null
+            }
+          },
+          {
+            "id": "fld5FtWxrlRfvJuSV",
+            "name": "Proposal Status",
+            "type": "SELECT",
+            "options": {
+              "choices": [
+                {
+                  "id": "selO0UwvVIZwVkxNa",
+                  "label": "Needs Review",
+                  "color": "yellowLight2"
+                },
+                {
+                  "id": "seljTIUInQneJEZYU",
+                  "label": "Approved",
+                  "color": "greenLight2"
+                },
+                {
+                  "id": "sel4rOHUc4KIUHRiC",
+                  "label": "Rejected",
+                  "color": "redLight2"
+                },
+                {
+                  "id": "selta62gVGpbPTNnu",
+                  "label": "Applied",
+                  "color": "blueLight2"
+                }
+              ],
+              "allowToAddNewChoice": true
+            }
+          },
+          {
+            "id": "fld3g9Uy8XMaeIbC2",
+            "name": "Approved",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "fldePef9ZqwtaVvWt",
+            "name": "Applied",
+            "type": "CHECKBOX",
+            "options": {}
+          },
+          {
+            "id": "flda4uLCDy6xUvFk7",
+            "name": "Proposal Reason",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldwN8RKXL3MDNCHZ",
+            "name": "Notes",
+            "type": "LONG_TEXT",
+            "options": {
+              "type": "TEXT"
+            }
+          },
+          {
+            "id": "fldy5qbcSocyU15NS",
+            "name": "Cost Movement",
+            "type": "LINKED_RECORD",
+            "options": {
+              "linkedTableId": "Cost Movement"
+            }
+          }
+        ],
+        "fieldReferenceKey": "name"
+      }
+    ],
+    "actions": []
+  },
+  "versionHistory": {
+    "totalCount": 19,
+    "returned": 19,
+    "versions": [
+      {
+        "versionId": "47bac2dc-b065-4585-a76e-217f729911e3",
+        "versionNumber": 19,
+        "title": "Refactor and UI Enhancements for Block.jsx",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  EyeOff,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Trash2,\\n  Wrench,\\n} from \\\"lucide",
+        "promptTruncated": true,
+        "createdAt": "2026-06-04T21:06:54",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "008cea4c-70df-4244-abed-3066d97266f8",
+        "versionNumber": 18,
+        "title": "Refactor: Filter visible records by ID",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  EyeOff,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Trash2,\\n  Wrench,\\n} from \\\"lucide",
+        "promptTruncated": true,
+        "createdAt": "2026-06-03T19:01:52",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d6b0bf07-0d41-482c-9a8e-89e9cb27be95",
+        "versionNumber": 17,
+        "title": "Refactor rejectHiddenDuplicate API handling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  EyeOff,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Trash2,\\n  Wrench,\\n} from \\\"lucide",
+        "promptTruncated": true,
+        "createdAt": "2026-06-03T18:59:18",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "756ecfda-cd10-41ec-b9e5-ccdc73a60ca9",
+        "versionNumber": 16,
+        "title": "Refactor: Add reject/setup button handling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  EyeOff,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Trash2,\\n  Wrench,\\n} from \\\"lucide",
+        "promptTruncated": true,
+        "createdAt": "2026-06-03T18:49:50",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d24f40f9-b1a0-46cf-a26d-fae6ad1b10a5",
+        "versionNumber": 15,
+        "title": "Refactor React Cost Signals UI",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  EyeOff,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Trash2,\\n  Wrench,\\n} from \\\"lucide",
+        "promptTruncated": true,
+        "createdAt": "2026-06-03T18:45:08",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "d289d4c3-815c-4e60-b03d-1b6f441479f7",
+        "versionNumber": 14,
+        "title": "Add hidden-duplicate cleanup and API reject",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-06-03T18:41:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "6b03ecbf-06c2-40d0-b08a-0e92ce6a0f48",
+        "versionNumber": 13,
+        "title": "Refactor review logic for matching",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-06-03T17:51:14",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e68aae35-aaf3-4fbc-a4a8-76a8fae2b490",
+        "versionNumber": 12,
+        "title": "Refactor review/matched records handling",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-29T21:03:21",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "1f03ac09-7edb-4a99-b118-e8742ee71163",
+        "versionNumber": 11,
+        "title": "Refactor Cost Links Review Component",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-29T20:54:25",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "efe56aa8-f852-4b7b-975f-0d11e53fa27e",
+        "versionNumber": 10,
+        "title": "Update React block: add filtering, fields, count increase",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-29T20:50:14",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "2d1682bf-d76a-4123-aa94-b1f2d1d8b734",
+        "versionNumber": 9,
+        "title": "Refactor component styling and SummaryCard",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-27T14:58:07",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8d71be37-e614-44e0-bf06-6d5554eb93e8",
+        "versionNumber": 8,
+        "title": "Add cost-change filtering to reviews",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-23T18:18:06",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "010cc2e0-5111-43c2-bcfe-01b6672bcf63",
+        "versionNumber": 7,
+        "title": "Refactor review/matching logic and counts",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-23T18:14:32",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "26a35d6e-80ce-4637-9fec-f97daf5c99b4",
+        "versionNumber": 6,
+        "title": "Update ownerRead messaging and copy",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-22T23:55:11",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e35342da-8bf3-4d8e-82c1-2b5422041124",
+        "versionNumber": 5,
+        "title": "Update UI headings and text labels",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-22T23:16:24",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "25ad3470-a22c-4404-b01d-76efbd96d389",
+        "versionNumber": 4,
+        "title": "Split blocked and matched review lists",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-22T23:13:20",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "8d2da5f6-7e3e-4b3c-83b8-78b5b1a62ffa",
+        "versionNumber": 3,
+        "title": "Remove where clause from useRecords call",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `import { useMemo, useState } from \\\"react\\\";\\nimport { useRecords, q } from \\\"@/lib/datasource\\\";\\nimport {\\n  AlertTriangle,\\n  CircleDollarSign,\\n  Link2,\\n  PackageSearch,\\n  RefreshCw,\\n  Search,\\n  ShieldAlert,\\n  Wrench,\\n} from \\\"lucide-react\\\";\\n\\nconst sel",
+        "promptTruncated": true,
+        "createdAt": "2026-05-22T23:10:09",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "e3659064-a75b-4746-96bf-7bddce02d1b4",
+        "versionNumber": 2,
+        "title": "Replace placeholder with cost-link dashboard",
+        "prompt": "{\"prompt\":\"Code changes.\\n\\nFrom: `// This is a placeholder code. Use the AI chat to describe what you want to build or start coding your custom block from scratch here\\nimport { EmptyStatePlaceholder } from \\\"@/components/empty-state-placeholder\\\";\\n\\nexport default function Block() {\\n    return <",
+        "promptTruncated": true,
+        "createdAt": "2026-05-22T23:00:10",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      },
+      {
+        "versionId": "fa8fc406-b487-480d-8993-65b2e53835bb",
+        "versionNumber": 1,
+        "title": "Initial Version Request",
+        "prompt": "{\"prompt\":\"Initial version\"}",
+        "promptTruncated": false,
+        "createdAt": "2026-05-22T22:59:35",
+        "createdBy": "c8b18764-6b6e-4990-b744-5b5173b5b752",
+        "sourceCode": null
+      }
+    ]
+  }
+}
