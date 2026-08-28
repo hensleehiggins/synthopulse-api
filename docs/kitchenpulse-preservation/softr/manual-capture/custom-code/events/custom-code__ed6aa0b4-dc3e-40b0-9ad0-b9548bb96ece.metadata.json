@@ -20,5 +20,5 @@
     "Block type/category",
     "Enabled state, visibility/user groups, and visible-device metadata in ../mcp-export/blocks.json"
   ],
-  "completionStatus": "NOT_CAPTURED"
+  "completionStatus": "DEFERRED_PROVIDER_PRESERVED"
 }

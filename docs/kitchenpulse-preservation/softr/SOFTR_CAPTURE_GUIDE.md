@@ -2,6 +2,8 @@
 
 Perform this page-by-page. Do not edit, publish, disable, or cancel anything while capturing.
 
+> **Parked 2026-08-28:** KitchenPulse is retained on Softr Free. Manual capture is suspended; the 23 incomplete items are `DEFERRED_PROVIDER_PRESERVED`, meaning retained in Softr only and not externally preserved. Do not resume this procedure unless Softr announces deletion/retention changes or KitchenPulse migration resumes.
+
 ## Before starting
 
 1. Create or identify the approved private archive for sensitive exports and attachments.
@@ -43,5 +45,4 @@ Do **not** repeat MCP-covered capture. The human-only remainder is:
 The destinations above were rechecked in the canonical checkout without accessing Softr. They do not yet contain supplied manual captures: `/link-expired` is still `NOT CAPTURED`, Tripleseat source is still a placeholder, all 11 native Custom Code files are placeholders, and `STUDIO_CONFIGURATION.md` remains `NOT CAPTURED`. The Billing handoff is correctly preserved only as `REDACTED_SENSITIVE_BILLING_VALUE`; no live Billing value is requested or stored.
 
 Do not treat this guide or its scaffold paths as evidence that the capture occurred. The preservation gate therefore remains `NOT_SAFE_TO_ALLOW_SOFTR_DOWNGRADE`.
-
 

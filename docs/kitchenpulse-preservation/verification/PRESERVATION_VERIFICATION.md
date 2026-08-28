@@ -57,3 +57,7 @@ The full 47 Vibe sources, 11 Custom Code payloads, and Studio-only configuration
 **NOT_SAFE_TO_ALLOW_SOFTR_DOWNGRADE**
 
 Downgrading Softr now could credibly cause irrecoverable loss of the missing Tripleseat Vibe source, native Custom Code, and Studio-only configuration. This verdict does not depend on future Vercel migration work.
+
+## Provider-retained parking supersession — 2026-08-28
+
+The owner has chosen to retain KitchenPulse on Softr Free rather than delete it. The 23 incomplete manual-capture items are therefore `DEFERRED_PROVIDER_PRESERVED`: they remain in the Softr workspace/application only and are not represented as externally preserved here. This historical verification is not authorization for further capture or a new readiness assessment. Reopen only on a Softr deletion/retention-policy change or resumed KitchenPulse migration.

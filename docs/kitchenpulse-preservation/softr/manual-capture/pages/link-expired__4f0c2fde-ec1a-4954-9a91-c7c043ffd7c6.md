@@ -5,7 +5,7 @@
 - Route: `/link-expired`
 - Type: `LINK_EXPIRED`
 - MCP state: listed, but page and permission reads returned `NOT_FOUND`.
-- Completion: **[ ] NOT CAPTURED**
+- Completion: **DEFERRED_PROVIDER_PRESERVED** — retained in Softr only; not externally preserved.
 
 ## Copy into this file
 
@@ -19,4 +19,3 @@
 - Captured by:
 - Captured at:
 - Screenshot (only builder-state proof): `screenshots/link-expired__page-builder.png`
-

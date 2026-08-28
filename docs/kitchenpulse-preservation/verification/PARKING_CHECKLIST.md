@@ -40,3 +40,11 @@
 - [ ] Manual capture evidence is present — **FAIL**: 23 checklist entries remain `NOT CAPTURED`; Tripleseat and all 11 Custom Code files remain placeholders; Studio and access-redirection evidence is absent.
 
 **Final result: `NOT_SAFE_TO_ALLOW_SOFTR_DOWNGRADE`.** No Softr, production, or application source was modified.
+
+## Provider-retained parking decision — 2026-08-28
+
+KitchenPulse is being retained on Softr Free rather than deleted. By owner instruction, the 23 incomplete items in [FINAL_MANUAL_CHECKLIST.md](../softr/manual-capture/FINAL_MANUAL_CHECKLIST.md) are now `DEFERRED_PROVIDER_PRESERVED`.
+
+- The deferred artifacts remain in the retained Softr workspace/application only; this repository does **not** claim they are externally preserved.
+- No further manual capture, preservation verification, or cancellation-readiness work is authorized.
+- Reopen this register only if Softr announces a deletion or retention-policy change, or if KitchenPulse migration resumes.

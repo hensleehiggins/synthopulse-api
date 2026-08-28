@@ -1,6 +1,6 @@
 # Studio-only configuration capture
 
-Completion status: **[ ] NOT CAPTURED**. Copy text/configuration into this file wherever possible; screenshots are named only for visual state that cannot be copied faithfully.
+Completion status: **DEFERRED_PROVIDER_PRESERVED**. The Studio-only configuration is retained in Softr only and is not externally preserved. Copy text/configuration into this file only if capture is later reopened; screenshots are named only for visual state that cannot be copied faithfully.
 
 ## Theme and assets
 
@@ -29,4 +29,3 @@ Capture all four mappings: triggering user group/condition, destination page/URL
 ## Published state
 
 Record app published state and, for each page whose enabled/published state differs from the MCP listing, page ID, route, observed state, and timestamp. Screenshot: `screenshots/studio-publish-state.png`.
-
