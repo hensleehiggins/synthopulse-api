@@ -23,3 +23,9 @@ Before replacement UI work, attach each Softr page/block to one table row above,
 Read-only MCP extraction added 26 listed pages (25 fully readable), 97 readable blocks, and a 97-row evidence matrix at [softr/mcp-export/reconstruction-matrix.json](../softr/mcp-export/reconstruction-matrix.json). It includes block IDs, class, wired source/table, filters, actions, visibility, and only explicit Vercel-route references found in Vibe source.
 
 Current Vibe source is preserved for 45 blocks; one Billing source is redacted for a sensitive literal, and one Tripleseat source endpoint returned `NOT_FOUND`. Native Custom Code payloads remain Studio-only. These gaps remain `MANUAL_CAPTURE_REQUIRED` and do not supersede the source-backed map above.
+
+## Final manual-capture reconciliation — 2026-08-28
+
+The manual-capture overlay was rechecked against the MCP matrix without a Softr read. It adds no completed reconstruction evidence: 46 MCP Vibe source files remain available, the required Tripleseat 47th source remains a placeholder, and all 11 native Custom Code destinations remain placeholders. The existing Billing source remains intentionally redacted and reconstructible only after an approved protected `BILLING_ADMIN_SECRET` is supplied outside Git.
+
+Theme, navigation, authentication, redirects/domain, global/app/page custom code, published-state evidence, and four access-redirection mappings are still not represented in the manual overlay. Therefore the map is not sufficient to reconstruct the Softr application after a downgrade.

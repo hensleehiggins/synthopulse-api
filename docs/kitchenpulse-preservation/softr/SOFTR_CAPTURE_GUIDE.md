@@ -38,5 +38,10 @@ Do **not** repeat MCP-covered capture. The human-only remainder is:
 4. Export the 11 native Custom Code block payloads omitted by the MCP.
 5. Capture Studio-only theme/assets, navigation, global/page CSS/JS, auth/login/signup, redirects, published preview/screenshots, and the four access-control redirection rules.
 
+## Final verification result — 2026-08-28
+
+The destinations above were rechecked in the canonical checkout without accessing Softr. They do not yet contain supplied manual captures: `/link-expired` is still `NOT CAPTURED`, Tripleseat source is still a placeholder, all 11 native Custom Code files are placeholders, and `STUDIO_CONFIGURATION.md` remains `NOT CAPTURED`. The Billing handoff is correctly preserved only as `REDACTED_SENSITIVE_BILLING_VALUE`; no live Billing value is requested or stored.
+
+Do not treat this guide or its scaffold paths as evidence that the capture occurred. The preservation gate therefore remains `NOT_SAFE_TO_ALLOW_SOFTR_DOWNGRADE`.
 
 

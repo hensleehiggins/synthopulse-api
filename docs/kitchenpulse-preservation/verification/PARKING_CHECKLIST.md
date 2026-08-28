@@ -31,3 +31,12 @@
 - [ ] Recover `/link-expired`, missing Tripleseat source, redacted Billing literal, 11 Custom Code blocks, and Studio-only global configuration.
 
 **Current result remains: `NOT_SAFE_TO_ALLOW_SOFTR_DOWNGRADE`.**
+
+## Final manual-capture verification — 2026-08-28
+
+- [x] Canonical checkout, branch, and clean baseline verified: `preservation/kitchenpulse-2026-08-28` tracking `origin/preservation/kitchenpulse-2026-08-28`.
+- [x] All JSON in the checkout parsed successfully (68 files).
+- [x] Preservation-path credential scan found no credential-shaped value; Billing remains a safe placeholder.
+- [ ] Manual capture evidence is present — **FAIL**: 23 checklist entries remain `NOT CAPTURED`; Tripleseat and all 11 Custom Code files remain placeholders; Studio and access-redirection evidence is absent.
+
+**Final result: `NOT_SAFE_TO_ALLOW_SOFTR_DOWNGRADE`.** No Softr, production, or application source was modified.

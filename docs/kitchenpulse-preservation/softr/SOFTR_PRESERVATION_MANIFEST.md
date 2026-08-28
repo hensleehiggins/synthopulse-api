@@ -46,5 +46,12 @@ The current Softr state is archived in [mcp-export/APPLICATION_MANIFEST.md](mcp-
 
 No write-capable Softr operation was invoked.
 
+## Final preservation verification — 2026-08-28
+
+The canonical checkout was inspected without accessing Softr. The manual-capture workspace remains the original scaffold: its checklist has 23 `NOT CAPTURED` items and only the deliberately redacted Billing handoff is complete. The Tripleseat Vibe destination remains a placeholder, all 11 Custom Code destinations remain placeholders, and Studio configuration, including the four access-redirection mappings, has not been recorded.
+
+Accordingly, the MCP export remains authoritative for the 46 available Vibe sources and inventories, but it cannot supply the missing current source or Studio-only configuration. This is insufficient evidence to preserve reconstructible Softr behavior.
+
+**Final Softr downgrade verdict: `NOT_SAFE_TO_ALLOW_SOFTR_DOWNGRADE`.**
 
 

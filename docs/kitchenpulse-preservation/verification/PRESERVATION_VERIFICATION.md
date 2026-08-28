@@ -34,3 +34,26 @@
 | Studio-only configuration/custom code | MANUAL_CAPTURE_REQUIRED |
 
 The MCP calls were read-only; no production application, record, workflow, integration, or permission state changed.
+
+## Final Softr preservation verification — 2026-08-28
+
+This verification used only the canonical checkout; it made no Softr or production access.
+
+| Check | Result |
+| --- | --- |
+| JSON validation | PASS — all 68 JSON files parsed with `JSON.parse` |
+| MCP Vibe source archive | PARTIAL — 46 current source files; the 47th Tripleseat source still has only a manual placeholder |
+| Native Custom Code archive | FAIL — all 11 expected files exist but retain their explicit manual-capture placeholders |
+| Billing sensitive configuration | PASS — `REDACTED_SENSITIVE_BILLING_VALUE` only; restoration requires protected `BILLING_ADMIN_SECRET` outside Git |
+| `/link-expired` | FAIL — still marked `NOT CAPTURED`; not documented as provider-owned/non-custom |
+| Studio configuration | FAIL — theme, navigation, auth, redirects/domain, custom code, published state, and access-redirection mappings remain unrecorded |
+| Preservation-path credential scan | PASS — no credential-shaped value found in the preservation archive |
+| Git baseline before this report | PASS — clean branch `preservation/kitchenpulse-2026-08-28` tracking origin |
+
+The full 47 Vibe sources, 11 Custom Code payloads, and Studio-only configuration are not reconstructible from the present checkout. The OAuth probe fixture literal `probe-secret` was detected only when scanning application source; it is a non-live test sentinel, lies outside the preservation archive, and was not changed under this documentation-only authorization.
+
+## Final verdict
+
+**NOT_SAFE_TO_ALLOW_SOFTR_DOWNGRADE**
+
+Downgrading Softr now could credibly cause irrecoverable loss of the missing Tripleseat Vibe source, native Custom Code, and Studio-only configuration. This verdict does not depend on future Vercel migration work.
